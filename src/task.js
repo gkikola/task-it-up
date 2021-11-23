@@ -1,7 +1,7 @@
 const taskProto = {
   title: null,
   dueDate: null,
-  priority: null,
+  priority: 'medium',
   description: null,
   notes: null,
   completed: false,
