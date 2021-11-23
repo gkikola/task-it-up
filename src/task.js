@@ -5,6 +5,10 @@ const taskProto = {
   description: null,
   notes: null,
   completed: false,
+
+  toString() {
+    return this.title ? `Task: ${this.title}` : 'Task: (untitled)';
+  },
 };
 
 function createTask(title) {
