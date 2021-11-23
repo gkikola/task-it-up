@@ -1,0 +1,35 @@
+{
+  "name": "task-it-up",
+  "version": "1.0.0",
+  "description": "A web-based to-do list and task organizer",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --watch",
+    "start": "webpack serve --open",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gkikola/task-it-up.git"
+  },
+  "keywords": [
+    "todo",
+    "task",
+    "organizer"
+  ],
+  "author": "Greg Kikola <gkikola@gmail.com> (https://www.gregkikola.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gkikola/task-it-up/issues"
+  },
+  "homepage": "https://github.com/gkikola/task-it-up#readme",
+  "devDependencies": {
+    "css-loader": "^6.5.1",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.64.2",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.5.0"
+  }
+}
