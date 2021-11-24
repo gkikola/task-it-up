@@ -34,8 +34,13 @@ function createApp() {
   container.id = 'app';
 
   container.appendChild(createHeader());
-  container.appendChild(createSidePanel());
-  container.appendChild(createMainPanel());
+
+  const middleContainer = document.createElement('div');
+  middleContainer.id = 'middle-container';
+  middleContainer.appendChild(createSidePanel());
+  middleContainer.appendChild(createMainPanel());
+  container.appendChild(middleContainer);
+
   container.appendChild(createFooter());
 
   return container;
