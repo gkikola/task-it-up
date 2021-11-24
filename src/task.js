@@ -1,10 +1,10 @@
 const taskProto = {
   title: null,
   dueDate: null,
+  completionDate: null,
   priority: 'medium',
   description: null,
   notes: null,
-  completed: false,
   recurringDate: null,
   project: null,
 
