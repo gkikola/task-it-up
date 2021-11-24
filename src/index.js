@@ -1,3 +1,6 @@
+import './reset.css';
+import './style.css';
+
 function createHeader() {
   const header = document.createElement('header');
   header.id = 'header';
