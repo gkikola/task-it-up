@@ -5,6 +5,7 @@ const taskProto = {
   description: null,
   notes: null,
   completed: false,
+  recurringDate: null,
 
   toString() {
     return this.title ? `Task: ${this.title}` : 'Task: (untitled)';
