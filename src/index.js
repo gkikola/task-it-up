@@ -1,5 +1,5 @@
-import './reset.css';
-import './style.css';
+import './styles/reset.css';
+import './styles/main.css';
 
 function createHeader() {
   const header = document.createElement('header');
