@@ -5,3 +5,27 @@ html {
 *, *::before, *::after {
   box-sizing: inherit;
 }
+
+/* Main layout */
+#app {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  width: 100vw;
+  height: 100vh;
+}
+
+#middle-container {
+  flex: 1 1 auto;
+  display: flex;
+}
+
+#side-panel {
+  height: 100%;
+}
+
+#main-panel {
+  flex: 1 1 auto;
+  height: 100%;
+}
