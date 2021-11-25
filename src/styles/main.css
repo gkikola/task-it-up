@@ -47,11 +47,14 @@ a:hover {
 
 #side-panel {
   height: 100%;
+  background-color: #fafafa;
+  overflow: auto;
 }
 
 #main-panel {
   flex: 1 1 auto;
   height: 100%;
+  overflow: auto;
 }
 
 #footer {
@@ -80,4 +83,14 @@ a:hover {
 
 .icon {
   font-size: 32px;
+}
+
+@media (max-width: 400px) {
+  #header {
+    justify-content: flex-end;
+  }
+
+  .title-container {
+    display: none;
+  }
 }

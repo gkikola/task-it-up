@@ -11,6 +11,7 @@ function createHeader() {
   header.id = 'header';
 
   const titleContainer = document.createElement('div');
+  titleContainer.classList.add('title-container');
   const title = document.createElement('p');
   title.classList.add('title');
   title.textContent = APP_NAME;
