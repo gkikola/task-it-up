@@ -9,6 +9,10 @@ html {
   box-sizing: inherit;
 }
 
+body {
+  font-family: 'Times New Roman', Times, serif;
+}
+
 a, a:visited {
   text-decoration: none;
 }
@@ -53,6 +57,7 @@ a:hover {
 #footer {
   color: white;
   background-color: #2c2c32;
+  font-size: 18px;
   padding: 16px;
 
   display: flex;
