@@ -2,6 +2,9 @@ import './styles/reset.css';
 import './styles/main.css';
 
 const APP_NAME = 'Task It Up';
+const APP_AUTHOR = 'Greg Kikola';
+const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
+const APP_COPYRIGHT_YEARS = '2021';
 
 function createHeader() {
   const header = document.createElement('header');
@@ -43,6 +46,13 @@ function createMainPanel() {
 function createFooter() {
   const footer = document.createElement('footer');
   footer.id = 'footer';
+
+  const copyright = document.createElement('div');
+  copyright.classList.add('copyright');
+  copyright.innerHTML = `Copyright &copy; ${APP_COPYRIGHT_YEARS} ` +
+    `<a href="${APP_AUTHOR_WEBSITE}" target="_blank">` +
+    `${APP_AUTHOR}</a>`;
+  footer.appendChild(copyright);
 
   return footer;
 }

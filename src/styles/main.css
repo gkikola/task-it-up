@@ -9,6 +9,14 @@ html {
   box-sizing: inherit;
 }
 
+a, a:visited {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 #app {
   display: flex;
   flex-direction: column;
@@ -40,6 +48,24 @@ html {
 #main-panel {
   flex: 1 1 auto;
   height: 100%;
+}
+
+#footer {
+  color: white;
+  background-color: #2c2c32;
+  padding: 16px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#footer a {
+  color: inherit;
+}
+
+#footer a:hover {
+  color: #c3c2fd;
 }
 
 .title {
