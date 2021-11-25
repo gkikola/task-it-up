@@ -47,8 +47,10 @@ a:hover {
 
 #side-panel {
   height: 100%;
-  background-color: #fafafa;
+  background-color: #f4f4f4;
   overflow: auto;
+  width: 350px;
+  max-width: 100vw;
 }
 
 #main-panel {
