@@ -1,9 +1,27 @@
 import './styles/reset.css';
 import './styles/main.css';
 
+const APP_NAME = 'Task It Up';
+
 function createHeader() {
   const header = document.createElement('header');
   header.id = 'header';
+
+  const titleContainer = document.createElement('div');
+  const title = document.createElement('p');
+  title.classList.add('title');
+  title.textContent = APP_NAME;
+  titleContainer.appendChild(title);
+  header.appendChild(titleContainer);
+
+  const toolContainer = document.createElement('div');
+  toolContainer.classList.add('tools');
+  const settingsIcon = document.createElement('div');
+  settingsIcon.classList.add('icon');
+  settingsIcon.classList.add('material-icons');
+  settingsIcon.textContent = 'settings';
+  toolContainer.appendChild(settingsIcon);
+  header.appendChild(toolContainer);
 
   return header;
 }

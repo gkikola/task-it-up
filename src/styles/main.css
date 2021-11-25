@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Carter+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Icons');
+
 /* Use alternative box model */
 html {
   box-sizing: border-box;
@@ -6,7 +9,6 @@ html {
   box-sizing: inherit;
 }
 
-/* Main layout */
 #app {
   display: flex;
   flex-direction: column;
@@ -14,6 +16,16 @@ html {
 
   width: 100vw;
   height: 100vh;
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  color: white;
+  background-color: #2C2C32;
+  padding: 16px;
 }
 
 #middle-container {
@@ -28,4 +40,13 @@ html {
 #main-panel {
   flex: 1 1 auto;
   height: 100%;
+}
+
+.title {
+  font-family: 'Carter One', sans-serif;
+  font-size: 36px;
+}
+
+.icon {
+  font-size: 32px;
 }
