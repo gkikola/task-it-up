@@ -30,9 +30,33 @@ function createHeader() {
   return header;
 }
 
+function createFilterList(label, id) {
+  const container = document.createElement('div');
+
+  const heading = document.createElement('h2');
+  heading.classList.add('filter-list-heading');
+  heading.textContent = label;
+  container.appendChild(heading);
+
+  const list = document.createElement('ul');
+  list.id = id;
+  list.classList.add('filter-list');
+  container.appendChild(list);
+
+  return container;
+}
+
 function createSidePanel() {
   const panel = document.createElement('aside');
   panel.id = 'side-panel';
+
+  const listContainer = document.createElement('div');
+  listContainer.classList.add('list-container');
+  listContainer.appendChild(createFilterList('Dates', 'date-filter-list'));
+  listContainer.appendChild(createFilterList('Projects',
+                                             'project-filter-list'));
+
+  panel.appendChild(listContainer);
 
   return panel;
 }

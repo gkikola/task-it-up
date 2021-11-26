@@ -87,6 +87,20 @@ a:hover {
   font-size: 32px;
 }
 
+.list-container {
+  margin: 16px;
+}
+
+.filter-list {
+  margin: 16px 0 48px;
+}
+
+.filter-list-heading {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+}
+
 @media (max-width: 400px) {
   #header {
     justify-content: flex-end;
