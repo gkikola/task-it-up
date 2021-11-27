@@ -1,5 +1,6 @@
 import './styles/reset.css';
 import './styles/main.css';
+import { createFilterList } from './modules/filterList';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -28,22 +29,6 @@ function createHeader() {
   header.appendChild(toolContainer);
 
   return header;
-}
-
-function createFilterList(label, id) {
-  const container = document.createElement('div');
-
-  const heading = document.createElement('h2');
-  heading.classList.add('filter-list-heading');
-  heading.textContent = label;
-  container.appendChild(heading);
-
-  const list = document.createElement('ul');
-  list.id = id;
-  list.classList.add('filter-list');
-  container.appendChild(list);
-
-  return container;
 }
 
 function createSidePanel() {
