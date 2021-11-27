@@ -35,11 +35,15 @@ function createSidePanel() {
   const panel = document.createElement('aside');
   panel.id = 'side-panel';
 
+  const dateList = createFilterList('Dates', 'date-filter-list', 'date');
+  const projList = createFilterList('Projects',
+                                    'project-filter-list',
+                                    'project');
+
   const listContainer = document.createElement('div');
   listContainer.classList.add('list-container');
-  listContainer.appendChild(createFilterList('Dates', 'date-filter-list'));
-  listContainer.appendChild(createFilterList('Projects',
-                                             'project-filter-list'));
+  listContainer.appendChild(dateList);
+  listContainer.appendChild(projList);
 
   panel.appendChild(listContainer);
 

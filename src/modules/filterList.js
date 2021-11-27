@@ -1,4 +1,4 @@
-function createFilterList(label, id) {
+function createFilterList(label, id, type) {
   const container = document.createElement('div');
 
   const heading = document.createElement('h2');
@@ -9,9 +9,28 @@ function createFilterList(label, id) {
   const list = document.createElement('ul');
   list.id = id;
   list.classList.add('filter-list');
+  list.dataset.type = type;
   container.appendChild(list);
 
   return container;
 }
 
-export { createFilterList };
+function addFilter(list, id, label) {
+  const listItem = document.createElement('li');
+  listItem.classList.add('filter-list-item');
+  listItem.dataset.id = id;
+  listItem.dataset.type = list.dataset.type;
+  listItem.textContent = label;
+  list.appendChild(listItem);
+}
+
+function updateFilter(list, id, label) {
+  for (let listItem of list.children) {
+    if (listItem.dataset.id === id) {
+      listItem.textContent = label;
+      break;
+    }
+  }
+}
+
+export { createFilterList, addFilter, updateFilter };
