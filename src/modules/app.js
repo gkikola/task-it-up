@@ -7,6 +7,23 @@ const APP_AUTHOR = 'Greg Kikola';
 const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
 const APP_COPYRIGHT_YEARS = '2021';
 
+function createApp(parent) {
+  const container = document.createElement('div');
+  container.id = 'app';
+
+  container.appendChild(createHeader());
+
+  const middleContainer = document.createElement('div');
+  middleContainer.id = 'middle-container';
+  middleContainer.appendChild(createSidePanel());
+  middleContainer.appendChild(createMainPanel());
+  container.appendChild(middleContainer);
+
+  container.appendChild(createFooter());
+
+  parent.appendChild(container);
+}
+
 function createHeader() {
   const header = document.createElement('header');
   header.id = 'header';
@@ -69,23 +86,6 @@ function createFooter() {
   footer.appendChild(copyright);
 
   return footer;
-}
-
-function createApp(parent) {
-  const container = document.createElement('div');
-  container.id = 'app';
-
-  container.appendChild(createHeader());
-
-  const middleContainer = document.createElement('div');
-  middleContainer.id = 'middle-container';
-  middleContainer.appendChild(createSidePanel());
-  middleContainer.appendChild(createMainPanel());
-  container.appendChild(middleContainer);
-
-  container.appendChild(createFooter());
-
-  parent.appendChild(container);
 }
 
 export { createApp };
