@@ -83,7 +83,7 @@ a:hover {
   font-size: 24px;
 }
 
-.icon {
+#header .icon {
   font-size: 24px;
 }
 
@@ -95,10 +95,23 @@ a:hover {
   margin: 16px 0 32px;
 }
 
+.filter-list-heading-container {
+  display: flex;
+  justify-content: space-between;
+}
+
 .filter-list-heading {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 16px;
   font-weight: bold;
+}
+
+.filter-list-button-container {
+  display: flex;
+}
+
+.filter-list-button-container .icon {
+  font-size: 20px;
 }
 
 .filter-list-item {

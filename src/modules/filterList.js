@@ -1,23 +1,35 @@
-function createFilterList(label, id, type, filters = null) {
+function createFilterList(id, type) {
+  const list = document.createElement('ul');
+  list.id = id;
+  list.classList.add('filter-list');
+  list.dataset.type = type;
+
+  return list;
+}
+
+function createFilterListHeading(label, buttons = null) {
   const container = document.createElement('div');
+  container.classList.add('filter-list-heading-container');
 
   const heading = document.createElement('h2');
   heading.classList.add('filter-list-heading');
   heading.textContent = label;
   container.appendChild(heading);
 
-  const list = document.createElement('ul');
-  list.id = id;
-  list.classList.add('filter-list');
-  list.dataset.type = type;
-  container.appendChild(list);
+  const buttonContainer = document.createElement('div');
+  buttonContainer.classList.add('filter-list-button-container');
 
-  if (filters) {
-    filters.forEach(filter => {
-      addFilter(list, filter.id, filter.label);
+  if (buttons) {
+    buttons.forEach(button => {
+      const icon = document.createElement('div');
+      icon.classList.add('icon');
+      icon.classList.add('material-icons');
+      icon.textContent = button.label;
+      buttonContainer.appendChild(icon);
     });
   }
 
+  container.appendChild(buttonContainer);
   return container;
 }
 
@@ -39,4 +51,4 @@ function updateFilter(list, id, label) {
   }
 }
 
-export { createFilterList, addFilter, updateFilter };
+export { createFilterList, createFilterListHeading, addFilter, updateFilter };
