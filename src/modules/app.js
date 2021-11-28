@@ -88,9 +88,26 @@ function createSidePanel() {
 }
 
 function createMainPanel() {
-  const panel = document.createElement('main');
+  const panel = document.createElement('div');
   panel.id = 'main-panel';
 
+  const content = document.createElement('main');
+  content.id = 'main-panel-content';
+
+  const headingContainer = document.createElement('div');
+  headingContainer.id = 'main-panel-header';
+  const heading = document.createElement('h2');
+  heading.classList.add('main-panel-heading');
+  heading.textContent = 'Today';
+  headingContainer.appendChild(heading);
+
+  const buttonContainer = document.createElement('div');
+  buttonContainer.classList.add('main-panel-button-container');
+  headingContainer.appendChild(buttonContainer);
+
+  content.appendChild(headingContainer);
+
+  panel.appendChild(content);
   return panel;
 }
 
