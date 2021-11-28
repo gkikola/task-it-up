@@ -56,13 +56,13 @@ a:hover {
 #main-panel {
   flex: 1 1 auto;
   height: 100%;
+  padding: 24px;
   overflow: auto;
 }
 
 #main-panel-content {
   max-width: 800px;
   margin: auto;
-  padding: 16px;
 }
 
 #footer {
@@ -94,7 +94,7 @@ a:hover {
 }
 
 .list-container {
-  margin: 16px;
+  margin: 24px;
 }
 
 .filter-list {
