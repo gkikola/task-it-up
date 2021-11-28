@@ -101,6 +101,12 @@ a:hover {
   font-weight: bold;
 }
 
+.filter-list-item {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 16px;
+  margin: 12px 8px;
+}
+
 @media (max-width: 400px) {
   #header {
     justify-content: flex-end;

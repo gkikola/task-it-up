@@ -56,10 +56,20 @@ function createSidePanel() {
   const panel = document.createElement('aside');
   panel.id = 'side-panel';
 
-  const dateList = createFilterList('Dates', 'date-filter-list', 'date');
+  const dateFilters = [
+    { id: 'today', label: 'Today' },
+    { id: 'week', label: 'Next Seven Days' },
+    { id: 'past-due', label: 'Past Due' },
+    { id: 'all', label: 'All' },
+  ];
+
+  const dateList = createFilterList('Dates',
+    'date-filter-list',
+    'date',
+    dateFilters);
   const projList = createFilterList('Projects',
-                                    'project-filter-list',
-                                    'project');
+    'project-filter-list',
+    'project');
 
   const listContainer = document.createElement('div');
   listContainer.classList.add('list-container');
