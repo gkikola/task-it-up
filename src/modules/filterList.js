@@ -1,4 +1,4 @@
-function createFilterList(label, id, type) {
+function createFilterList(label, id, type, filters = null) {
   const container = document.createElement('div');
 
   const heading = document.createElement('h2');
@@ -11,6 +11,12 @@ function createFilterList(label, id, type) {
   list.classList.add('filter-list');
   list.dataset.type = type;
   container.appendChild(list);
+
+  if (filters) {
+    filters.forEach(filter => {
+      addFilter(list, filter.id, filter.label);
+    });
+  }
 
   return container;
 }
