@@ -8,6 +8,10 @@ const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
 const APP_COPYRIGHT_YEARS = '2021';
 
 function createApp(parent) {
+  parent.appendChild(createPageElements());
+}
+
+function createPageElements() {
   const container = document.createElement('div');
   container.id = 'app';
 
@@ -21,7 +25,7 @@ function createApp(parent) {
 
   container.appendChild(createFooter());
 
-  parent.appendChild(container);
+  return container;
 }
 
 function createHeader() {
