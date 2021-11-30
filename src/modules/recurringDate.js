@@ -1,22 +1,19 @@
-const proto = {
-  durationUnit: null,
-  durationLength: null,
-  weekOfMonth: null,
-  dayOfMonth: null,
-  daysOfWeek: [],
-  hour: null,
-  minute: null,
-  onWeekends: 'no change',
-  endDate: null,
-  count: null,
+class RecurringDate {
+  durationUnit = null;
+  durationLength = null;
+  weekOfMonth = null;
+  dayOfMonth = null;
+  daysOfWeek = [];
+  hour = null;
+  minute = null;
+  onWeekends = 'no change';
+  endDate = null;
+  count = null;
+
+  constructor(durationUnit, durationLength) {
+    this.durationUnit = durationUnit;
+    this.durationLength = durationLength;
+  }
 };
 
-function createRecurringDate(durationUnit, durationLength) {
-  const date = Object.create(proto);
-  date.durationUnit = durationUnit;
-  date.durationLength = durationLength;
-
-  return date;
-}
-
-export { createRecurringDate };
+export default RecurringDate;
