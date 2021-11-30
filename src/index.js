@@ -1,3 +1,3 @@
-import { createApp } from './modules/app.js';
+import App from './modules/app.js';
 
-createApp(document.body);
+let app = new App(document.body);

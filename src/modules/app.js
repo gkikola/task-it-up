@@ -9,9 +9,11 @@ const APP_AUTHOR = 'Greg Kikola';
 const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
 const APP_COPYRIGHT_YEARS = '2021';
 
-function createApp(parent) {
-  parent.appendChild(createPageElements());
-}
+class App {
+  constructor(parent) {
+    parent.appendChild(createPageElements());
+  }
+};
 
 function createPageElements() {
   const container = document.createElement('div');
@@ -125,4 +127,4 @@ function createFooter() {
   return footer;
 }
 
-export { createApp };
+export default App;
