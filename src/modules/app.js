@@ -13,6 +13,9 @@ class App {
   constructor(parent) {
     parent.appendChild(createPageElements());
   }
+
+  run() {
+  }
 };
 
 function createPageElements() {
