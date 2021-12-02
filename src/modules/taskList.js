@@ -17,6 +17,7 @@ class TaskList {
 
     // Add task to task map
     this.#tasks.set(id, _.cloneDeep(task));
+    return id;
   }
 }
 
