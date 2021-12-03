@@ -1,3 +1,8 @@
+/**
+ * Defines the [App]{@link module:app~App} class.
+ * @module app
+ */
+
 import '../styles/reset.css';
 import '../styles/main.css';
 import { createFilterList,
@@ -9,15 +14,34 @@ const APP_AUTHOR = 'Greg Kikola';
 const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
 const APP_COPYRIGHT_YEARS = '2021';
 
+/**
+ * Class responsible for creating the DOM elements for the app and running the
+ * event-driven logic.
+ */
 class App {
+  /**
+   * Append the DOM elements for the app to the given parent node.
+   * @param {HTMLElement} parent The DOM node where the app elements should be
+   *   appended.
+   */
   constructor(parent) {
     parent.appendChild(createPageElements());
   }
 
+  /**
+   * Run the app. This method sets up the event handlers and performs
+   * high-level logic. This should not be called until the page elements have
+   * been added to the DOM.
+   */
   run() {
   }
 };
 
+/**
+ * Create the DOM elements for the page content.
+ * @returns {HTMLElement} The container element that holds the app's DOM
+ *   content.
+ */
 function createPageElements() {
   const container = document.createElement('div');
   container.id = 'app';
@@ -35,6 +59,10 @@ function createPageElements() {
   return container;
 }
 
+/**
+ * Create the app's header.
+ * @returns {HTMLElement} The header element.
+ */
 function createHeader() {
   const header = document.createElement('header');
   header.id = 'header';
@@ -59,6 +87,10 @@ function createHeader() {
   return header;
 }
 
+/**
+ * Create the app's side panel.
+ * @returns {HTMLElement} The side panel container element.
+ */
 function createSidePanel() {
   const panel = document.createElement('aside');
   panel.id = 'side-panel';
@@ -92,6 +124,10 @@ function createSidePanel() {
   return panel;
 }
 
+/**
+ * Create the app's main panel.
+ * @returns {HTMLElement} The main panel container element.
+ */
 function createMainPanel() {
   const panel = document.createElement('div');
   panel.id = 'main-panel';
@@ -116,6 +152,10 @@ function createMainPanel() {
   return panel;
 }
 
+/**
+ * Create the app's footer.
+ * @returns {HTMLElement} The footer element.
+ */
 function createFooter() {
   const footer = document.createElement('footer');
   footer.id = 'footer';
