@@ -8,6 +8,7 @@ import '../styles/main.css';
 import { createFilterList,
   createFilterListHeading,
   addFilter } from './filterList';
+import TaskList from './taskList';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -25,6 +26,12 @@ class App {
    *   appended.
    */
   constructor(parent) {
+    /**
+     * Holds the task container.
+     * @type {module:taskList~TaskList}
+     */
+    this._tasks = new TaskList();
+
     parent.appendChild(createPageElements());
   }
 
