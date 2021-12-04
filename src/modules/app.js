@@ -32,6 +32,17 @@ class App {
      */
     this._tasks = new TaskList();
 
+    /**
+     * Information about the currently selected filter.
+     * @type {Object}
+     * @property {string} type The type of filter that is currently selected.
+     * @property {string} id The ID of the currently selected filter.
+     */
+    this._selectedFilter = {
+      type: null,
+      id: null,
+    };
+
     parent.appendChild(createPageElements());
   }
 
