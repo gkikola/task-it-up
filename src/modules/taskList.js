@@ -18,7 +18,7 @@ class TaskList {
      * Holds a map associating UUIDs to tasks.
      * @type {Map}
      */
-    this.tasks = new Map();
+    this._tasks = new Map();
   }
 
   /**
@@ -33,10 +33,10 @@ class TaskList {
     let id;
     do {
       id = uuid();
-    } while (this.tasks.has(id));
+    } while (this._tasks.has(id));
 
     // Add task to task map
-    this.tasks.set(id, _.cloneDeep(task));
+    this._tasks.set(id, _.cloneDeep(task));
     return id;
   }
 }
