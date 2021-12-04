@@ -50,6 +50,33 @@ class App {
    * been added to the DOM.
    */
   run() {
+    this._selectFilter('date', 'today');
+  }
+
+  /**
+   * Select a task filter.
+   * @param {string} type The type of filter to select.
+   * @param {string} id The ID of the filter to select.
+   */
+  _selectFilter(type, id) {
+    const listIDs = ['date-filter-list', 'project-filter-list'];
+    const lists = [];
+
+    listIDs.forEach(id => {
+      const elem = document.querySelector(`#${id}`);
+
+      if (!elem)
+        throw new Error(`Filter list "${id}" not found in DOM`);
+
+      lists.push(elem);
+    });
+
+    lists.forEach(list => {
+      if (list.dataset.type === type)
+        fl.selectFilter(list, id);
+      else
+        fl.selectFilter(list, null);
+    });
   }
 };
 
