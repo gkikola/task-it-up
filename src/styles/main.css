@@ -84,6 +84,10 @@ a:hover {
   color: #c3c2fd;
 }
 
+.icon {
+  cursor: pointer;
+}
+
 .title {
   font-family: 'Carter One', sans-serif;
   font-size: 24px;
@@ -124,7 +128,14 @@ a:hover {
 .filter-list-item {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 16px;
-  margin: 12px 8px;
+  margin: 4px 8px;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter-list-item:hover, .filter-list-item.selected {
+  background-color: #dadada;
 }
 
 #main-panel-header {
