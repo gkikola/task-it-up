@@ -102,12 +102,13 @@ a:hover {
 }
 
 .filter-list {
-  margin: 16px 0 32px;
+  margin: 4px 0 32px;
 }
 
 .filter-list-heading-container {
   display: flex;
   justify-content: space-between;
+  padding: 8px;
 }
 
 .filter-list-heading {
