@@ -5,9 +5,7 @@
 
 import '../styles/reset.css';
 import '../styles/main.css';
-import { createFilterList,
-  createFilterListHeading,
-  addFilter } from './filterList';
+import * as fl from './filterList';
 import TaskList from './taskList';
 
 const APP_NAME = 'Task It Up';
@@ -114,23 +112,27 @@ function createSidePanel() {
   panel.id = 'side-panel';
 
   const dateContainer = document.createElement('div');
-  dateContainer.appendChild(createFilterListHeading('Dates'));
+  dateContainer.appendChild(fl.createFilterListHeading('Dates'));
   const dateFilters = [
     { id: 'today', label: 'Today' },
     { id: 'week', label: 'Next Seven Days' },
     { id: 'past-due', label: 'Past Due' },
     { id: 'all', label: 'All' },
   ];
-  const dateList = createFilterList('date-filter-list', 'date');
-  dateFilters.forEach(filter => addFilter(dateList, filter.id, filter.label));
+  const dateList = fl.createFilterList('date-filter-list', 'date');
+  dateFilters.forEach(filter => {
+    fl.addFilter(dateList, filter.id, filter.label);
+  });
   dateContainer.appendChild(dateList);
 
   const projContainer = document.createElement('div');
   const projButtons = [
     { label: 'add' },
   ];
-  projContainer.appendChild(createFilterListHeading('Projects', projButtons));
-  projContainer.appendChild(createFilterList('project-filter-list', 'project'));
+  projContainer.appendChild(fl.createFilterListHeading('Projects',
+    projButtons));
+  projContainer.appendChild(fl.createFilterList('project-filter-list',
+    'project'));
 
   const listContainer = document.createElement('div');
   listContainer.classList.add('list-container');
