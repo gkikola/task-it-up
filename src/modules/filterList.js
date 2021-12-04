@@ -10,7 +10,7 @@
  *   "data-type" attribute of the list element and in its list item elements.
  * @returns {HTMLElement} The newly-created list element.
  */
-function createFilterList(id, type) {
+export function createFilterList(id, type) {
   const list = document.createElement('ul');
   list.id = id;
   list.classList.add('filter-list');
@@ -27,7 +27,7 @@ function createFilterList(id, type) {
  * @param {string} buttons[].label The label for the button.
  * @returns {HTMLElement} The heading element.
  */
-function createFilterListHeading(label, buttons) {
+export function createFilterListHeading(label, buttons) {
   const container = document.createElement('div');
   container.classList.add('filter-list-heading-container');
 
@@ -61,7 +61,7 @@ function createFilterListHeading(label, buttons) {
  *   attribute.
  * @param {string} label The filter's displayed name, used as the item label.
  */
-function addFilter(list, id, label) {
+export function addFilter(list, id, label) {
   const listItem = document.createElement('li');
   listItem.classList.add('filter-list-item');
   listItem.dataset.id = id;
@@ -76,7 +76,7 @@ function addFilter(list, id, label) {
  * @param {string} id The ID of the list item to update.
  * @param {string} label The new label to use for the filter.
  */
-function updateFilter(list, id, label) {
+export function updateFilter(list, id, label) {
   for (let listItem of list.children) {
     if (listItem.dataset.id === id) {
       listItem.textContent = label;
@@ -85,4 +85,21 @@ function updateFilter(list, id, label) {
   }
 }
 
-export { createFilterList, createFilterListHeading, addFilter, updateFilter };
+/**
+ * Select a filter in a filter list. The 'selected' class is applied to the
+ * list item, and any previously selected filter in the list is unselected. If
+ * the given ID is null or undefined, then the selection is cleared and no
+ * filter is selected.
+ * @param {HTMLElement} list The list element where the selection is to be
+ *   made.
+ * @param {string} [id] The ID of the filter to select. If not given, then the
+ *   selection is cleared.
+ */
+export function selectFilter(list, id) {
+  for (let listItem of list.children) {
+    if (listItem.dataset.id === id)
+      listItem.classList.add('selected');
+    else if (listItem.classList.contains('selected'))
+      listItem.classList.remove('selected');
+  }
+}
