@@ -5,7 +5,7 @@
 
 /**
  * Create an empty filter list.
- * @param {string} id The unique ID of the list.
+ * @param {string} id The unique identifier of the list.
  * @param {string} type The type of the list. This string is stored in the
  *   "data-type" attribute of the list element and in its list item elements.
  * @returns {HTMLElement} The newly-created list element.
@@ -57,7 +57,7 @@ export function createFilterListHeading(label, buttons) {
  * Add a filter item to a filter list.
  * @param {HTMLElement} list The DOM list element where the item is to be
  *   added.
- * @param {string} id The ID of the list item, stored as a custom data
+ * @param {string} id The identifier of the list item, stored as a custom data
  *   attribute.
  * @param {string} label The filter's displayed name, used as the item label.
  */
@@ -73,7 +73,7 @@ export function addFilter(list, id, label) {
 /**
  * Update the label for a filter in a filter list.
  * @param {HTMLElement} list The list element containing the filter item.
- * @param {string} id The ID of the list item to update.
+ * @param {string} id The identifier of the list item to update.
  * @param {string} label The new label to use for the filter.
  */
 export function updateFilter(list, id, label) {
@@ -92,8 +92,8 @@ export function updateFilter(list, id, label) {
  * filter is selected.
  * @param {HTMLElement} list The list element where the selection is to be
  *   made.
- * @param {string} [id] The ID of the filter to select. If not given, then the
- *   selection is cleared.
+ * @param {string} [id] The identifier of the filter to select. If not given,
+ *   then the selection is cleared.
  */
 export function selectFilter(list, id) {
   for (let listItem of list.children) {

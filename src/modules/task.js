@@ -57,7 +57,7 @@ class Task {
     this.recurringDate = null;
 
     /**
-     * The ID of the project to which this task belongs, if any.
+     * The identifier of the project to which this task belongs, if any.
      * @type {?string}
      */
     this.project = null;

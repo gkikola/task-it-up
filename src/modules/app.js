@@ -34,7 +34,7 @@ class App {
      * Information about the currently selected filter.
      * @type {Object}
      * @property {string} type The type of filter that is currently selected.
-     * @property {string} id The ID of the currently selected filter.
+     * @property {string} id The identifier for the currently selected filter.
      */
     this._selectedFilter = {
       type: null,
@@ -56,13 +56,13 @@ class App {
   /**
    * Select a task filter.
    * @param {string} type The type of filter to select.
-   * @param {string} id The ID of the filter to select.
+   * @param {string} id The identifier of the filter to select.
    */
   _selectFilter(type, id) {
-    const listIDs = ['date-filter-list', 'project-filter-list'];
+    const listIds = ['date-filter-list', 'project-filter-list'];
     const lists = [];
 
-    listIDs.forEach(id => {
+    listIds.forEach(id => {
       const elem = document.querySelector(`#${id}`);
 
       if (!elem)

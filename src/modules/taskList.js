@@ -22,11 +22,11 @@ class TaskList {
   }
 
   /**
-   * Adds a task to the task list and returns its unique ID. In order to
-   * prevent unintentional external modification of the task, a deep copy is
+   * Adds a task to the task list and returns its unique identifier. In order
+   * to prevent unintentional external modification of the task, a deep copy is
    * made, and the original object is not kept.
    * @param {module:task~Task} task The task to be added.
-   * @returns {string} The ID of the newly-added task.
+   * @returns {string} The identifier of the newly-added task.
    */
   addTask(task) {
     // Generate UUID (loop just in case there's a collision)
