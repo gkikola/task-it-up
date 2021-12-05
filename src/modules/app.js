@@ -5,7 +5,7 @@
 
 import '../styles/reset.css';
 import '../styles/main.css';
-import * as fl from './filterList';
+import FilterMenu from './filterMenu';
 import TaskList from './taskList';
 
 const APP_NAME = 'Task It Up';
@@ -41,7 +41,16 @@ class App {
       id: null,
     };
 
-    parent.appendChild(createPageElements());
+    const elements = createPageElements();
+    const sidePanel = elements.querySelector('#side-panel');
+
+    /**
+     * Holds the menu of task filters in the side panel.
+     * @type {module:filterMenu~FilterMenu}
+     */
+    this._filterMenu = this._createFilterMenu(sidePanel);
+
+    parent.appendChild(elements);
   }
 
   /**
@@ -50,33 +59,40 @@ class App {
    * been added to the DOM.
    */
   run() {
-    this._selectFilter('date', 'today');
   }
 
-  /**
-   * Select a task filter.
-   * @param {string} type The type of filter to select.
-   * @param {string} id The identifier of the filter to select.
-   */
-  _selectFilter(type, id) {
-    const listIds = ['date-filter-list', 'project-filter-list'];
-    const lists = [];
+  _createFilterMenu(parent) {
+    const filterGroups = [
+      { id: 'default', label: null },
+      { id: 'dates', label: 'Dates' },
+      { id: 'priorities', label: 'Priorities' },
+      { id: 'projects', label: 'Projects' },
+    ];
 
-    listIds.forEach(id => {
-      const elem = document.querySelector(`#${id}`);
+    const menu = new FilterMenu(parent, filterGroups);
 
-      if (!elem)
-        throw new Error(`Filter list "${id}" not found in DOM`);
+    const filters = [
+      { groupId: 'default', filterId: 'all', label: 'All Tasks' },
+      { groupId: 'dates', filterId: 'today', label: 'Today' },
+      { groupId: 'dates', filterId: 'week', label: 'This Week' },
+      { groupId: 'dates', filterId: 'past-due', label: 'Past Due' },
+      { groupId: 'priorities', filterId: 'very-high', label: 'Very High' },
+      { groupId: 'priorities', filterId: 'high', label: 'High' },
+      { groupId: 'priorities', filterId: 'medium', label: 'Medium' },
+      { groupId: 'priorities', filterId: 'low', label: 'Low' },
+      { groupId: 'priorities', filterId: 'very-low', label: 'Very Low' },
+      {
+        groupId: 'projects',
+        filterId: 'uncategorized',
+        label: 'Uncategorized',
+      },
+    ];
 
-      lists.push(elem);
+    filters.forEach(filter => {
+      menu.addFilter(filter.groupId, filter.filterId, filter.label);
     });
 
-    lists.forEach(list => {
-      if (list.dataset.type === type)
-        fl.selectFilter(list, id);
-      else
-        fl.selectFilter(list, null);
-    });
+    return menu;
   }
 };
 
@@ -138,35 +154,35 @@ function createSidePanel() {
   const panel = document.createElement('aside');
   panel.id = 'side-panel';
 
-  const dateContainer = document.createElement('div');
-  dateContainer.appendChild(fl.createFilterListHeading('Dates'));
-  const dateFilters = [
-    { id: 'today', label: 'Today' },
-    { id: 'week', label: 'Next Seven Days' },
-    { id: 'past-due', label: 'Past Due' },
-    { id: 'all', label: 'All' },
-  ];
-  const dateList = fl.createFilterList('date-filter-list', 'date');
-  dateFilters.forEach(filter => {
-    fl.addFilter(dateList, filter.id, filter.label);
-  });
-  dateContainer.appendChild(dateList);
+  // const dateContainer = document.createElement('div');
+  // dateContainer.appendChild(fl.createFilterListHeading('Dates'));
+  // const dateFilters = [
+  //   { id: 'today', label: 'Today' },
+  //   { id: 'week', label: 'Next Seven Days' },
+  //   { id: 'past-due', label: 'Past Due' },
+  //   { id: 'all', label: 'All' },
+  // ];
+  // const dateList = fl.createFilterList('date-filter-list', 'date');
+  // dateFilters.forEach(filter => {
+  //   fl.addFilter(dateList, filter.id, filter.label);
+  // });
+  // dateContainer.appendChild(dateList);
 
-  const projContainer = document.createElement('div');
-  const projButtons = [
-    { label: 'add' },
-  ];
-  projContainer.appendChild(fl.createFilterListHeading('Projects',
-    projButtons));
-  projContainer.appendChild(fl.createFilterList('project-filter-list',
-    'project'));
+  // const projContainer = document.createElement('div');
+  // const projButtons = [
+  //   { label: 'add' },
+  // ];
+  // projContainer.appendChild(fl.createFilterListHeading('Projects',
+  //   projButtons));
+  // projContainer.appendChild(fl.createFilterList('project-filter-list',
+  //   'project'));
 
-  const listContainer = document.createElement('div');
-  listContainer.classList.add('list-container');
-  listContainer.appendChild(dateContainer);
-  listContainer.appendChild(projContainer);
+  // const listContainer = document.createElement('div');
+  // listContainer.classList.add('list-container');
+  // listContainer.appendChild(dateContainer);
+  // listContainer.appendChild(projContainer);
 
-  panel.appendChild(listContainer);
+  // panel.appendChild(listContainer);
 
   return panel;
 }

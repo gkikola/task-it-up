@@ -9,6 +9,11 @@ html {
   box-sizing: inherit;
 }
 
+:root {
+  --header-height: 56px;
+  --footer-height: 44px;
+}
+
 body {
   font-family: 'Times New Roman', Times, serif;
 }
@@ -19,6 +24,11 @@ a, a:visited {
 
 a:hover {
   text-decoration: underline;
+}
+
+button {
+  background-color: transparent;
+  border-style: none;
 }
 
 #app {
@@ -34,6 +44,7 @@ a:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: var(--header-height);
 
   color: white;
   background-color: #0000bb;
@@ -43,6 +54,7 @@ a:hover {
 #middle-container {
   flex: 1 1 auto;
   display: flex;
+  height: calc(100% - var(--header-height) - var(--footer-height));
 }
 
 #side-panel {
@@ -70,6 +82,7 @@ a:hover {
   background-color: #2c2c32;
   font-size: 16px;
   padding: 12px;
+  height: var(--footer-height);
 
   display: flex;
   justify-content: center;
@@ -97,46 +110,69 @@ a:hover {
   font-size: 24px;
 }
 
-.list-container {
+.filter-menu {
   margin: 24px;
 }
 
-.filter-list {
-  margin: 4px 0 32px;
+.filter-group {
+  margin-bottom: 12px;
 }
 
-.filter-list-heading-container {
+.filter-list {
+  margin: 4px 0;
+}
+
+.filter-group-heading {
   display: flex;
   justify-content: space-between;
   padding: 8px;
 }
 
-.filter-list-heading {
+.filter-group-toggle {
+  flex: 1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filter-group-expand-icon {
+  font-size: 24px;
+  vertical-align: middle;
+}
+
+.filter-group-label {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 16px;
   font-weight: bold;
+  vertical-align: middle;
 }
 
-.filter-list-button-container {
+.filter-group-button-container {
   display: flex;
   gap: 4px;
 }
 
-.filter-list-button-container .icon {
-  font-size: 20px;
+.filter-group-button-container .icon {
+  font-size: 24px;
 }
 
-.filter-list-item {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 16px;
-  margin: 4px 8px;
+.filter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin: 4px 0 8px 32px;
   padding: 8px;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.filter-list-item:hover, .filter-list-item.selected {
+.filter-item:hover, .filter-item.selected {
   background-color: #dadada;
+}
+
+.filter-item-label {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 16px;
 }
 
 #main-panel-header {
