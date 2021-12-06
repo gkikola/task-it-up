@@ -65,8 +65,8 @@ class App {
     const filterGroups = [
       { id: 'default', label: null },
       { id: 'dates', label: 'Dates' },
-      { id: 'priorities', label: 'Priorities' },
       { id: 'projects', label: 'Projects' },
+      { id: 'priorities', label: 'Priorities' },
     ];
 
     const menu = new FilterMenu(parent, filterGroups);
