@@ -43,15 +43,16 @@ class FilterMenu {
   addGroup(id, label) {
     const groupContainer = document.createElement('div');
     groupContainer.classList.add('filter-group');
-    groupContainer.classList.add('expanded');
     groupContainer.dataset.groupId = id;
 
+    let toggle = null;
+    let arrow = null;
     if (label) {
       const heading = document.createElement('div');
       heading.classList.add('filter-group-heading');
       groupContainer.appendChild(heading);
 
-      const toggle = document.createElement('button');
+      toggle = document.createElement('button');
       toggle.classList.add('filter-group-toggle');
       heading.appendChild(toggle);
 
@@ -59,11 +60,9 @@ class FilterMenu {
       buttonContainer.classList.add('filter-group-button-container');
       heading.appendChild(buttonContainer);
 
-      const arrow = document.createElement('span');
-      arrow.classList.add('icon');
-      arrow.classList.add('material-icons');
-      arrow.classList.add('filter-group-expand-icon');
-      arrow.textContent = ICON_EXPANDED;
+      arrow = document.createElement('span');
+      arrow.classList.add('icon', 'material-icons', 'filter-group-expand-icon');
+      arrow.textContent = ICON_COLLAPSED;
       toggle.appendChild(arrow);
 
       const text = document.createElement('span');
@@ -72,9 +71,21 @@ class FilterMenu {
       toggle.appendChild(text);
     }
 
+    const collapsible = document.createElement('div');
+    collapsible.classList.add('collapsible', 'collapsed');
+    groupContainer.appendChild(collapsible);
+
     const list = document.createElement('ul');
     list.classList.add('filter-list');
-    groupContainer.appendChild(list);
+    collapsible.appendChild(list);
+
+    if (toggle) {
+      toggle.addEventListener('click', e => {
+        const collapsed = collapsible.classList.toggle('collapsed');
+        recalcCollapsibleHeight(collapsible);
+        arrow.textContent = collapsed ? ICON_COLLAPSED : ICON_EXPANDED;
+      });
+    }
 
     this._container.appendChild(groupContainer);
   }
@@ -88,11 +99,15 @@ class FilterMenu {
    * @param {number} [count=0] The number of tasks matching the filter.
    */
   addFilter(groupId, filterId, label, count = 0) {
-    const selector = `.filter-group[data-group-id="${groupId}"] .filter-list`;
-    const list = this._container.querySelector(selector);
-
-    if (!list)
+    const selector = `.filter-group[data-group-id="${groupId}"] .collapsible`;
+    const collapsible = this._container.querySelector(selector);
+    if (!collapsible)
       throw new RangeError(`Could not locate filter group "${groupId}"`);
+
+    const list = collapsible.firstChild;
+    if (!list)
+      throw new RangeError('No list element found for filter group '
+        + `"${groupId}"`);
 
     const item = document.createElement('li');
     item.classList.add('filter-item');
@@ -109,6 +124,8 @@ class FilterMenu {
     item.appendChild(countElem);
 
     list.appendChild(item);
+
+    recalcCollapsibleHeight(collapsible);
   }
 
   /**
@@ -137,6 +154,22 @@ class FilterMenu {
         + `in group "${groupId}"`);
 
     return element;
+  }
+}
+
+/**
+ * Sets the height of a collapsible container according to its collapsed
+ * state and child height.
+ * @param {HTMLElement} collapsible The collapsible container element.
+ */
+function recalcCollapsibleHeight(collapsible) {
+  const child = collapsible.firstChild;
+
+  if (child) {
+    const collapsed = collapsible.classList.contains('collapsed');
+    collapsible.style.height = collapsed ? '0' : `${child.offsetHeight}px`;
+  } else {
+    collapsible.style.height = '0';
   }
 }
 

@@ -101,6 +101,11 @@ button {
   cursor: pointer;
 }
 
+.collapsible {
+  overflow: hidden;
+  transition: height 250ms ease-out;
+}
+
 .title {
   font-family: 'Carter One', sans-serif;
   font-size: 24px;
