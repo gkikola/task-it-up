@@ -28,6 +28,30 @@ class FilterMenu {
     this._container = document.createElement('div');
     this._container.classList.add('filter-menu');
 
+    /**
+     * Holds references to DOM elements related to a particular filter group in
+     * the filter menu.
+     * @typedef {Object} module:filterMenu~FilterMenu~groupElements
+     * @property {HTMLElement} container The container element for the group.
+     * @property {HTMLElement} [expandIcon] The expand/collapse icon element in
+     *   the group heading (if any).
+     * @property {HTMLElement} collapsible The collapsible container for the
+     *   group's filter list.
+     * @property {HTMLElement} filterList The list element containing the
+     *   filter items belonging to the group.
+     * @property {Map} filterItems A map associating filter identifiers to the
+     *   list item elements in the DOM belonging to each filter item in the
+     *   group.
+     */
+
+    /**
+     * A map associating filter group identifiers to
+     * [groupElements]{@link module:filterMenu~FilterMenu~groupElements}
+     * objects.
+     * @type {Map}
+     */
+    this._groupElements = new Map();
+
     if (groups)
       groups.forEach(group => this.addGroup(group.id, group.label));
 
@@ -79,6 +103,14 @@ class FilterMenu {
     list.classList.add('filter-list');
     collapsible.appendChild(list);
 
+    this._groupElements.set(id, {
+      container: groupContainer,
+      expandIcon: arrow,
+      collapsible,
+      filterList: list,
+      filterItems: new Map(),
+    });
+
     if (toggle) {
       toggle.addEventListener('click', e => {
         const collapsed = collapsible.classList.toggle('collapsed');
@@ -99,15 +131,9 @@ class FilterMenu {
    * @param {number} [count=0] The number of tasks matching the filter.
    */
   addFilter(groupId, filterId, label, count = 0) {
-    const selector = `.filter-group[data-group-id="${groupId}"] .collapsible`;
-    const collapsible = this._container.querySelector(selector);
-    if (!collapsible)
+    const groupElements = this._groupElements.get(groupId);
+    if (!groupElements)
       throw new RangeError(`Could not locate filter group "${groupId}"`);
-
-    const list = collapsible.firstChild;
-    if (!list)
-      throw new RangeError('No list element found for filter group '
-        + `"${groupId}"`);
 
     const item = document.createElement('li');
     item.classList.add('filter-item');
@@ -123,9 +149,10 @@ class FilterMenu {
     countElem.textContent = (count > 0) ? count : '';
     item.appendChild(countElem);
 
-    list.appendChild(item);
+    groupElements.filterList.appendChild(item);
+    groupElements.filterItems.set(filterId, item);
 
-    recalcCollapsibleHeight(collapsible);
+    recalcCollapsibleHeight(groupElements.collapsible);
   }
 
   /**
@@ -134,8 +161,17 @@ class FilterMenu {
    * @param {string} filterId The identifier of the filter to remove.
    */
   removeFilter(groupId, filterId) {
-    const item = this._getFilterElement(groupId, filterId);
-    item.parentNode.removeChild(item);
+    const groupElements = this._groupElements.get(groupId);
+    if (!groupElements)
+      throw new RangeError(`Could not locate filter group "${groupId}"`);
+
+    const item = groupElements.filterItems.get(filterId);
+    if (!item)
+      throw new RangeError(`Could not locate filter "${filterId}" `
+        + `in group "${groupId}"`);
+
+    groupElements.filterList.removeChild(item);
+    groupElements.filterItems.delete(filterId);
   }
 
   /**
