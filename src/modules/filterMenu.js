@@ -114,7 +114,7 @@ class FilterMenu {
     if (toggle) {
       toggle.addEventListener('click', e => {
         const collapsed = collapsible.classList.toggle('collapsed');
-        recalcCollapsibleHeight(collapsible);
+        this._recalcCollapsibleHeight(id);
         arrow.textContent = collapsed ? ICON_COLLAPSED : ICON_EXPANDED;
       });
     }
@@ -129,11 +129,10 @@ class FilterMenu {
    * @param {string} filterId The identifier for the filter.
    * @param {string} label The displayed label for the filter.
    * @param {number} [count=0] The number of tasks matching the filter.
+   * @throws {RangeError} If the group identifier is invalid.
    */
   addFilter(groupId, filterId, label, count = 0) {
-    const groupElements = this._groupElements.get(groupId);
-    if (!groupElements)
-      throw new RangeError(`Could not locate filter group "${groupId}"`);
+    const groupElements = this._getGroupElements(groupId);
 
     const item = document.createElement('li');
     item.classList.add('filter-item');
@@ -152,60 +151,70 @@ class FilterMenu {
     groupElements.filterList.appendChild(item);
     groupElements.filterItems.set(filterId, item);
 
-    recalcCollapsibleHeight(groupElements.collapsible);
+    this._recalcCollapsibleHeight(groupId);
   }
 
   /**
    * Remove a filter from the menu.
    * @param {string} groupId The identifier of the group containing the filter.
    * @param {string} filterId The identifier of the filter to remove.
+   * @throws {RangeError} If either the group or filter identifiers are
+   *   invalid.
    */
   removeFilter(groupId, filterId) {
-    const groupElements = this._groupElements.get(groupId);
-    if (!groupElements)
-      throw new RangeError(`Could not locate filter group "${groupId}"`);
-
-    const item = groupElements.filterItems.get(filterId);
-    if (!item)
-      throw new RangeError(`Could not locate filter "${filterId}" `
-        + `in group "${groupId}"`);
-
+    const groupElements = this._getGroupElements(groupId);
+    const item = this._getFilterItemElement(groupId, filterId);
     groupElements.filterList.removeChild(item);
     groupElements.filterItems.delete(filterId);
   }
 
   /**
-   * Retrieve the list item element for a given filter.
-   * @param {string} groupId The identifier of the group containing the filter.
-   * @param {string} filterId The identifier of the filter.
-   * @returns {HTMLElement} The filter list item.
+   * Get the [groupElements]{@link module:filterMenu~FilterMenu~groupElements}
+   * object associated with a filter group.
+   * @param {string} groupId The identifier for the group whose elements are to
+   *   be retrieved.
+   * @return {module:filterMenu~FilterMenu~groupElements} The object containing
+   *   the group's DOM elements.
+   * @throws {RangeError} If the given group identifier is invalid.
    */
-  _getFilterElement(groupId, filterId) {
-    const selector = `.filter-group[data-group-id="${groupId}"] `
-      + `.filter-item[data-filter-id="${filterId}"]`;
-    const element = this._container.querySelector(selector);
-
-    if (!element)
-      throw new RangeError(`Could not locate filter "${filterId}" `
-        + `in group "${groupId}"`);
-
-    return element;
+  _getGroupElements(groupId) {
+    const elements = this._groupElements.get(groupId);
+    if (!elements)
+      throw new RangeError(`Cannot locate filter group "${groupId}"`);
+    return elements;
   }
-}
 
-/**
- * Sets the height of a collapsible container according to its collapsed
- * state and child height.
- * @param {HTMLElement} collapsible The collapsible container element.
- */
-function recalcCollapsibleHeight(collapsible) {
-  const child = collapsible.firstChild;
+  /**
+   * Get the list item element in the DOM belonging to a particular filter.
+   * @param {string} groupId The identifier for the group containing the
+   *   filter.
+   * @param {string} filterId The identifier for the filter.
+   * @returns {HTMLElement} The list item element for the filter.
+   * @throws {RangeError} If either the group or filter identifiers are
+   *   invalid.
+   */
+  _getFilterItemElement(groupId, filterId) {
+    const item = this._getGroupElements(groupId).filterItems.get(filterId);
+    if (!item)
+      throw new RangeError(`Cannot locate filter "${filterId}" in group `
+        + `"${groupId}"`);
+    return item;
+  }
 
-  if (child) {
+  /**
+   * Set the height of a filter group's collapsible container according to the
+   * collapsed state and list height.
+   * @param {string} groupId The identifier for the group to which the
+   *   collapsible container is associated.
+   * @throws {RangeError} If the group identifier is invalid.
+   */
+  _recalcCollapsibleHeight(groupId) {
+    const elements = this._getGroupElements(groupId);
+    const collapsible = elements.collapsible;
+    const list = elements.filterList;
+
     const collapsed = collapsible.classList.contains('collapsed');
-    collapsible.style.height = collapsed ? '0' : `${child.offsetHeight}px`;
-  } else {
-    collapsible.style.height = '0';
+    collapsible.style.height = collapsed ? '0' : `${list.offsetHeight}px`;
   }
 }
 
