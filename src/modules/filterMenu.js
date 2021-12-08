@@ -111,13 +111,8 @@ class FilterMenu {
       filterItems: new Map(),
     });
 
-    if (toggle) {
-      toggle.addEventListener('click', e => {
-        const collapsed = collapsible.classList.toggle('collapsed');
-        this._recalcCollapsibleHeight(id);
-        arrow.textContent = collapsed ? ICON_COLLAPSED : ICON_EXPANDED;
-      });
-    }
+    if (toggle)
+      toggle.addEventListener('click', this.toggleGroup.bind(this, id));
 
     this._container.appendChild(groupContainer);
   }
@@ -166,6 +161,45 @@ class FilterMenu {
     const item = this._getFilterItemElement(groupId, filterId);
     groupElements.filterList.removeChild(item);
     groupElements.filterItems.delete(filterId);
+  }
+
+  /**
+   * Expand a filter group, so that its filter items are visible.
+   * @param {string} id The identifier for the group to be expanded.
+   * @throws {RangeError} If the group identifier is invalid.
+   */
+  expandGroup(id) {
+    const elements = this._getGroupElements(id);
+    elements.collapsible.classList.remove('collapsed');
+    this._recalcCollapsibleHeight(id);
+    elements.expandIcon.textContent = ICON_EXPANDED;
+  }
+
+  /**
+   * Collapse a filter group, so that its filter items are hidden.
+   * @param {string} id The identifier for the group to be collapsed.
+   * @throws {RangeError} If the group identifier is invalid.
+   */
+  collapseGroup(id) {
+    const elements = this._getGroupElements(id);
+    elements.collapsible.classList.add('collapsed');
+    this._recalcCollapsibleHeight(id);
+    elements.expandIcon.textContent = ICON_COLLAPSED;
+  }
+
+  /**
+   * Toggle the collapsed state of a filter group. If the group is collapsed,
+   * it will be expanded and vice versa.
+   * @param {string} id The identifier for the group to expand or collapse.
+   * @throws {RangeError} If the group identifier is invalid.
+   */
+  toggleGroup(id) {
+    const elements = this._getGroupElements(id);
+    const collapsed = elements.collapsible.classList.contains('collapsed');
+    if (collapsed)
+      this.expandGroup(id);
+    else
+      this.collapseGroup(id);
   }
 
   /**
