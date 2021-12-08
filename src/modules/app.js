@@ -59,6 +59,8 @@ class App {
    * been added to the DOM.
    */
   run() {
+    this._filterMenu.expandGroup('dates');
+    this._filterMenu.expandGroup('projects');
   }
 
   _createFilterMenu(parent) {
