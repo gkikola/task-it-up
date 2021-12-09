@@ -79,14 +79,12 @@ class App {
 
     const menuSelector = '.title-container .icon[data-icon-type="menu"]';
     const menuIcon = document.querySelector(menuSelector);
-    const sidePanel = document.getElementById('side-panel');
-    const resizer = document.querySelector('#middle-container .resizer');
     menuIcon.addEventListener('click', () => {
-      const closed = sidePanel.classList.toggle('closed');
+      const closed = this._sidePanel.classList.toggle('closed');
       if (closed)
-        resizer.classList.add('closed');
+        this._resizer.classList.add('closed');
       else
-        resizer.classList.remove('closed');
+        this._resizer.classList.remove('closed');
     });
   }
 
