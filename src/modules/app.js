@@ -41,16 +41,31 @@ class App {
       id: null,
     };
 
-    const elements = createPageElements();
-    const sidePanel = elements.querySelector('#side-panel');
+    /**
+     * Holds a reference to the side panel element in the DOM.
+     * @type {HTMLElement}
+     */
+    this._sidePanel = null;
+
+    /**
+     * Holds a reference to the resizing bar element for the side panel.
+     * @type {HTMLElement}
+     */
+    this._resizer = null;
+
+    /**
+     * Holds a reference to the main panel element in the DOM.
+     * @type {HTMLElement}
+     */
+    this._mainPanel = null;
 
     /**
      * Holds the menu of task filters in the side panel.
      * @type {module:filterMenu~FilterMenu}
      */
-    this._filterMenu = this._createFilterMenu(sidePanel);
+    this._filterMenu = null;
 
-    parent.appendChild(elements);
+    this._createPageElements(parent);
   }
 
   /**
@@ -75,7 +90,10 @@ class App {
     });
   }
 
-  _createFilterMenu(parent) {
+  /**
+   * Create the app's task filter menu.
+   */
+  _createFilterMenu() {
     const filterGroups = [
       { id: 'default', label: null },
       { id: 'dates', label: 'Dates' },
@@ -83,7 +101,7 @@ class App {
       { id: 'priorities', label: 'Priorities' },
     ];
 
-    const menu = new FilterMenu(parent, filterGroups);
+    this._filterMenu = new FilterMenu(this._sidePanel, filterGroups);
 
     const filters = [
       { groupId: 'default', filterId: 'all', label: 'All Tasks' },
@@ -103,155 +121,155 @@ class App {
     ];
 
     filters.forEach(filter => {
-      menu.addFilter(filter.groupId, filter.filterId, filter.label);
+      this._filterMenu.addFilter(filter.groupId, filter.filterId, filter.label);
+    });
+  }
+
+  /**
+   * Create the DOM elements for the page content.
+   * @param {HTMLElement} parent The container element under which the page
+   *   elements should be inserted.
+   */
+  _createPageElements(parent) {
+    const container = document.createElement('div');
+    container.id = 'app';
+
+    this._createHeader(container);
+
+    const middleContainer = document.createElement('div');
+    middleContainer.id = 'middle-container';
+    this._createSidePanel(middleContainer);
+    this._createResizer(middleContainer);
+    this._createMainPanel(middleContainer);
+    container.appendChild(middleContainer);
+
+    this._createFooter(container);
+
+    parent.appendChild(container);
+  }
+
+  /**
+   * Create the app's header.
+   * @param {HTMLElement} parent The parent element under which the header
+   *   should be inserted.
+   */
+  _createHeader(parent) {
+    const header = document.createElement('header');
+    header.id = 'header';
+
+    const titleContainer = document.createElement('div');
+    titleContainer.classList.add('title-container');
+    const menuIcon = document.createElement('div');
+    menuIcon.classList.add('icon', 'material-icons');
+    menuIcon.dataset.iconType = 'menu';
+    menuIcon.textContent = 'menu';
+    titleContainer.appendChild(menuIcon);
+    const title = document.createElement('p');
+    title.classList.add('title');
+    title.textContent = APP_NAME;
+    titleContainer.appendChild(title);
+    header.appendChild(titleContainer);
+
+    const toolContainer = document.createElement('div');
+    toolContainer.classList.add('tools');
+    const settingsIcon = document.createElement('div');
+    settingsIcon.classList.add('icon', 'material-icons');
+    settingsIcon.dataset.iconType = 'settings';
+    settingsIcon.textContent = 'settings';
+    toolContainer.appendChild(settingsIcon);
+    header.appendChild(toolContainer);
+
+    parent.appendChild(header);
+  }
+
+  /**
+   * Create the app's side panel.
+   * @param {HTMLElement} parent The parent element under which the side panel
+   *   should be inserted.
+   */
+  _createSidePanel(parent) {
+    this._sidePanel = document.createElement('aside');
+    this._sidePanel.id = 'side-panel';
+    this._createFilterMenu();
+    parent.appendChild(this._sidePanel);
+  }
+
+  /**
+   * Create the resizing bar for the side panel.
+   * @param {HTMLElement} parent The parent element under which the resizer is
+   *   to be inserted.
+   */
+  _createResizer(parent) {
+    this._resizer = document.createElement('div');
+    this._resizer.classList.add('resizer');
+
+    const handler = e => {
+      const size = `${e.x}px`;
+      this._sidePanel.style.width = size;
+      e.preventDefault();
+    };
+
+    this._resizer.addEventListener('mousedown', e => {
+      document.addEventListener('mousemove', handler);
+      e.target.classList.add('dragging');
+      e.preventDefault();
     });
 
-    return menu;
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', handler);
+      this._resizer.classList.remove('dragging');
+    });
+
+    parent.appendChild(this._resizer);
+  }
+
+  /**
+   * Create the app's main panel.
+   * @param {HTMLElement} parent The parent element under which the main panel
+   *   is to be inserted.
+   */
+  _createMainPanel(parent) {
+    this._mainPanel = document.createElement('div');
+    this._mainPanel.id = 'main-panel';
+
+    const content = document.createElement('main');
+    content.id = 'main-panel-content';
+
+    const headingContainer = document.createElement('div');
+    headingContainer.id = 'main-panel-header';
+    const heading = document.createElement('h2');
+    heading.classList.add('main-panel-heading');
+    heading.textContent = 'Today';
+    headingContainer.appendChild(heading);
+
+    const buttonContainer = document.createElement('div');
+    buttonContainer.classList.add('main-panel-button-container');
+    headingContainer.appendChild(buttonContainer);
+
+    content.appendChild(headingContainer);
+
+    this._mainPanel.appendChild(content);
+    parent.appendChild(this._mainPanel);
+  }
+
+  /**
+   * Create the app's footer.
+   * @param {HTMLElement} parent The parent element under which the footer is
+   *   to be inserted.
+   */
+  _createFooter(parent) {
+    const footer = document.createElement('footer');
+    footer.id = 'footer';
+
+    const copyright = document.createElement('div');
+    copyright.classList.add('copyright');
+    copyright.innerHTML = `Copyright &copy; ${APP_COPYRIGHT_YEARS} ` +
+      `<a href="${APP_AUTHOR_WEBSITE}" target="_blank">` +
+      `${APP_AUTHOR}</a>`;
+    footer.appendChild(copyright);
+
+    parent.appendChild(footer);
   }
 };
-
-/**
- * Create the DOM elements for the page content.
- * @returns {HTMLElement} The container element that holds the app's DOM
- *   content.
- */
-function createPageElements() {450
-  const container = document.createElement('div');
-  container.id = 'app';
-
-  container.appendChild(createHeader());
-
-  const middleContainer = document.createElement('div');
-  middleContainer.id = 'middle-container';
-
-  const sidePanel = createSidePanel();
-  middleContainer.appendChild(sidePanel);
-  middleContainer.appendChild(createResizer(sidePanel));
-  middleContainer.appendChild(createMainPanel());
-  container.appendChild(middleContainer);
-
-  container.appendChild(createFooter());
-
-  return container;
-}
-
-/**
- * Create the app's header.
- * @returns {HTMLElement} The header element.
- */
-function createHeader() {
-  const header = document.createElement('header');
-  header.id = 'header';
-
-  const titleContainer = document.createElement('div');
-  titleContainer.classList.add('title-container');
-  const menuIcon = document.createElement('div');
-  menuIcon.classList.add('icon', 'material-icons');
-  menuIcon.dataset.iconType = 'menu';
-  menuIcon.textContent = 'menu';
-  titleContainer.appendChild(menuIcon);
-  const title = document.createElement('p');
-  title.classList.add('title');
-  title.textContent = APP_NAME;
-  titleContainer.appendChild(title);
-  header.appendChild(titleContainer);
-
-  const toolContainer = document.createElement('div');
-  toolContainer.classList.add('tools');
-  const settingsIcon = document.createElement('div');
-  settingsIcon.classList.add('icon', 'material-icons');
-  settingsIcon.dataset.iconType = 'settings';
-  settingsIcon.textContent = 'settings';
-  toolContainer.appendChild(settingsIcon);
-  header.appendChild(toolContainer);
-
-  return header;
-}
-
-/**
- * Create the app's side panel.
- * @returns {HTMLElement} The side panel container element.
- */
-function createSidePanel() {
-  const panel = document.createElement('aside');
-  panel.id = 'side-panel';
-
-  return panel;
-}
-
-/**
- * Create a resizing bar for a panel.
- * @param {HTMLElement} panel The panel to be resized.
- * @returns {HTMLElement} The resizer element.
- */
-function createResizer(panel) {
-  const resizer = document.createElement('div');
-  resizer.classList.add('resizer');
-
-  const handler = e => {
-    const size = `${e.x}px`;
-    panel.style.width = size;
-    e.preventDefault();
-  };
-
-  resizer.addEventListener('mousedown', e => {
-    document.addEventListener('mousemove', handler);
-    e.target.classList.add('dragging');
-    e.preventDefault();
-  });
-
-  document.addEventListener('mouseup', () => {
-    document.removeEventListener('mousemove', handler);
-    resizer.classList.remove('dragging');
-  });
-
-  return resizer;
-}
-
-/**
- * Create the app's main panel.
- * @returns {HTMLElement} The main panel container element.
- */
-function createMainPanel() {
-  const panel = document.createElement('div');
-  panel.id = 'main-panel';
-
-  const content = document.createElement('main');
-  content.id = 'main-panel-content';
-
-  const headingContainer = document.createElement('div');
-  headingContainer.id = 'main-panel-header';
-  const heading = document.createElement('h2');
-  heading.classList.add('main-panel-heading');
-  heading.textContent = 'Today';
-  headingContainer.appendChild(heading);
-
-  const buttonContainer = document.createElement('div');
-  buttonContainer.classList.add('main-panel-button-container');
-  headingContainer.appendChild(buttonContainer);
-
-  content.appendChild(headingContainer);
-
-  panel.appendChild(content);
-  return panel;
-}
-
-/**
- * Create the app's footer.
- * @returns {HTMLElement} The footer element.
- */
-function createFooter() {
-  const footer = document.createElement('footer');
-  footer.id = 'footer';
-
-  const copyright = document.createElement('div');
-  copyright.classList.add('copyright');
-  copyright.innerHTML = `Copyright &copy; ${APP_COPYRIGHT_YEARS} ` +
-    `<a href="${APP_AUTHOR_WEBSITE}" target="_blank">` +
-    `${APP_AUTHOR}</a>`;
-  footer.appendChild(copyright);
-
-  return footer;
-}
 
 export default App;
