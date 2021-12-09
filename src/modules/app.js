@@ -61,6 +61,18 @@ class App {
   run() {
     this._filterMenu.expandGroup('dates');
     this._filterMenu.expandGroup('projects');
+
+    const menuSelector = '.title-container .icon[data-icon-type="menu"]';
+    const menuIcon = document.querySelector(menuSelector);
+    const sidePanel = document.getElementById('side-panel');
+    const resizer = document.querySelector('#middle-container .resizer');
+    menuIcon.addEventListener('click', () => {
+      const closed = sidePanel.classList.toggle('closed');
+      if (closed)
+        resizer.classList.add('closed');
+      else
+        resizer.classList.remove('closed');
+    });
   }
 
   _createFilterMenu(parent) {
@@ -103,7 +115,7 @@ class App {
  * @returns {HTMLElement} The container element that holds the app's DOM
  *   content.
  */
-function createPageElements() {
+function createPageElements() {450
   const container = document.createElement('div');
   container.id = 'app';
 
@@ -135,6 +147,7 @@ function createHeader() {
   titleContainer.classList.add('title-container');
   const menuIcon = document.createElement('div');
   menuIcon.classList.add('icon', 'material-icons');
+  menuIcon.dataset.iconType = 'menu';
   menuIcon.textContent = 'menu';
   titleContainer.appendChild(menuIcon);
   const title = document.createElement('p');
@@ -147,6 +160,7 @@ function createHeader() {
   toolContainer.classList.add('tools');
   const settingsIcon = document.createElement('div');
   settingsIcon.classList.add('icon', 'material-icons');
+  settingsIcon.dataset.iconType = 'settings';
   settingsIcon.textContent = 'settings';
   toolContainer.appendChild(settingsIcon);
   header.appendChild(toolContainer);

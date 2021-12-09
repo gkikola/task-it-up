@@ -110,6 +110,10 @@ button {
   background-color: #9b9b9b;
 }
 
+.closed {
+  display: none;
+}
+
 .icon {
   cursor: pointer;
 }
@@ -211,11 +215,7 @@ button {
 }
 
 @media (max-width: 400px) {
-  #header {
-    justify-content: flex-end;
-  }
-
-  .title-container {
+  .title-container .title {
     display: none;
   }
 }
