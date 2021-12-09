@@ -156,36 +156,6 @@ function createSidePanel() {
   const panel = document.createElement('aside');
   panel.id = 'side-panel';
 
-  // const dateContainer = document.createElement('div');
-  // dateContainer.appendChild(fl.createFilterListHeading('Dates'));
-  // const dateFilters = [
-  //   { id: 'today', label: 'Today' },
-  //   { id: 'week', label: 'Next Seven Days' },
-  //   { id: 'past-due', label: 'Past Due' },
-  //   { id: 'all', label: 'All' },
-  // ];
-  // const dateList = fl.createFilterList('date-filter-list', 'date');
-  // dateFilters.forEach(filter => {
-  //   fl.addFilter(dateList, filter.id, filter.label);
-  // });
-  // dateContainer.appendChild(dateList);
-
-  // const projContainer = document.createElement('div');
-  // const projButtons = [
-  //   { label: 'add' },
-  // ];
-  // projContainer.appendChild(fl.createFilterListHeading('Projects',
-  //   projButtons));
-  // projContainer.appendChild(fl.createFilterList('project-filter-list',
-  //   'project'));
-
-  // const listContainer = document.createElement('div');
-  // listContainer.classList.add('list-container');
-  // listContainer.appendChild(dateContainer);
-  // listContainer.appendChild(projContainer);
-
-  // panel.appendChild(listContainer);
-
   return panel;
 }
 
