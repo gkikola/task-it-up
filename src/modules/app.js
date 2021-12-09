@@ -111,7 +111,10 @@ function createPageElements() {
 
   const middleContainer = document.createElement('div');
   middleContainer.id = 'middle-container';
-  middleContainer.appendChild(createSidePanel());
+
+  const sidePanel = createSidePanel();
+  middleContainer.appendChild(sidePanel);
+  middleContainer.appendChild(createResizer(sidePanel));
   middleContainer.appendChild(createMainPanel());
   container.appendChild(middleContainer);
 
@@ -157,6 +160,35 @@ function createSidePanel() {
   panel.id = 'side-panel';
 
   return panel;
+}
+
+/**
+ * Create a resizing bar for a panel.
+ * @param {HTMLElement} panel The panel to be resized.
+ * @returns {HTMLElement} The resizer element.
+ */
+function createResizer(panel) {
+  const resizer = document.createElement('div');
+  resizer.classList.add('resizer');
+
+  const handler = e => {
+    const size = `${e.x}px`;
+    panel.style.width = size;
+    e.preventDefault();
+  };
+
+  resizer.addEventListener('mousedown', e => {
+    document.addEventListener('mousemove', handler);
+    e.target.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  document.addEventListener('mouseup', () => {
+    document.removeEventListener('mousemove', handler);
+    resizer.classList.remove('dragging');
+  });
+
+  return resizer;
 }
 
 /**
