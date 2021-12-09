@@ -133,6 +133,10 @@ function createHeader() {
 
   const titleContainer = document.createElement('div');
   titleContainer.classList.add('title-container');
+  const menuIcon = document.createElement('div');
+  menuIcon.classList.add('icon', 'material-icons');
+  menuIcon.textContent = 'menu';
+  titleContainer.appendChild(menuIcon);
   const title = document.createElement('p');
   title.classList.add('title');
   title.textContent = APP_NAME;
@@ -142,8 +146,7 @@ function createHeader() {
   const toolContainer = document.createElement('div');
   toolContainer.classList.add('tools');
   const settingsIcon = document.createElement('div');
-  settingsIcon.classList.add('icon');
-  settingsIcon.classList.add('material-icons');
+  settingsIcon.classList.add('icon', 'material-icons');
   settingsIcon.textContent = 'settings';
   toolContainer.appendChild(settingsIcon);
   header.appendChild(toolContainer);

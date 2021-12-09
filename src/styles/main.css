@@ -119,6 +119,12 @@ button {
   transition: height 250ms ease-out;
 }
 
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .title {
   font-family: 'Carter One', sans-serif;
   font-size: 24px;
