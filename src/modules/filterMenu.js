@@ -195,6 +195,11 @@ class FilterMenu {
    *   invalid.
    */
   removeFilter(groupId, filterId) {
+    // If filter is selected, clear selection
+    if (this._selectedFilter.group === groupId
+      && this._selectedFilter.filter === filterId)
+      this.clearSelection();
+
     const groupElements = this._getGroupElements(groupId);
     const item = this._getFilterItemElement(groupId, filterId);
     groupElements.filterList.removeChild(item);
