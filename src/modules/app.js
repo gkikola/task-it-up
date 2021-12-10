@@ -197,7 +197,7 @@ class App {
 
     const titleContainer = document.createElement('div');
     titleContainer.classList.add('title-container');
-    const menuIcon = document.createElement('div');
+    const menuIcon = document.createElement('button');
     menuIcon.classList.add('icon', 'material-icons');
     menuIcon.dataset.iconType = 'menu';
     menuIcon.textContent = 'menu';
@@ -210,7 +210,7 @@ class App {
 
     const toolContainer = document.createElement('div');
     toolContainer.classList.add('tools');
-    const settingsIcon = document.createElement('div');
+    const settingsIcon = document.createElement('button');
     settingsIcon.classList.add('icon', 'material-icons');
     settingsIcon.dataset.iconType = 'settings';
     settingsIcon.textContent = 'settings';
