@@ -63,8 +63,9 @@ class FilterMenu {
      * @property {HTMLElement} container The container element for the group.
      * @property {HTMLElement} [expandIcon] The expand/collapse icon element in
      *   the group heading (if any).
-     * @property {HTMLElement} collapsible The collapsible container for the
-     *   group's filter list.
+     * @property {HTMLElement} [collapsible] The collapsible container for the
+     *   group's filter list. If the group cannot be collapsed, this should be
+     *   null.
      * @property {HTMLElement} filterList The list element containing the
      *   filter items belonging to the group.
      * @property {Map} filterItems A map associating filter identifiers to the
@@ -131,7 +132,9 @@ class FilterMenu {
     }
 
     const collapsible = document.createElement('div');
-    collapsible.classList.add('collapsible', 'collapsed');
+    collapsible.classList.add('collapsible');
+    if (label)
+      collapsible.classList.add('collapsed');
     groupContainer.appendChild(collapsible);
 
     const list = document.createElement('ul');
@@ -141,7 +144,7 @@ class FilterMenu {
     this._groupElements.set(id, {
       container: groupContainer,
       expandIcon: arrow,
-      collapsible,
+      collapsible: label ? collapsible : null,
       filterList: list,
       filterItems: new Map(),
     });
@@ -205,9 +208,12 @@ class FilterMenu {
    */
   expandGroup(id) {
     const elements = this._getGroupElements(id);
-    elements.collapsible.classList.remove('collapsed');
-    this._recalcCollapsibleHeight(id);
-    elements.expandIcon.textContent = ICON_EXPANDED;
+    const collapsible = elements.collapsible;
+    if (collapsible) {
+      collapsible.classList.remove('collapsed');
+      this._recalcCollapsibleHeight(id);
+      elements.expandIcon.textContent = ICON_EXPANDED;
+    }
   }
 
   /**
@@ -217,9 +223,12 @@ class FilterMenu {
    */
   collapseGroup(id) {
     const elements = this._getGroupElements(id);
-    elements.collapsible.classList.add('collapsed');
-    this._recalcCollapsibleHeight(id);
-    elements.expandIcon.textContent = ICON_COLLAPSED;
+    const collapsible = elements.collapsible;
+    if (collapsible) {
+      collapsible.classList.add('collapsed');
+      this._recalcCollapsibleHeight(id);
+      elements.expandIcon.textContent = ICON_COLLAPSED;
+    }
   }
 
   /**
@@ -230,11 +239,14 @@ class FilterMenu {
    */
   toggleGroup(id) {
     const elements = this._getGroupElements(id);
-    const collapsed = elements.collapsible.classList.contains('collapsed');
-    if (collapsed)
-      this.expandGroup(id);
-    else
-      this.collapseGroup(id);
+    const collapsible = elements.collapsible;
+    if (collapsible) {
+      const collapsed = collapsible.classList.contains('collapsed');
+      if (collapsed)
+        this.expandGroup(id);
+      else
+        this.collapseGroup(id);
+    }
   }
 
   /**
@@ -348,10 +360,11 @@ class FilterMenu {
   _recalcCollapsibleHeight(groupId) {
     const elements = this._getGroupElements(groupId);
     const collapsible = elements.collapsible;
-    const list = elements.filterList;
-
-    const collapsed = collapsible.classList.contains('collapsed');
-    collapsible.style.height = collapsed ? '0' : `${list.offsetHeight}px`;
+    if (collapsible) {
+      const list = elements.filterList;
+      const collapsed = collapsible.classList.contains('collapsed');
+      collapsible.style.height = collapsed ? '0' : `${list.offsetHeight}px`;
+    }
   }
 
   /**
