@@ -99,6 +99,7 @@ class App {
 
     this._filterMenu.expandGroup('dates');
     this._filterMenu.expandGroup('projects');
+    this._filterMenu.selectFilter('dates', 'today');
 
     const menuSelector = '.title-container .icon[data-icon-type="menu"]';
     const menuIcon = document.querySelector(menuSelector);
