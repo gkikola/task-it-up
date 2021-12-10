@@ -208,14 +208,19 @@ class App {
     };
 
     this._resizer.addEventListener('mousedown', e => {
-      document.addEventListener('mousemove', handler);
-      e.target.classList.add('dragging');
-      e.preventDefault();
+      // Check for left-click
+      if (e.button === 0) {
+        document.addEventListener('mousemove', handler);
+        e.target.classList.add('dragging');
+        e.preventDefault();
+      }
     });
 
-    document.addEventListener('mouseup', () => {
-      document.removeEventListener('mousemove', handler);
-      this._resizer.classList.remove('dragging');
+    document.addEventListener('mouseup', e => {
+      if (e.button === 0) {
+        document.removeEventListener('mousemove', handler);
+        this._resizer.classList.remove('dragging');
+      }
     });
 
     parent.appendChild(this._resizer);
