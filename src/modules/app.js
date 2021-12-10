@@ -13,6 +13,8 @@ const APP_AUTHOR = 'Greg Kikola';
 const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
 const APP_COPYRIGHT_YEARS = '2021';
 
+const NARROW_LAYOUT_CUTOFF = 700;
+
 /**
  * Class responsible for creating the DOM elements for the app and running the
  * event-driven logic.
@@ -60,6 +62,13 @@ class App {
     this._mainPanel = null;
 
     /**
+     * Indicates whether the screen size is narrow. This should be true when
+     * the viewport width is less than or equal to NARROW_LAYOUT_CUTOFF.
+     * @type {boolean}
+     */
+    this._narrowScreen = false;
+
+    /**
      * Holds the menu of task filters in the side panel.
      * @type {module:filterMenu~FilterMenu}
      */
@@ -74,6 +83,20 @@ class App {
    * been added to the DOM.
    */
   run() {
+    window.addEventListener('resize', () => {
+      const width = document.documentElement.clientWidth;
+      const narrow = width <= NARROW_LAYOUT_CUTOFF;
+
+      // Adjust side panel if screen changes from narrow to wide or vice versa
+      if (narrow && !this._narrowScreen) {
+        this._closeSidePanel();
+      } else if (!narrow && this._narrowScreen) {
+        this._openSidePanel();
+      }
+
+      this._narrowScreen = narrow;
+    });
+
     this._filterMenu.expandGroup('dates');
     this._filterMenu.expandGroup('projects');
 
@@ -86,6 +109,22 @@ class App {
       else
         this._resizer.classList.remove('closed');
     });
+  }
+
+  /**
+   * Open the side panel, so that the filter menu is visible.
+   */
+  _openSidePanel() {
+    this._sidePanel.classList.remove('closed');
+    this._resizer.classList.remove('closed');
+  }
+
+  /**
+   * Close the side panel, so that the filter menu is hidden.
+   */
+  _closeSidePanel() {
+    this._sidePanel.classList.add('closed');
+    this._resizer.classList.add('closed');
   }
 
   /**
