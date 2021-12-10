@@ -3,6 +3,8 @@
  * @module filterMenu
  */
 
+import _ from 'lodash';
+
 const ICON_EXPANDED = 'expand_more';
 const ICON_COLLAPSED = 'chevron_right';
 
@@ -29,11 +31,16 @@ class FilterMenu {
     this._container.classList.add('filter-menu');
 
     /**
-     * Describes the currently selected task filter, if any.
-     * @type {Object}
+     * Identifies a task filter in the menu.
+     * @typedef {Object} module:filterMenu~FilterMenu~filterInfo
      * @property {string} [group] The identifier for the filter group
-     *   containing the selected filter.
-     * @property {string} [filter] The identifier for the selected filter.
+     *   containing the filter.
+     * @property {string} [filter] The identifier for the filter.
+     */
+
+    /**
+     * Describes the currently selected task filter, if any.
+     * @type {module:filterMenu~FilterMenu~filterInfo}
      */
     this._selectedFilter = { group: null, filter: null };
 
@@ -239,6 +246,15 @@ class FilterMenu {
 
     this._selectedFilter.group = null;
     this._selectedFilter.filter = null;
+  }
+
+  /**
+   * Retrieve the task filter that is currently selected in the menu, if any.
+   * @returns {module:filterMenu~FilterMenu~filterInfo} An object describing
+   *   the selected filter.
+   */
+  getSelection() {
+    return _.cloneDeep(this._selectedFilter);
   }
 
   /**
