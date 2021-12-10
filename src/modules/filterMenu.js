@@ -29,6 +29,15 @@ class FilterMenu {
     this._container.classList.add('filter-menu');
 
     /**
+     * Describes the currently selected task filter, if any.
+     * @type {Object}
+     * @property {string} [group] The identifier for the filter group
+     *   containing the selected filter.
+     * @property {string} [filter] The identifier for the selected filter.
+     */
+    this._selectedFilter = { group: null, filter: null };
+
+    /**
      * Holds references to DOM elements related to a particular filter group in
      * the filter menu.
      * @typedef {Object} module:filterMenu~FilterMenu~groupElements
@@ -200,6 +209,36 @@ class FilterMenu {
       this.expandGroup(id);
     else
       this.collapseGroup(id);
+  }
+
+  /**
+   * Select a filter in the menu.
+   * @param {string} groupId The identifier for the group containing the filter
+   *   to be selected.
+   * @param {string} filterId The identifier for the filter to be selected.
+   */
+  selectFilter(groupId, filterId) {
+    this.clearSelection();
+
+    const listItem = this._getFilterItemElement(groupId, filterId);
+    listItem.classList.add('selected');
+    this._selectedFilter.group = groupId;
+    this._selectedFilter.filter = filterId;
+  }
+
+  /**
+   * Clear the filter selection, so that none of the filters in the menu are
+   * selected.
+   */
+  clearSelection() {
+    if (this._selectedFilter.group && this._selectedFilter.filter) {
+      const listItem = this._getFilterItemElement(this._selectedFilter.group,
+        this._selectedFilter.filter);
+      listItem.classList.remove('selected');
+    }
+
+    this._selectedFilter.group = null;
+    this._selectedFilter.filter = null;
   }
 
   /**
