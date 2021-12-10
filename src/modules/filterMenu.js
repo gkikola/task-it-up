@@ -12,6 +12,18 @@ const ICON_COLLAPSED = 'chevron_right';
  * A customizable menu of task filters.
  */
 class FilterMenu {
+
+  /**
+   * Event that is fired when a filter item is selected, or when the selection
+   * is cleared.
+   * @event module:filterMenu~FilterMenu~selectFilter
+   * @type {Object}
+   * @property {string} [groupId] The identifier for the filter group
+   *   containing the selected filter, if any.
+   * @property {string} [filterId] The identifier for the filter that was
+   *   selected, if any.
+   */
+
   /**
    * Create a filter menu and add it to the DOM.
    * @param {HTMLElement} parent The parent DOM node that will contain the
@@ -67,6 +79,13 @@ class FilterMenu {
      * @type {Map}
      */
     this._groupElements = new Map();
+
+    /**
+     * A map holding event listeners. The keys in the map are event types, and
+     * the values are arrays of listeners.
+     * @type {Map}
+     */
+    this._listeners = new Map();
 
     if (groups)
       groups.forEach(group => this.addGroup(group.id, group.label));
@@ -223,29 +242,26 @@ class FilterMenu {
    * @param {string} groupId The identifier for the group containing the filter
    *   to be selected.
    * @param {string} filterId The identifier for the filter to be selected.
+   * @fires module:filterMenu~FilterMenu~selectFilter
    */
   selectFilter(groupId, filterId) {
-    this.clearSelection();
+    this._silentClearSelection();
 
     const listItem = this._getFilterItemElement(groupId, filterId);
     listItem.classList.add('selected');
     this._selectedFilter.group = groupId;
     this._selectedFilter.filter = filterId;
+    this._fireEvent('select-filter', { groupId, filterId });
   }
 
   /**
    * Clear the filter selection, so that none of the filters in the menu are
    * selected.
+   * @fires module:filterMenu~FilterMenu~selectFilter
    */
   clearSelection() {
-    if (this._selectedFilter.group && this._selectedFilter.filter) {
-      const listItem = this._getFilterItemElement(this._selectedFilter.group,
-        this._selectedFilter.filter);
-      listItem.classList.remove('selected');
-    }
-
-    this._selectedFilter.group = null;
-    this._selectedFilter.filter = null;
+    this._silentClearSelection();
+    this._fireEvent('select-filter', { groupId: null, filterId: null });
   }
 
   /**
@@ -255,6 +271,25 @@ class FilterMenu {
    */
   getSelection() {
     return _.cloneDeep(this._selectedFilter);
+  }
+
+  /**
+   * Add an event listener to the menu.
+   * @param {string} type The type of event to listen for.
+   * @param {Function} listener The event listener to be called when the event
+   *   if fired.
+   */
+  addEventListener(type, listener) {
+    let listenerArray = this._listeners.get(type);
+
+    if (!listenerArray) {
+      listenerArray = [];
+      this._listeners.set(type, listenerArray);
+    }
+
+    if (!listenerArray.includes(listener)) {
+      listenerArray.push(listener);
+    }
   }
 
   /**
@@ -291,6 +326,19 @@ class FilterMenu {
   }
 
   /**
+   * Fire an event. This will call any registered event listeners.
+   * @param {string} type The type of event to fire.
+   * @param {Object} data The object to be sent to the event listeners.
+   */
+  _fireEvent(type, data) {
+    const listeners = this._listeners.get(type);
+
+    if (listeners) {
+      listeners.forEach(listener => listener(data));
+    }
+  }
+
+  /**
    * Set the height of a filter group's collapsible container according to the
    * collapsed state and list height.
    * @param {string} groupId The identifier for the group to which the
@@ -304,6 +352,20 @@ class FilterMenu {
 
     const collapsed = collapsible.classList.contains('collapsed');
     collapsible.style.height = collapsed ? '0' : `${list.offsetHeight}px`;
+  }
+
+  /**
+   * Clear the filter selection, but do so without firing any events.
+   */
+   _silentClearSelection() {
+    if (this._selectedFilter.group && this._selectedFilter.filter) {
+      const listItem = this._getFilterItemElement(this._selectedFilter.group,
+        this._selectedFilter.filter);
+      listItem.classList.remove('selected');
+    }
+
+    this._selectedFilter.group = null;
+    this._selectedFilter.filter = null;
   }
 }
 
