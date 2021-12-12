@@ -161,6 +161,9 @@ class App {
     filters.forEach(filter => {
       this._filterMenu.addFilter(filter.groupId, filter.filterId, filter.label);
     });
+
+    this._filterMenu.addEventListener('select-filter',
+      this._handleFilterChange.bind(this));
   }
 
   /**
@@ -312,6 +315,17 @@ class App {
     footer.appendChild(copyright);
 
     parent.appendChild(footer);
+  }
+
+  /**
+   * Respond to a change in the filter menu selection.
+   * @param {Object} e The event object.
+   * @param {string} e.groupId The identifier for the group containing the
+   *   filter that was selected.
+   * @param {string} e.filterId The identifier for the filter that was selected.
+   */
+  _handleFilterChange(e) {
+    // TODO: Update main panel
   }
 };
 
