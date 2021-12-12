@@ -320,11 +320,23 @@ class App {
   /**
    * Respond to a change in the filter menu selection.
    * @param {Object} e The event object.
-   * @param {string} e.groupId The identifier for the group containing the
-   *   filter that was selected.
-   * @param {string} e.filterId The identifier for the filter that was selected.
+   * @param {string} [e.groupId] The identifier for the group containing the
+   *   filter that was selected, if any.
+   * @param {string} [e.filterId] The identifier for the filter that was
+   *   selected, if any.
+   * @param {string} [e.filterLabel] The displayed label for the selected
+   *   filter, if any.
    */
   _handleFilterChange(e) {
+    if (!e.filterId)
+      return;
+
+    const headingLabel = this._mainPanel.querySelector('.main-panel-heading');
+    let labelText = e.filterLabel;
+    if (e.groupId === 'priorities')
+      labelText += ' Priority';
+    headingLabel.textContent = labelText;
+
     // TODO: Update main panel
   }
 };
