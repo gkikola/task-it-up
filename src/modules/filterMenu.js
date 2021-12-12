@@ -22,6 +22,8 @@ class FilterMenu {
    *   containing the selected filter, if any.
    * @property {string} [filterId] The identifier for the filter that was
    *   selected, if any.
+   * @property {string} [filterLabel] The displayed label for the filter that
+   *   was selected, if any.
    */
 
   /**
@@ -170,6 +172,7 @@ class FilterMenu {
     const item = document.createElement('li');
     item.classList.add('filter-item');
     item.dataset.filterId = filterId;
+    item.dataset.filterLabel = label;
 
     const button = document.createElement('button');
     button.classList.add('filter-item-selector');
@@ -276,7 +279,8 @@ class FilterMenu {
     listItem.classList.add('selected');
     this._selectedFilter.group = groupId;
     this._selectedFilter.filter = filterId;
-    this._fireEvent('select-filter', { groupId, filterId });
+    const filterLabel = listItem.dataset.filterLabel;
+    this._fireEvent('select-filter', { groupId, filterId, filterLabel });
   }
 
   /**
@@ -286,7 +290,11 @@ class FilterMenu {
    */
   clearSelection() {
     this._silentClearSelection();
-    this._fireEvent('select-filter', { groupId: null, filterId: null });
+    this._fireEvent('select-filter', {
+      groupId: null,
+      filterId: null,
+      filterLabel: null,
+    });
   }
 
   /**
