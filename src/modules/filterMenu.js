@@ -3,7 +3,7 @@
  * @module filterMenu
  */
 
-import _ from 'lodash';
+import _, { filter } from 'lodash';
 
 const ICON_EXPANDED = 'expand_more';
 const ICON_COLLAPSED = 'chevron_right';
@@ -189,6 +189,10 @@ class FilterMenu {
     groupElements.filterItems.set(filterId, item);
 
     this._recalcCollapsibleHeight(groupId);
+
+    button.addEventListener('click', () => {
+      this.selectFilter(groupId, filterId);
+    });
   }
 
   /**
