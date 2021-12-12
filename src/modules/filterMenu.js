@@ -171,15 +171,19 @@ class FilterMenu {
     item.classList.add('filter-item');
     item.dataset.filterId = filterId;
 
-    const labelElem = document.createElement('div');
+    const button = document.createElement('button');
+    button.classList.add('filter-item-selector');
+    item.appendChild(button);
+
+    const labelElem = document.createElement('span');
     labelElem.classList.add('filter-item-label');
     labelElem.textContent = label;
-    item.appendChild(labelElem);
+    button.appendChild(labelElem);
 
-    const countElem = document.createElement('div');
+    const countElem = document.createElement('span');
     countElem.classList.add('filter-item-count');
     countElem.textContent = (count > 0) ? count : '';
-    item.appendChild(countElem);
+    button.appendChild(countElem);
 
     groupElements.filterList.appendChild(item);
     groupElements.filterItems.set(filterId, item);

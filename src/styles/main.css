@@ -148,7 +148,7 @@ button {
 }
 
 .filter-list {
-  margin: 4px 0;
+  padding: 2px;
 }
 
 .filter-group-heading {
@@ -184,17 +184,21 @@ button {
 }
 
 .filter-item {
+  margin: 4px 0 6px 32px;
+}
+
+.filter-item-selector {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 
-  margin: 4px 0 8px 32px;
   padding: 8px;
   border-radius: 4px;
-  cursor: pointer;
+  outline-offset: 0;
 }
 
-.filter-item:hover, .filter-item.selected {
+.filter-item-selector:hover, .filter-item.selected .filter-item-selector {
   background-color: #dadada;
 }
 
