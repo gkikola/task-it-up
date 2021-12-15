@@ -6,8 +6,9 @@
 import '../styles/reset.css';
 import '../styles/main.css';
 import FilterMenu from './filterMenu';
+import Modal from './modal';
 import TaskList from './taskList';
-import { head } from 'lodash';
+import { createFormField } from './utility';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -74,6 +75,16 @@ class App {
      * @type {module:filterMenu~FilterMenu}
      */
     this._filterMenu = null;
+
+    /**
+     * Stores references to the modal dialogs.
+     * @type {Object}
+     * @property {module:modal~Modal} addTask The modal shown for creating a
+     *   new task.
+     */
+    this._modals = {
+      addTask: null,
+    };
 
     this._createPageElements(parent);
   }
@@ -186,6 +197,8 @@ class App {
     container.appendChild(middleContainer);
 
     this._createFooter(container);
+
+    this._createModals(container);
 
     parent.appendChild(container);
   }
@@ -315,6 +328,21 @@ class App {
     footer.appendChild(copyright);
 
     parent.appendChild(footer);
+  }
+
+  /**
+   * Create the modal dialogs for the app.
+   * @param {HTMLElement} parent The parent element under which the modals are
+   *   to be inserted.
+   */
+  _createModals(parent) {
+    let content;
+
+    const addTask = new Modal(parent, 'Add Task');
+    content = addTask.content;
+    content.appendChild(createFormField('text', 'Name', 'task-name'));
+
+    this._modals.addTask = addTask;
   }
 
   /**
