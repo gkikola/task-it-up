@@ -3,12 +3,26 @@
  * @module modal
  */
 
-import { createIconButton } from "./utility";
+import { createIconButton } from './utility';
+import EventEmitter from 'events';
 
 /**
  * A modal dialog box.
  */
 class Modal {
+  /**
+   * Event that is fired when the user selects the okay button to confirm their
+   * selections in the dialog.
+   * @event module:modal~Modal~confirm
+   */
+
+  /**
+   * Event that is fired when the user attempts to cancel the modal dialog.
+   * This can occur when the user clicks the X icon in the corner, or selects
+   * the cancel button.
+   * @event module:modal~Modal~cancel
+   */
+
   /**
    * Create the modal. It will be hidden by default.
    * @param {HTMLElement} parent The parent DOM node that will contain the
@@ -18,6 +32,8 @@ class Modal {
    * @param {string} [okayLabel=Okay] The label to use for the okay button.
    * @param {string} [cancelLabel=Cancel] The label to use for the cancel
    *   button.
+   * @fires module:modal~Modal~confirm
+   * @fires module:modal~Modal~cancel
    */
   constructor(parent, title, okayLabel = 'Okay', cancelLabel = 'Cancel') {
     const overlay = document.createElement('div');
@@ -35,7 +51,8 @@ class Modal {
     titleText.classList.add('modal-title');
     titleText.textContent = title;
     titleBar.appendChild(titleText);
-    titleBar.appendChild(createIconButton('close'));
+    const closeIcon = createIconButton('close');
+    titleBar.appendChild(closeIcon);
 
     const content = document.createElement('div');
     content.classList.add('modal-content');
@@ -74,6 +91,19 @@ class Modal {
      * @type {HTMLElement}
      */
     this._content = content;
+
+    /**
+     * The event emitter, for dispatching events.
+     * @type {EventEmitter}
+     */
+    this._eventEmitter = new EventEmitter();
+
+    const fireEvent = type => {
+      return () => this._eventEmitter.emit(type);
+    }
+    okayButton.addEventListener('click', fireEvent('confirm'));
+    cancelButton.addEventListener('click', fireEvent('cancel'));
+    closeIcon.addEventListener('click', fireEvent('cancel'));
   }
 
   /**
@@ -97,6 +127,16 @@ class Modal {
   hide() {
     this._overlay.classList.add('closed');
     this._modal.classList.add('closed');
+  }
+
+  /**
+   * Add an event listener to the modal dialog.
+   * @param {string} type The type of event to listen for.
+   * @param {Function} listener The event listener to be called when the event
+   *   is fired.
+   */
+  addEventListener(type, listener) {
+    this._eventEmitter.on(type, listener);
   }
 }
 
