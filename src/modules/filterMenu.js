@@ -118,9 +118,9 @@ class FilterMenu {
       toggle.classList.add('filter-group-toggle');
       heading.appendChild(toggle);
 
-      const buttonContainer = document.createElement('div');
-      buttonContainer.classList.add('button-container');
-      heading.appendChild(buttonContainer);
+      const iconContainer = document.createElement('div');
+      iconContainer.classList.add('icon-container');
+      heading.appendChild(iconContainer);
 
       arrow = document.createElement('span');
       arrow.classList.add('icon', 'material-icons', 'filter-group-expand-icon');

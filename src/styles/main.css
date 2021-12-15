@@ -196,12 +196,12 @@ button {
   color: inherit;
 }
 
-.button-container {
+.icon-container {
   display: flex;
   gap: 4px;
 }
 
-.button-container .icon {
+.icon-container .icon {
   font-size: 24px;
 }
 

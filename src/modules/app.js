@@ -299,11 +299,11 @@ class App {
     subheading.id = 'main-panel-subheading';
     headingContainer.appendChild(subheading);
 
-    const buttonContainer = document.createElement('div');
-    buttonContainer.classList.add('button-container');
-    buttonContainer.appendChild(createIconButton('add'));
-    buttonContainer.appendChild(createIconButton('more_horiz'));
-    header.appendChild(buttonContainer);
+    const iconContainer = document.createElement('div');
+    iconContainer.classList.add('icon-container');
+    iconContainer.appendChild(createIconButton('add'));
+    iconContainer.appendChild(createIconButton('more_horiz'));
+    header.appendChild(iconContainer);
 
     content.appendChild(header);
 
