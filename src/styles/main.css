@@ -140,6 +140,14 @@ button {
   padding: 8px;
   border-bottom: 1px solid black;
   flex: none;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title-bar .icon {
+  font-size: 24px;
 }
 
 .modal-title {
@@ -186,6 +194,15 @@ button {
 
 .icon {
   color: inherit;
+}
+
+.button-container {
+  display: flex;
+  gap: 4px;
+}
+
+.button-container .icon {
+  font-size: 24px;
 }
 
 .collapsible {
@@ -243,15 +260,6 @@ button {
   vertical-align: middle;
 }
 
-.filter-group-button-container {
-  display: flex;
-  gap: 4px;
-}
-
-.filter-group-button-container .icon {
-  font-size: 24px;
-}
-
 .filter-item {
   margin: 4px 0 6px 32px;
 }
@@ -297,15 +305,6 @@ button {
 #main-panel-subheading {
   margin-top: 8px;
   font-size: 16px;
-}
-
-.main-panel-button-container {
-  display: flex;
-  gap: 4px;
-}
-
-.main-panel-button-container .icon {
-  font-size: 24px;
 }
 
 @media (max-width: 400px) {

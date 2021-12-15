@@ -119,7 +119,7 @@ class FilterMenu {
       heading.appendChild(toggle);
 
       const buttonContainer = document.createElement('div');
-      buttonContainer.classList.add('filter-group-button-container');
+      buttonContainer.classList.add('button-container');
       heading.appendChild(buttonContainer);
 
       arrow = document.createElement('span');
