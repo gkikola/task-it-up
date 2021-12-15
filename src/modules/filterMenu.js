@@ -314,7 +314,7 @@ class FilterMenu {
    * Add an event listener to the menu.
    * @param {string} type The type of event to listen for.
    * @param {Function} listener The event listener to be called when the event
-   *   if fired.
+   *   is fired.
    */
   addEventListener(type, listener) {
     this._eventEmitter.on(type, listener);
