@@ -201,11 +201,7 @@ class App {
 
     const titleContainer = document.createElement('div');
     titleContainer.classList.add('title-container');
-    const menuIcon = document.createElement('button');
-    menuIcon.classList.add('icon', 'material-icons');
-    menuIcon.dataset.iconType = 'menu';
-    menuIcon.textContent = 'menu';
-    titleContainer.appendChild(menuIcon);
+    titleContainer.appendChild(_createIconButton('menu'));
     const title = document.createElement('p');
     title.classList.add('title');
     title.textContent = APP_NAME;
@@ -214,11 +210,7 @@ class App {
 
     const toolContainer = document.createElement('div');
     toolContainer.classList.add('tools');
-    const settingsIcon = document.createElement('button');
-    settingsIcon.classList.add('icon', 'material-icons');
-    settingsIcon.dataset.iconType = 'settings';
-    settingsIcon.textContent = 'settings';
-    toolContainer.appendChild(settingsIcon);
+    toolContainer.appendChild(_createIconButton('settings'));
     header.appendChild(toolContainer);
 
     parent.appendChild(header);
@@ -351,5 +343,20 @@ class App {
     // TODO: Update main panel
   }
 };
+
+/**
+ * Create an icon button element.
+ * @param {string} iconType The type of icon to display. This is stored in the
+ *   data-icon-type attribute of the button and also indicates the icon to use
+ *   from the Google Material Icons font.
+ * @returns {HTMLElement} The newly created button element.
+ */
+function _createIconButton(iconType) {
+  const button = document.createElement('button');
+  button.classList.add('icon', 'material-icons');
+  button.dataset.iconType = iconType;
+  button.textContent = iconType;
+  return button;
+}
 
 export default App;
