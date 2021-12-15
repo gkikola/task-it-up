@@ -15,8 +15,11 @@ class Modal {
    *   modal.
    * @param {string} title The title for the modal, to be displayed in the
    *   title bar.
+   * @param {string} [okayLabel=Okay] The label to use for the okay button.
+   * @param {string} [cancelLabel=Cancel] The label to use for the cancel
+   *   button.
    */
-  constructor(parent, title) {
+  constructor(parent, title, okayLabel = 'Okay', cancelLabel = 'Cancel') {
     const overlay = document.createElement('div');
     overlay.classList.add('modal-overlay', 'closed');
 
@@ -37,6 +40,20 @@ class Modal {
     const content = document.createElement('div');
     content.classList.add('modal-content');
     modal.appendChild(content);
+
+    const buttonContainer = document.createElement('div');
+    buttonContainer.classList.add('modal-button-container');
+    modal.appendChild(buttonContainer);
+
+    const cancelButton = document.createElement('button');
+    cancelButton.classList.add('modal-button');
+    cancelButton.textContent = cancelLabel;
+    buttonContainer.appendChild(cancelButton);
+
+    const okayButton = document.createElement('button');
+    okayButton.classList.add('modal-button', 'modal-okay');
+    okayButton.textContent = okayLabel;
+    buttonContainer.appendChild(okayButton);
 
     parent.appendChild(overlay);
 
