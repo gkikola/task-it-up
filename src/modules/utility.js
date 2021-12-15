@@ -31,4 +31,19 @@ function createFormField(inputType, label, id) {
   return container;
 }
 
-export { createFormField };
+/**
+ * Create an icon button element.
+ * @param {string} iconType The type of icon to display. This is stored in the
+ *   data-icon-type attribute of the button and also indicates the icon to use
+ *   from the Google Material Icons font.
+ * @returns {HTMLElement} The newly created button element.
+ */
+ function createIconButton(iconType) {
+  const button = document.createElement('button');
+  button.classList.add('icon', 'material-icons');
+  button.dataset.iconType = iconType;
+  button.textContent = iconType;
+  return button;
+}
+
+export { createFormField, createIconButton };
