@@ -14,6 +14,9 @@ class Modal {
    * Event that is fired when the user selects the okay button to confirm their
    * selections in the dialog.
    * @event module:modal~Modal~confirm
+   * @type {Object}
+   * @property {string} type The event type: confirm.
+   * @property {module:modal~Modal} target The modal that fired the event.
    */
 
   /**
@@ -21,6 +24,9 @@ class Modal {
    * This can occur when the user clicks the X icon in the corner, or selects
    * the cancel button.
    * @event module:modal~Modal~cancel
+   * @type {Object}
+   * @property {string} type The event type: cancel.
+   * @property {module:modal~Modal} target The modal that fired the event.
    */
 
   /**
@@ -99,7 +105,10 @@ class Modal {
     this._eventEmitter = new EventEmitter();
 
     const fireEvent = type => {
-      return () => this._eventEmitter.emit(type);
+      return () => this._eventEmitter.emit(type, {
+        type,
+        target: this,
+      });
     }
     okayButton.addEventListener('click', fireEvent('confirm'));
     cancelButton.addEventListener('click', fireEvent('cancel'));

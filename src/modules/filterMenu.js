@@ -18,6 +18,9 @@ class FilterMenu {
    * is cleared.
    * @event module:filterMenu~FilterMenu~selectFilter
    * @type {Object}
+   * @property {string} type The event type: select-filter.
+   * @property {module:filterMenu~FilterMenu} target The filter menu that fired
+   *   the event.
    * @property {string} [groupId] The identifier for the filter group
    *   containing the selected filter, if any.
    * @property {string} [filterId] The identifier for the filter that was
@@ -281,6 +284,8 @@ class FilterMenu {
     this._selectedFilter.filter = filterId;
     const filterLabel = listItem.dataset.filterLabel;
     this._eventEmitter.emit('select-filter', {
+      type: 'select-filter',
+      target: this,
       groupId,
       filterId,
       filterLabel,
@@ -295,6 +300,8 @@ class FilterMenu {
   clearSelection() {
     this._silentClearSelection();
     this._eventEmitter.emit('select-filter', {
+      type: 'select-filter',
+      target: this,
       groupId: null,
       filterId: null,
       filterLabel: null,
