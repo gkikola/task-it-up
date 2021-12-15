@@ -3,6 +3,8 @@
  * @module modal
  */
 
+import { createIconButton } from "./utility";
+
 /**
  * A modal dialog box.
  */
@@ -30,6 +32,7 @@ class Modal {
     titleText.classList.add('modal-title');
     titleText.textContent = title;
     titleBar.appendChild(titleText);
+    titleBar.appendChild(createIconButton('close'));
 
     const content = document.createElement('div');
     content.classList.add('modal-content');
