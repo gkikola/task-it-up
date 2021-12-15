@@ -212,10 +212,22 @@ button {
   justify-content: space-between;
 }
 
-.main-panel-heading {
+#main-panel-heading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+#main-panel-heading {
   font-size: 24px;
   font-weight: bold;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+#main-panel-subheading {
+  margin-top: 8px;
+  font-size: 16px;
 }
 
 @media (max-width: 400px) {

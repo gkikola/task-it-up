@@ -7,6 +7,7 @@ import '../styles/reset.css';
 import '../styles/main.css';
 import FilterMenu from './filterMenu';
 import TaskList from './taskList';
+import { head } from 'lodash';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -281,18 +282,23 @@ class App {
     const content = document.createElement('main');
     content.id = 'main-panel-content';
 
+    const header = document.createElement('div');
+    header.id = 'main-panel-header';
     const headingContainer = document.createElement('div');
-    headingContainer.id = 'main-panel-header';
+    headingContainer.id = 'main-panel-heading-container';
+    header.appendChild(headingContainer);
     const heading = document.createElement('h2');
-    heading.classList.add('main-panel-heading');
-    heading.textContent = 'Today';
+    heading.id = 'main-panel-heading';
     headingContainer.appendChild(heading);
+    const subheading = document.createElement('h3');
+    subheading.id = 'main-panel-subheading';
+    headingContainer.appendChild(subheading);
 
     const buttonContainer = document.createElement('div');
     buttonContainer.classList.add('main-panel-button-container');
-    headingContainer.appendChild(buttonContainer);
+    header.appendChild(buttonContainer);
 
-    content.appendChild(headingContainer);
+    content.appendChild(header);
 
     this._mainPanel.appendChild(content);
     parent.appendChild(this._mainPanel);
@@ -331,11 +337,16 @@ class App {
     if (!e.filterId)
       return;
 
-    const headingLabel = this._mainPanel.querySelector('.main-panel-heading');
+    const heading = document.getElementById('main-panel-heading');
     let labelText = e.filterLabel;
     if (e.groupId === 'priorities')
       labelText += ' Priority';
-    headingLabel.textContent = labelText;
+    heading.textContent = labelText;
+
+    const subheading = document.getElementById('main-panel-subheading');
+    labelText = '';
+    subheading.textContent = labelText;
+    subheading.style.display = (labelText.length > 0) ? 'block' : 'none';
 
     // TODO: Update main panel
   }
