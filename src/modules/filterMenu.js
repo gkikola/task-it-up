@@ -4,6 +4,7 @@
  */
 
 import _, { filter } from 'lodash';
+import EventEmitter from 'events';
 
 const ICON_EXPANDED = 'expand_more';
 const ICON_COLLAPSED = 'chevron_right';
@@ -12,7 +13,6 @@ const ICON_COLLAPSED = 'chevron_right';
  * A customizable menu of task filters.
  */
 class FilterMenu {
-
   /**
    * Event that is fired when a filter item is selected, or when the selection
    * is cleared.
@@ -84,11 +84,11 @@ class FilterMenu {
     this._groupElements = new Map();
 
     /**
-     * A map holding event listeners. The keys in the map are event types, and
-     * the values are arrays of listeners.
-     * @type {Map}
+     * Holds the event emitter. The event emitter dispatches events to any
+     * attached event listeners.
+     * @type {EventEmitter}
      */
-    this._listeners = new Map();
+    this._eventEmitter = new EventEmitter();
 
     if (groups)
       groups.forEach(group => this.addGroup(group.id, group.label));
@@ -280,7 +280,11 @@ class FilterMenu {
     this._selectedFilter.group = groupId;
     this._selectedFilter.filter = filterId;
     const filterLabel = listItem.dataset.filterLabel;
-    this._fireEvent('select-filter', { groupId, filterId, filterLabel });
+    this._eventEmitter.emit('select-filter', {
+      groupId,
+      filterId,
+      filterLabel,
+    });
   }
 
   /**
@@ -290,7 +294,7 @@ class FilterMenu {
    */
   clearSelection() {
     this._silentClearSelection();
-    this._fireEvent('select-filter', {
+    this._eventEmitter.emit('select-filter', {
       groupId: null,
       filterId: null,
       filterLabel: null,
@@ -313,16 +317,7 @@ class FilterMenu {
    *   if fired.
    */
   addEventListener(type, listener) {
-    let listenerArray = this._listeners.get(type);
-
-    if (!listenerArray) {
-      listenerArray = [];
-      this._listeners.set(type, listenerArray);
-    }
-
-    if (!listenerArray.includes(listener)) {
-      listenerArray.push(listener);
-    }
+    this._eventEmitter.on(type, listener);
   }
 
   /**
@@ -356,19 +351,6 @@ class FilterMenu {
       throw new RangeError(`Cannot locate filter "${filterId}" in group `
         + `"${groupId}"`);
     return item;
-  }
-
-  /**
-   * Fire an event. This will call any registered event listeners.
-   * @param {string} type The type of event to fire.
-   * @param {Object} data The object to be sent to the event listeners.
-   */
-  _fireEvent(type, data) {
-    const listeners = this._listeners.get(type);
-
-    if (listeners) {
-      listeners.forEach(listener => listener(data));
-    }
   }
 
   /**
