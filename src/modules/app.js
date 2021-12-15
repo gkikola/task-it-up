@@ -288,6 +288,8 @@ class App {
 
     const buttonContainer = document.createElement('div');
     buttonContainer.classList.add('main-panel-button-container');
+    buttonContainer.appendChild(_createIconButton('add'));
+    buttonContainer.appendChild(_createIconButton('more_horiz'));
     header.appendChild(buttonContainer);
 
     content.appendChild(header);
