@@ -122,6 +122,13 @@ class App {
       else
         this._resizer.classList.remove('closed');
     });
+
+    const mainPanelHeader = document.getElementById('main-panel-header');
+    const addTaskIcon
+      = mainPanelHeader.querySelector('.icon[data-icon-type="add"]');
+    addTaskIcon.addEventListener('click', () => {
+      this._modals.addTask.show();
+    });
   }
 
   /**
@@ -341,6 +348,7 @@ class App {
     const addTask = new Modal(parent, 'Add Task');
     content = addTask.content;
     content.appendChild(createFormField('text', 'Name', 'task-name'));
+    addTask.addEventListener('cancel', () => addTask.hide());
 
     this._modals.addTask = addTask;
   }
