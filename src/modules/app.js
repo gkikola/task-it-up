@@ -205,9 +205,9 @@ class App {
 
     this._createFooter(container);
 
-    this._createModals(container);
-
     parent.appendChild(container);
+
+    this._createModals(parent, container);
   }
 
   /**
@@ -341,11 +341,13 @@ class App {
    * Create the modal dialogs for the app.
    * @param {HTMLElement} parent The parent element under which the modals are
    *   to be inserted.
+   * @param {HTMLElement} background The container node for background elements
+   *   that should be hidden when modals are open.
    */
-  _createModals(parent) {
+  _createModals(parent, background) {
     let content;
 
-    const addTask = new Modal(parent, 'Add Task');
+    const addTask = new Modal(parent, background);
     content = addTask.content;
     content.appendChild(createFormField('text', 'Name', 'task-name'));
     addTask.addEventListener('cancel', () => addTask.hide());

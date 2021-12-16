@@ -6,6 +6,15 @@
 import { createIconButton } from './utility';
 import EventEmitter from 'events';
 
+const FOCUSABLE_ELEMS = [
+  'a[href]',
+  'input',
+  'select',
+  'textarea',
+  'button',
+];
+const FOCUSABLE_SELECTOR = FOCUSABLE_ELEMS.join(', ');
+
 /**
  * A modal dialog box.
  */
@@ -33,15 +42,13 @@ class Modal {
    * Create the modal. It will be hidden by default.
    * @param {HTMLElement} parent The parent DOM node that will contain the
    *   modal.
-   * @param {string} title The title for the modal, to be displayed in the
-   *   title bar.
-   * @param {string} [okayLabel=Okay] The label to use for the okay button.
-   * @param {string} [cancelLabel=Cancel] The label to use for the cancel
-   *   button.
+   * @param {HTMLElement} [background] The DOM node containing background
+   *   elements that should be hidden from screen readers and made unfocusable
+   *   while the modal is open.
    * @fires module:modal~Modal~confirm
    * @fires module:modal~Modal~cancel
    */
-  constructor(parent, title, okayLabel = 'Okay', cancelLabel = 'Cancel') {
+  constructor(parent, background) {
     const overlay = document.createElement('div');
     overlay.classList.add('modal-overlay', 'closed');
 
@@ -55,7 +62,7 @@ class Modal {
 
     const titleText = document.createElement('div');
     titleText.classList.add('modal-title');
-    titleText.textContent = title;
+    titleText.textContent = '';
     titleBar.appendChild(titleText);
     const closeIcon = createIconButton('close');
     titleBar.appendChild(closeIcon);
@@ -70,12 +77,12 @@ class Modal {
 
     const cancelButton = document.createElement('button');
     cancelButton.classList.add('modal-button');
-    cancelButton.textContent = cancelLabel;
+    cancelButton.textContent = 'Cancel';
     buttonContainer.appendChild(cancelButton);
 
     const okayButton = document.createElement('button');
     okayButton.classList.add('modal-button', 'modal-okay');
-    okayButton.textContent = okayLabel;
+    okayButton.textContent = 'Okay';
     buttonContainer.appendChild(okayButton);
 
     parent.appendChild(overlay);
@@ -97,6 +104,13 @@ class Modal {
      * @type {HTMLElement}
      */
     this._content = content;
+
+    /**
+     * A reference to the container for background elements that should be
+     * disabled while the modal is open.
+     * @type {?HTMLElement}
+     */
+    this._background = background;
 
     /**
      * The event emitter, for dispatching events.
@@ -128,6 +142,13 @@ class Modal {
   show() {
     this._overlay.classList.remove('closed');
     this._modal.classList.remove('closed');
+
+    if (this._background) {
+      this._background.setAttribute('aria-hidden', 'true');
+      this._background.querySelectorAll(FOCUSABLE_SELECTOR).forEach(elem => {
+        elem.setAttribute('tabindex', '-1');
+      });
+    }
   }
 
   /**
@@ -136,6 +157,13 @@ class Modal {
   hide() {
     this._overlay.classList.add('closed');
     this._modal.classList.add('closed');
+
+    if (this._background) {
+      this._background.removeAttribute('aria-hidden');
+      this._background.querySelectorAll(FOCUSABLE_SELECTOR).forEach(elem => {
+        elem.removeAttribute('tabindex');
+      });
+    }
   }
 
   /**
