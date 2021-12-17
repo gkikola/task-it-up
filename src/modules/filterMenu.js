@@ -3,7 +3,7 @@
  * @module filterMenu
  */
 
-import _, { filter } from 'lodash';
+import _ from 'lodash';
 import EventEmitter from 'events';
 
 const ICON_EXPANDED = 'expand_more';
