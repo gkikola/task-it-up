@@ -9,9 +9,11 @@
  *   the input element.
  * @param {string} id The identifier for the input element.
  * @param {string} [label] An optional label, placed before the input element.
+ * @param {string[]} [classes] An optional array of class names to add to the
+ *   input element.
  * @returns {HTMLElement} The container holding the input and its label.
  */
-function createFormField(inputType, id, label) {
+function createFormField(inputType, id, label, classes = []) {
   const container = document.createElement('div');
   container.classList.add('form-input-container');
 
@@ -23,7 +25,7 @@ function createFormField(inputType, id, label) {
   }
 
   const input = document.createElement('input');
-  input.classList.add('form-input');
+  input.classList.add('form-input', ...classes);
   input.id = id;
   input.type = inputType;
   container.appendChild(input);
