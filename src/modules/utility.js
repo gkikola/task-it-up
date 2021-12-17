@@ -7,11 +7,11 @@
  * Create an input field in a form.
  * @param {string} inputType The type of input, used in the type attribute of
  *   the input element.
- * @param {string} [label] An optional label, placed before the input element.
  * @param {string} id The identifier for the input element.
+ * @param {string} [label] An optional label, placed before the input element.
  * @returns {HTMLElement} The container holding the input and its label.
  */
-function createFormField(inputType, label, id) {
+function createFormField(inputType, id, label) {
   const container = document.createElement('div');
   container.classList.add('form-input-container');
 
