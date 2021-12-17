@@ -38,6 +38,7 @@
     "webpack-dev-server": "^4.5.0"
   },
   "dependencies": {
+    "flatpickr": "^4.6.9",
     "lodash": "^4.17.21",
     "uuid": "^8.3.2"
   }

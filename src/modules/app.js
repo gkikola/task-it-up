@@ -8,7 +8,10 @@ import '../styles/main.css';
 import FilterMenu from './filterMenu';
 import Modal from './modal';
 import TaskList from './taskList';
-import { createFormField, createIconButton } from './utility';
+import { createFormField, createIconButton, getDateFormat } from './utility';
+
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.css';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -129,6 +132,8 @@ class App {
     addTaskIcon.addEventListener('click', () => {
       this._modals.addTask.show();
     });
+
+    this._initDatePicker();
   }
 
   /**
@@ -349,10 +354,24 @@ class App {
 
     const addTask = new Modal(parent, background);
     content = addTask.content;
-    content.appendChild(createFormField('text', 'Name', 'task-name'));
+    content.appendChild(createFormField('text', 'task-name', 'Name'));
+    content.appendChild(createFormField('text', 'task-due-date', 'Due Date',
+      ['date-input']));
     addTask.addEventListener('cancel', () => addTask.hide());
 
     this._modals.addTask = addTask;
+  }
+
+  /**
+   * Associate a date picker with each date input field.
+   */
+  _initDatePicker() {
+    flatpickr('.form-input.date-input', {
+      allowInput: true,
+      static: true,
+      formatDate: undefined,
+      parseDate: undefined,
+    });
   }
 
   /**
