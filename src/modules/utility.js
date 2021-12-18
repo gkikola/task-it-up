@@ -18,9 +18,10 @@ function createFormField(inputType, id, label, classes = []) {
   container.classList.add('form-input-container');
 
   if (label) {
-    const labelElem = document.createElement('div');
+    const labelElem = document.createElement('label');
     labelElem.classList.add('form-input-label');
     labelElem.textContent = label;
+    labelElem.htmlFor = id;
     container.appendChild(labelElem);
   }
 
