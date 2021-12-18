@@ -33,6 +33,8 @@
  *   item is selected.
  * @param {string} options.items[].label The label that will be displayed for
  *   the item.
+ * @param {boolean} [options.items[].selected] If true, indicates that the item
+ *   should be selected or checked by default.
  * @returns {HTMLElement} The container holding the input and its label.
  */
 function createFormField(inputType, options = {}) {
@@ -74,6 +76,8 @@ function createFormField(inputType, options = {}) {
             input.name = options.name;
           if (item.value)
             input.value = item.value;
+          if (item.selected)
+            input.checked = true;
           itemContainer.appendChild(input);
 
           labelElem.classList.add('form-input-item-label');
@@ -97,6 +101,8 @@ function createFormField(inputType, options = {}) {
           const opt = document.createElement('option');
           if (item.value)
             opt.value = item.value;
+          if (item.selected)
+            opt.selected = true;
           opt.textContent = item.label;
           select.appendChild(opt);
         });
