@@ -54,6 +54,10 @@ function createFormField(inputType, options = {}) {
     case 'radio': {
       if (options.items) {
         options.items.forEach(item => {
+          const itemContainer = document.createElement('div');
+          itemContainer.classList.add('form-input-item-container');
+          container.appendChild(itemContainer);
+
           const input = document.createElement('input');
           const labelElem = document.createElement('label');
           input.type = inputType;
@@ -70,11 +74,11 @@ function createFormField(inputType, options = {}) {
             input.name = options.name;
           if (item.value)
             input.value = item.value;
-          container.appendChild(input);
+          itemContainer.appendChild(input);
 
           labelElem.classList.add('form-input-item-label');
           labelElem.textContent = item.label;
-          container.appendChild(labelElem);
+          itemContainer.appendChild(labelElem);
         });
       }
       break;
