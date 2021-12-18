@@ -7,29 +7,111 @@
  * Create an input field in a form.
  * @param {string} inputType The type of input, used in the type attribute of
  *   the input element.
- * @param {string} id The identifier for the input element.
- * @param {string} [label] An optional label, placed before the input element.
- * @param {string[]} [classes] An optional array of class names to add to the
- *   input element.
+ * @param {Object} [options={}] An object holding additional options to control
+ *   the creation of the input element.
+ * @param {string} [options.id] The identifier for the input element. If the
+ *   input type is 'checkbox' or 'radio', this is ignored since there may be
+ *   multiple buttons in the group.
+ * @param {string} [options.name] The name of the input element. For an input
+ *   type of 'checkbox', each checkbox should be named individually and this
+ *   property is ignored.
+ * @param {string} [options.label] An optional label that will be displayed
+ *   before the input element.
+ * @param {string[]} [options.classList] An array of class names to apply to
+ *   the element. For 'checkbox' or 'radio' inputs, the class names will apply
+ *   to each input item in the group.
+ * @param {Object[]} [options.items] This property is ignored unless the input
+ *   type is 'select', 'checkbox', or 'radio'. In these cases, this property
+ *   can be set to an object holding information for the individual buttons in
+ *   a checkbox or radio group, or for the options in a select box.
+ * @param {string} [options.items[].id] The identifier for the checkbox or
+ *   radio item. This property is ignored for the 'select' input type.
+ * @param {string} [options.items[].name] For checkboxes only, this specifies
+ *   the form name for the checkbox item. This property is ignored for other
+ *   input types.
+ * @param {string} [options.items[].value] The form value that is used when the
+ *   item is selected.
+ * @param {string} options.items[].label The label that will be displayed for
+ *   the item.
  * @returns {HTMLElement} The container holding the input and its label.
  */
-function createFormField(inputType, id, label, classes = []) {
+function createFormField(inputType, options = {}) {
+  inputType = inputType.toLowerCase();
   const container = document.createElement('div');
   container.classList.add('form-input-container');
 
-  if (label) {
+  if (options.label) {
     const labelElem = document.createElement('label');
     labelElem.classList.add('form-input-label');
-    labelElem.textContent = label;
-    labelElem.htmlFor = id;
+    labelElem.textContent = options.label;
+    if (options.id && inputType !== 'checkbox' && inputType !== 'radio')
+      labelElem.htmlFor = options.id;
     container.appendChild(labelElem);
   }
 
-  const input = document.createElement('input');
-  input.classList.add('form-input', ...classes);
-  input.id = id;
-  input.type = inputType;
-  container.appendChild(input);
+  switch (inputType) {
+    case 'checkbox':
+    case 'radio': {
+      if (options.items) {
+        options.items.forEach(item => {
+          const input = document.createElement('input');
+          const labelElem = document.createElement('label');
+          input.type = inputType;
+          if (item.id) {
+            input.id = item.id;
+            labelElem.htmlFor = item.id;
+          }
+          if (item.name)
+            input.name = item.name;
+          if (options.name && inputType === 'radio')
+            input.name = options.name;
+          if (item.value)
+            input.value = item.value;
+          container.appendChild(input);
+
+          labelElem.classList.add('form-input-item-label');
+          labelElem.textContent = item.label;
+          container.appendChild(labelElem);
+        });
+      }
+      break;
+    }
+    case 'select': {
+      const select = document.createElement('select');
+      select.classList.add('form-select');
+      if (options.classList)
+        select.classList.add(...options.classList);
+      if (options.id)
+        select.id = options.id;
+      if (options.name)
+        select.name = options.name;
+      if (options.items) {
+        options.items.forEach(item => {
+          const opt = document.createElement('option');
+          if (item.value)
+            opt.value = item.value;
+          opt.textContent = item.label;
+          select.appendChild(opt);
+        });
+      }
+      container.appendChild(select);
+      break;
+    }
+    case 'text':
+    default: {
+      const input = document.createElement('input');
+      input.classList.add('form-input');
+      if (options.classList)
+        input.classList.add(...options.classList);
+      if (options.id)
+        input.id = options.id;
+      if (options.name)
+        input.name = options.name;
+      input.type = inputType;
+      container.appendChild(input);
+      break;
+    }
+  }
 
   return container;
 }

@@ -354,9 +354,29 @@ class App {
 
     const addTask = new Modal(parent, background);
     content = addTask.content;
-    content.appendChild(createFormField('text', 'task-name', 'Name'));
-    content.appendChild(createFormField('text', 'task-due-date', 'Due Date',
-      ['date-input']));
+    content.appendChild(createFormField('text', {
+      id: 'task-name',
+      name: 'task-name',
+      label: 'Name',
+    }));
+    content.appendChild(createFormField('text', {
+      id: 'task-due-date',
+      name: 'task-due-date',
+      label: 'Due Date',
+      classList: ['date-input'],
+    }));
+    content.appendChild(createFormField('select', {
+      id: 'task-priority',
+      name: 'task-priority',
+      label: 'Priority',
+      items: [
+        { value: 'very-high', label: 'Very High' },
+        { value: 'high', label: 'High' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'low', label: 'Low' },
+        { value: 'very-low', label: 'Very Low' },
+      ],
+    }));
     addTask.addEventListener('cancel', () => addTask.hide());
 
     this._modals.addTask = addTask;
