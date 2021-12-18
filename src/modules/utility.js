@@ -57,6 +57,9 @@ function createFormField(inputType, options = {}) {
           const input = document.createElement('input');
           const labelElem = document.createElement('label');
           input.type = inputType;
+          input.classList.add('form-input-item');
+          if (options.classList)
+            input.classList.add(...options.classList);
           if (item.id) {
             input.id = item.id;
             labelElem.htmlFor = item.id;
