@@ -10,6 +10,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
+      template: './src/template.ejs',
       title: 'Task It Up',
     }),
   ],
