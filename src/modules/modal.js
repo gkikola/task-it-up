@@ -39,6 +39,22 @@ class Modal {
    */
 
   /**
+   * Event that is fired when the modal is shown.
+   * @event module:modal~Modal~show
+   * @type {Object}
+   * @property {string} type The event type: show.
+   * @property {module:modal~Modal} target The modal that fired the event.
+   */
+
+  /**
+   * Event that is fired when the modal is hidden.
+   * @event module:modal~Modal~hide
+   * @type {Object}
+   * @property {string} type The event type: hide.
+   * @property {module:modal~Modal} target The modal that fired the event.
+   */
+
+  /**
    * Create the modal. It will be hidden by default.
    * @param {HTMLElement} parent The parent DOM node that will contain the
    *   modal.
@@ -138,6 +154,7 @@ class Modal {
 
   /**
    * Display the modal.
+   * @fires module:modal~Modal~show
    */
   show() {
     this._overlay.classList.remove('closed');
@@ -149,10 +166,13 @@ class Modal {
         elem.setAttribute('tabindex', '-1');
       });
     }
+
+    this._eventEmitter.emit('show', { type: 'show', target: this });
   }
 
   /**
    * Hide the modal.
+   * @fires module:modal~Modal~hide
    */
   hide() {
     this._overlay.classList.add('closed');
@@ -164,6 +184,8 @@ class Modal {
         elem.removeAttribute('tabindex');
       });
     }
+
+    this._eventEmitter.emit('hide', { type: 'hide', target: this });
   }
 
   /**
