@@ -206,7 +206,7 @@ button {
   margin-bottom: 8px;
 }
 
-.form-input, .form-select {
+.form-input, .form-select, .form-textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid black;
@@ -214,6 +214,11 @@ button {
 
   font-family: var(--label-font);
   font-size: 14px;
+}
+
+.form-textarea {
+  width: 100%;
+  resize: vertical;
 }
 
 .form-input-item-container {
