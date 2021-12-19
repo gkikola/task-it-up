@@ -122,6 +122,12 @@ class Modal {
     this._content = content;
 
     /**
+     * The DOM element displaying the title for the modal.
+     * @type {HTMLElement}
+     */
+    this._titleElem = titleText;
+
+    /**
      * A reference to the container for background elements that should be
      * disabled while the modal is open.
      * @type {?HTMLElement}
@@ -147,9 +153,22 @@ class Modal {
 
   /**
    * The content container element in the DOM.
+   * @type {HTMLElement}
    */
   get content() {
     return this._content;
+  }
+
+  /**
+   * The title of the modal.
+   * @type {string}
+   */
+  get title() {
+    return this._titleElem.textContent;
+  }
+
+  set title(label) {
+    this._titleElem.textContent = label;
   }
 
   /**
