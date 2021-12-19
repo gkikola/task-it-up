@@ -120,7 +120,7 @@ button {
 .modal {
   width: 400px;
   max-width: 100vw;
-  max-height: min(500px, 100vh);
+  max-height: min(600px, 100vh);
   z-index: 150;
   overflow: auto;
 
