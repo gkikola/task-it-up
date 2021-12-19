@@ -366,17 +366,46 @@ class App {
       classList: ['date-input'],
     }));
     content.appendChild(createFormField('select', {
+      id: 'task-recurring-date',
+      name: 'task-recurring-date',
+      label: 'Recurrence',
+      items: [
+        { value: 'none', label: 'Never Repeat', selected: true },
+        { value: 'daily', label: 'Repeat Daily' },
+        { value: 'weekly', label: 'Repeat Weekly' },
+        { value: 'monthly', label: 'Repeat Monthly' },
+        { value: 'annually', label: 'Repeat Annually' },
+        { value: 'custom', label: 'Custom Recurrence...' },
+      ],
+    }));
+    content.appendChild(createFormField('select', {
       id: 'task-priority',
       name: 'task-priority',
       label: 'Priority',
       items: [
         { value: 'very-high', label: 'Very High' },
         { value: 'high', label: 'High' },
-        { value: 'medium', label: 'Medium' },
+        { value: 'medium', label: 'Medium', selected: true },
         { value: 'low', label: 'Low' },
         { value: 'very-low', label: 'Very Low' },
       ],
     }));
+    content.appendChild(createFormField('select', {
+      id: 'task-project',
+      name: 'task-project',
+      label: 'Project',
+      items: [
+        { value: 'none', label: 'None', selected: true },
+        { value: 'new', label: 'New Project...' },
+      ],
+    }));
+    content.appendChild(createFormField('textarea', {
+      id: 'task-description',
+      name: 'task-description',
+      label: 'Description',
+      size: { rows: 4, cols: 20 },
+    }));
+    addTask.title = 'Add Task';
     addTask.addEventListener('show', () => this._resetModal(addTask));
     addTask.addEventListener('cancel', () => addTask.hide());
 
@@ -398,6 +427,8 @@ class App {
     modal.content.querySelectorAll('.form-select option').forEach(elem => {
       elem.selected = elem.defaultSelected;
     });
+    modal.content.scrollTop = 0;
+    modal.content.scrollLeft = 0;
   }
 
   /**
