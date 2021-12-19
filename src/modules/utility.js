@@ -15,6 +15,8 @@
  * @param {string} [options.name] The name of the input element. For an input
  *   type of 'checkbox', each checkbox should be named individually and this
  *   property is ignored.
+ * @param {string} [options.value] The initial value of the input element. This
+ *   is ignored for input types of 'checkbox', 'radio', or 'select'.
  * @param {string} [options.label] An optional label that will be displayed
  *   before the input element.
  * @param {string[]} [options.classList] An array of class names to apply to
@@ -76,8 +78,10 @@ function createFormField(inputType, options = {}) {
             input.name = options.name;
           if (item.value)
             input.value = item.value;
-          if (item.selected)
+          if (item.selected) {
+            input.defaultChecked = true;
             input.checked = true;
+          }
           itemContainer.appendChild(input);
 
           labelElem.classList.add('form-input-item-label');
@@ -101,8 +105,10 @@ function createFormField(inputType, options = {}) {
           const opt = document.createElement('option');
           if (item.value)
             opt.value = item.value;
-          if (item.selected)
+          if (item.selected) {
+            opt.defaultSelected = true;
             opt.selected = true;
+          }
           opt.textContent = item.label;
           select.appendChild(opt);
         });
@@ -120,6 +126,10 @@ function createFormField(inputType, options = {}) {
         input.id = options.id;
       if (options.name)
         input.name = options.name;
+      if (options.value) {
+        input.defaultValue = options.value;
+        input.value = options.value;
+      }
       input.type = inputType;
       container.appendChild(input);
       break;
