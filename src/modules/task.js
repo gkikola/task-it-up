@@ -45,12 +45,6 @@ class Task {
     this.description = null;
 
     /**
-     * An optional collection of notes related to the task.
-     * @type {?string}
-     */
-    this.notes = null;
-
-    /**
      * A recurring due date for the task, if any.
      * @type {?module:recurringDate~RecurringDate}
      */
