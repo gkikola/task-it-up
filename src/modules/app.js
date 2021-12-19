@@ -377,9 +377,27 @@ class App {
         { value: 'very-low', label: 'Very Low' },
       ],
     }));
+    addTask.addEventListener('show', () => this._resetModal(addTask));
     addTask.addEventListener('cancel', () => addTask.hide());
 
     this._modals.addTask = addTask;
+  }
+
+  /**
+   * Reset the form inputs in a modal dialog.
+   * @param {module:modal~Modal} modal The modal dialog whose forms are to be
+   *   reset.
+   */
+  _resetModal(modal) {
+    modal.content.querySelectorAll('.form-input').forEach(elem => {
+      elem.value = elem.defaultValue;
+    });
+    modal.content.querySelectorAll('.form-input-item').forEach(elem => {
+      elem.checked = elem.defaultChecked;
+    });
+    modal.content.querySelectorAll('.form-select option').forEach(elem => {
+      elem.selected = elem.defaultSelected;
+    });
   }
 
   /**
