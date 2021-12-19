@@ -5,8 +5,10 @@
 
 /**
  * Create an input field in a form.
- * @param {string} inputType The type of input, used in the type attribute of
- *   the input element.
+ * @param {string} inputType The type of input element to create. For most text
+ *   or numeric forms of input, this value is used as the 'type' attribute in
+ *   an 'input' form element. If this is set to 'select', then a 'select' box
+ *   is created. If this is set to 'textarea', then a 'textarea' is created.
  * @param {Object} [options={}] An object holding additional options to control
  *   the creation of the input element.
  * @param {string} [options.id] The identifier for the input element. If the
@@ -22,6 +24,12 @@
  * @param {string[]} [options.classList] An array of class names to apply to
  *   the element. For 'checkbox' or 'radio' inputs, the class names will apply
  *   to each input item in the group.
+ * @param {Object} [options.size] An object containing size information for the
+ *   input element. This is only used for the 'textarea' input type.
+ * @param {number} [options.size.rows] The number of rows that a textarea
+ *   should have.
+ * @param {number} [options.size.cols] The number of columns that a textarea
+ *   should have.
  * @param {Object[]} [options.items] This property is ignored unless the input
  *   type is 'select', 'checkbox', or 'radio'. In these cases, this property
  *   can be set to an object holding information for the individual buttons in
@@ -114,6 +122,24 @@ function createFormField(inputType, options = {}) {
         });
       }
       container.appendChild(select);
+      break;
+    }
+    case 'textarea': {
+      const input = document.createElement('textarea');
+      input.classList.add('form-textarea');
+      if (options.classList)
+        input.classList.add(...options.classList);
+      if (options.id)
+        input.id = options.id;
+      if (options.name)
+        input.name = options.name;
+      if (options.value)
+        input.textContent = value;
+      if (options.size) {
+        if (options.size.rows) input.rows = options.size.rows;
+        if (options.size.cols) input.cols = options.size.cols;
+      }
+      container.appendChild(input);
       break;
     }
     case 'text':
