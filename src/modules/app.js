@@ -427,6 +427,9 @@ class App {
     modal.content.querySelectorAll('.form-select option').forEach(elem => {
       elem.selected = elem.defaultSelected;
     });
+    modal.content.querySelectorAll('.form-textarea').forEach(elem => {
+      elem.value = elem.textContent;
+    });
     modal.content.scrollTop = 0;
     modal.content.scrollLeft = 0;
   }
