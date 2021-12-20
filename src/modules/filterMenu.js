@@ -3,6 +3,8 @@
  * @module filterMenu
  */
 
+import Collapsible from './collapsible';
+
 import _ from 'lodash';
 import EventEmitter from 'events';
 
@@ -68,9 +70,9 @@ class FilterMenu {
      * @property {HTMLElement} container The container element for the group.
      * @property {HTMLElement} [expandIcon] The expand/collapse icon element in
      *   the group heading (if any).
-     * @property {HTMLElement} [collapsible] The collapsible container for the
-     *   group's filter list. If the group cannot be collapsed, this should be
-     *   null.
+     * @property {module:collapsible~Collapsible} [collapsible] The collapsible
+     *   panel containing the group's filter list. If the group cannot be
+     *   collapsed, this should be null.
      * @property {HTMLElement} filterList The list element containing the
      *   filter items belonging to the group.
      * @property {Map} filterItems A map associating filter identifiers to the
@@ -136,20 +138,24 @@ class FilterMenu {
       toggle.appendChild(text);
     }
 
-    const collapsible = document.createElement('div');
-    collapsible.classList.add('collapsible');
-    if (label)
-      collapsible.classList.add('collapsed');
-    groupContainer.appendChild(collapsible);
+    let collapsible;
+    let listContainer;
+    if (label) {
+      collapsible = new Collapsible(groupContainer, true);
+      listContainer = collapsible.content;
+    } else {
+      collapsible = null;
+      listContainer = groupContainer;
+    }
 
     const list = document.createElement('ul');
     list.classList.add('filter-list');
-    collapsible.appendChild(list);
+    listContainer.appendChild(list);
 
     this._groupElements.set(id, {
       container: groupContainer,
       expandIcon: arrow,
-      collapsible: label ? collapsible : null,
+      collapsible,
       filterList: list,
       filterItems: new Map(),
     });
@@ -194,7 +200,7 @@ class FilterMenu {
     groupElements.filterList.appendChild(item);
     groupElements.filterItems.set(filterId, item);
 
-    this._recalcCollapsibleHeight(groupId);
+    groupElements.collapsible?.update();
 
     button.addEventListener('click', () => {
       this.selectFilter(groupId, filterId);
@@ -218,6 +224,7 @@ class FilterMenu {
     const item = this._getFilterItemElement(groupId, filterId);
     groupElements.filterList.removeChild(item);
     groupElements.filterItems.delete(filterId);
+    groupElements.collapsible?.update();
   }
 
   /**
@@ -229,8 +236,7 @@ class FilterMenu {
     const elements = this._getGroupElements(id);
     const collapsible = elements.collapsible;
     if (collapsible) {
-      collapsible.classList.remove('collapsed');
-      this._recalcCollapsibleHeight(id);
+      collapsible.expand();
       elements.expandIcon.textContent = ICON_EXPANDED;
     }
   }
@@ -244,8 +250,7 @@ class FilterMenu {
     const elements = this._getGroupElements(id);
     const collapsible = elements.collapsible;
     if (collapsible) {
-      collapsible.classList.add('collapsed');
-      this._recalcCollapsibleHeight(id);
+      collapsible.collapse();
       elements.expandIcon.textContent = ICON_COLLAPSED;
     }
   }
@@ -260,8 +265,7 @@ class FilterMenu {
     const elements = this._getGroupElements(id);
     const collapsible = elements.collapsible;
     if (collapsible) {
-      const collapsed = collapsible.classList.contains('collapsed');
-      if (collapsed)
+      if (collapsible.collapsed)
         this.expandGroup(id);
       else
         this.collapseGroup(id);
@@ -358,23 +362,6 @@ class FilterMenu {
       throw new RangeError(`Cannot locate filter "${filterId}" in group `
         + `"${groupId}"`);
     return item;
-  }
-
-  /**
-   * Set the height of a filter group's collapsible container according to the
-   * collapsed state and list height.
-   * @param {string} groupId The identifier for the group to which the
-   *   collapsible container is associated.
-   * @throws {RangeError} If the group identifier is invalid.
-   */
-  _recalcCollapsibleHeight(groupId) {
-    const elements = this._getGroupElements(groupId);
-    const collapsible = elements.collapsible;
-    if (collapsible) {
-      const list = elements.filterList;
-      const collapsed = collapsible.classList.contains('collapsed');
-      collapsible.style.height = collapsed ? '0' : `${list.offsetHeight}px`;
-    }
   }
 
   /**
