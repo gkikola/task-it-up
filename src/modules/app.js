@@ -354,18 +354,33 @@ class App {
 
     const addTask = new Modal(parent, background);
     content = addTask.content;
-    content.appendChild(createFormField('text', {
+    this._createAddTaskForm(content);
+    addTask.title = 'Add Task';
+    addTask.addEventListener('show', () => this._resetModal(addTask));
+    addTask.addEventListener('cancel', () => addTask.hide());
+
+    this._modals.addTask = addTask;
+  }
+
+  /**
+   * Create the form elements for adding a new task.
+   * @param {HTMLElement} parent The parent DOM node under which the form
+   *   should be inserted.
+   */
+  _createAddTaskForm(parent) {
+    parent.appendChild(createFormField('text', {
       id: 'task-name',
       name: 'task-name',
       label: 'Name',
     }));
-    content.appendChild(createFormField('text', {
+    parent.appendChild(createFormField('text', {
       id: 'task-due-date',
       name: 'task-due-date',
       label: 'Due Date',
       classList: ['date-input'],
     }));
-    content.appendChild(createFormField('select', {
+
+    parent.appendChild(createFormField('select', {
       id: 'task-recurring-date',
       name: 'task-recurring-date',
       label: 'Recurrence',
@@ -378,7 +393,9 @@ class App {
         { value: 'custom', label: 'Custom Recurrence...' },
       ],
     }));
-    content.appendChild(createFormField('select', {
+    this._createRecurringDateForm(parent);
+
+    parent.appendChild(createFormField('select', {
       id: 'task-priority',
       name: 'task-priority',
       label: 'Priority',
@@ -390,7 +407,7 @@ class App {
         { value: 'very-low', label: 'Very Low' },
       ],
     }));
-    content.appendChild(createFormField('select', {
+    parent.appendChild(createFormField('select', {
       id: 'task-project',
       name: 'task-project',
       label: 'Project',
@@ -399,17 +416,20 @@ class App {
         { value: 'new', label: 'New Project...' },
       ],
     }));
-    content.appendChild(createFormField('textarea', {
+    parent.appendChild(createFormField('textarea', {
       id: 'task-description',
       name: 'task-description',
       label: 'Description',
       size: { rows: 4, cols: 20 },
     }));
-    addTask.title = 'Add Task';
-    addTask.addEventListener('show', () => this._resetModal(addTask));
-    addTask.addEventListener('cancel', () => addTask.hide());
+  }
 
-    this._modals.addTask = addTask;
+  /**
+   * Create the form elements for setting a recurring due date.
+   * @param {HTMLElement} parent The parent DOM node under which the form
+   *   should be inserted.
+   */
+  _createRecurringDateForm(parent) {
   }
 
   /**
