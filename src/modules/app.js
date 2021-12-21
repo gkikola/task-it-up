@@ -5,6 +5,7 @@
 
 import '../styles/reset.css';
 import '../styles/main.css';
+import Collapsible from './collapsible';
 import FilterMenu from './filterMenu';
 import Modal from './modal';
 import TaskList from './taskList';
@@ -80,13 +81,25 @@ class App {
     this._filterMenu = null;
 
     /**
+     * Stores information about a modal dialog.
+     * @typedef {Object} module:app~App~modalInfo
+     * @property {module:modal~Modal} modal The
+     *   [Modal]{@link module:modal~Modal} instance for the dialog.
+     * @property {Object} collapsibles Holds references to the collapsible
+     *   panels contained in the modal's contents.
+     */
+
+    /**
      * Stores references to the modal dialogs.
      * @type {Object}
-     * @property {module:modal~Modal} addTask The modal shown for creating a
-     *   new task.
+     * @property {module:app~App~modalInfo} addTask Holds information about the
+     *   modal that is shown for creating a new task.
      */
     this._modals = {
-      addTask: null,
+      addTask: {
+        modal: null,
+        collapsibles: { recurrence: null, addProject: null },
+      },
     };
 
     this._createPageElements(parent);
@@ -130,7 +143,7 @@ class App {
     const addTaskIcon
       = mainPanelHeader.querySelector('.icon[data-icon-type="add"]');
     addTaskIcon.addEventListener('click', () => {
-      this._modals.addTask.show();
+      this._modals.addTask.modal.show();
     });
 
     this._initDatePicker();
@@ -350,16 +363,25 @@ class App {
    *   that should be hidden when modals are open.
    */
   _createModals(parent, background) {
-    let content;
+    this._createAddTaskModal(parent, background);
+  }
 
-    const addTask = new Modal(parent, background);
-    content = addTask.content;
+  /**
+   * Create the modal dialog for adding a new task.
+   * @param {HTMLElement} parent The parent element under which the modal
+   *   should be inserted.
+   * @param {HTMLElement} background The container node for background elements
+   *   that should be hidden when the modal is open.
+   */
+  _createAddTaskModal(parent, background) {
+    const modal = new Modal(parent, background);
+    const content = modal.content;
     this._createAddTaskForm(content);
-    addTask.title = 'Add Task';
-    addTask.addEventListener('show', () => this._resetModal(addTask));
-    addTask.addEventListener('cancel', () => addTask.hide());
+    modal.title = 'Add Task';
+    modal.addEventListener('show', () => this._resetModal(modal));
+    modal.addEventListener('cancel', () => modal.hide());
 
-    this._modals.addTask = addTask;
+    this._modals.addTask.modal = modal;
   }
 
   /**
@@ -379,7 +401,6 @@ class App {
       label: 'Due Date',
       classList: ['date-input'],
     }));
-
     parent.appendChild(createFormField('select', {
       id: 'task-recurring-date',
       name: 'task-recurring-date',
@@ -393,8 +414,6 @@ class App {
         { value: 'custom', label: 'Custom Recurrence...' },
       ],
     }));
-    this._createRecurringDateForm(parent);
-
     parent.appendChild(createFormField('select', {
       id: 'task-priority',
       name: 'task-priority',
