@@ -11,17 +11,20 @@ class Collapsible {
    * Create a collapsible panel and add it to the DOM.
    * @param {HTMLElement} parent The parent node under which the collapsible is
    *   to be inserted.
+   * @param {HTMLElement} [referenceNode=null] The child node before which the
+   *   collapsible should be inserted. If not given, the collapsible will be
+   *   appended at the end of the parent's child nodes.
    * @param {boolean} [collapsed=false] Specifies whether the panel should be
    *   initially collapsed.
    */
-  constructor(parent, collapsed = false) {
+  constructor(parent, referenceNode = null, collapsed = false) {
     const container = document.createElement('div');
     container.classList.add('collapsible');
 
     const innerContainer = document.createElement('div');
     innerContainer.classList.add('collapsible-content');
     container.appendChild(innerContainer);
-    parent.appendChild(container);
+    parent.insertBefore(container, referenceNode);
 
     /**
      * The collapsible element.
