@@ -493,16 +493,20 @@ class App {
    *   reset.
    */
   _resetModal(modal) {
-    modal.content.querySelectorAll('.form-input').forEach(elem => {
+    const checkAttr = '[type="checkbox"]';
+    const radioAttr = '[type="radio"]';
+    const textQuery = `input:not(${checkAttr}):not(${radioAttr})`;
+    const checkRadioQuery = `input${checkAttr}, input${radioAttr}`;
+    modal.content.querySelectorAll(textQuery).forEach(elem => {
       elem.value = elem.defaultValue;
     });
-    modal.content.querySelectorAll('.form-input-item').forEach(elem => {
+    modal.content.querySelectorAll(checkRadioQuery).forEach(elem => {
       elem.checked = elem.defaultChecked;
     });
-    modal.content.querySelectorAll('.form-select option').forEach(elem => {
+    modal.content.querySelectorAll('option').forEach(elem => {
       elem.selected = elem.defaultSelected;
     });
-    modal.content.querySelectorAll('.form-textarea').forEach(elem => {
+    modal.content.querySelectorAll('textarea').forEach(elem => {
       elem.value = elem.textContent;
     });
     modal.content.scrollTop = 0;
