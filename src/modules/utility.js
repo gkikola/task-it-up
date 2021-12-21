@@ -30,6 +30,8 @@
  *   should have.
  * @param {number} [options.size.cols] The number of columns that a textarea
  *   should have.
+ * @param {string} [options.containerId] The identifier for the container
+ *   holding the input element and label.
  * @param {Object[]} [options.items] This property is ignored unless the input
  *   type is 'select', 'checkbox', or 'radio'. In these cases, this property
  *   can be set to an object holding information for the individual buttons in
@@ -50,6 +52,8 @@
 function createFormField(inputType, options = {}) {
   inputType = inputType.toLowerCase();
   const container = document.createElement('div');
+  if (options.containerId)
+    container.id = options.containerId;
   container.classList.add('form-input-container');
 
   if (options.label) {
