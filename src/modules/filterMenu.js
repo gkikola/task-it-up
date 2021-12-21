@@ -141,7 +141,7 @@ class FilterMenu {
     let collapsible;
     let listContainer;
     if (label) {
-      collapsible = new Collapsible(groupContainer, null, true);
+      collapsible = new Collapsible(groupContainer, null, { collapsed: true });
       listContainer = collapsible.content;
     } else {
       collapsible = null;

@@ -14,12 +14,20 @@ class Collapsible {
    * @param {HTMLElement} [referenceNode=null] The child node before which the
    *   collapsible should be inserted. If not given, the collapsible will be
    *   appended at the end of the parent's child nodes.
-   * @param {boolean} [collapsed=false] Specifies whether the panel should be
+   * @param {Object} [options={}] Specifies additional options for the modal.
+   * @param {string} [options.id] The identifier for the collapsible container.
+   * @param {string[]} [options.classList] An array of class names to be
+   *   applied to the collapsible container.
+   * @param {boolean} [options.collapsed] Specifies whether the panel should be
    *   initially collapsed.
    */
-  constructor(parent, referenceNode = null, collapsed = false) {
+  constructor(parent, referenceNode = null, options = {}) {
     const container = document.createElement('div');
+    if (options.id)
+      container.id = options.id;
     container.classList.add('collapsible');
+    if (options.classList)
+      container.classList.add(...options.classList);
 
     const innerContainer = document.createElement('div');
     innerContainer.classList.add('collapsible-content');
@@ -44,7 +52,10 @@ class Collapsible {
      */
     this._collapsed = false;
 
-    this.collapsed = collapsed;
+    if ('collapsed' in options && options.collapsed)
+      this.collapse();
+    else
+      this.expand();
   }
 
   /**

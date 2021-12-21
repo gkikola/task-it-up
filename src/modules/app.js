@@ -386,7 +386,7 @@ class App {
     let selectBoxParent = selectBox.parentNode;
     let insertionPoint = selectBox.nextSibling;
     const recurrenceCollapsible = new Collapsible(selectBoxParent,
-      insertionPoint, true);
+      insertionPoint, { collapsed: true });
     this._createRecurringDateForm(recurrenceCollapsible.content);
     this._modals.addTask.collapsibles.recurrence = recurrenceCollapsible;
     selectBox.addEventListener('change', e => {
@@ -400,7 +400,7 @@ class App {
     selectBoxParent = selectBox.parentNode;
     insertionPoint = selectBox.nextSibling;
     const projectCollapsible = new Collapsible(selectBoxParent,
-      insertionPoint, true);
+      insertionPoint, { collapsed: true });
     this._createShortAddProjectForm(projectCollapsible.content);
     this._modals.addTask.collapsibles.addProject = projectCollapsible;
     selectBox.addEventListener('change', e => {
