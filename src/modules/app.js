@@ -380,8 +380,35 @@ class App {
     modal.title = 'Add Task';
     modal.addEventListener('show', () => this._resetModal(modal));
     modal.addEventListener('cancel', () => modal.hide());
-
     this._modals.addTask.modal = modal;
+
+    let selectBox = content.querySelector('#task-recurring-date');
+    let selectBoxParent = selectBox.parentNode;
+    let insertionPoint = selectBox.nextSibling;
+    const recurrenceCollapsible = new Collapsible(selectBoxParent,
+      insertionPoint, true);
+    this._createRecurringDateForm(recurrenceCollapsible.content);
+    this._modals.addTask.collapsibles.recurrence = recurrenceCollapsible;
+    selectBox.addEventListener('change', e => {
+      if (e.target.value === 'custom')
+        recurrenceCollapsible.expand();
+      else
+        recurrenceCollapsible.collapse();
+    });
+
+    selectBox = content.querySelector('#task-project');
+    selectBoxParent = selectBox.parentNode;
+    insertionPoint = selectBox.nextSibling;
+    const projectCollapsible = new Collapsible(selectBoxParent,
+      insertionPoint, true);
+    this._createShortAddProjectForm(projectCollapsible.content);
+    this._modals.addTask.collapsibles.addProject = projectCollapsible;
+    selectBox.addEventListener('change', e => {
+      if (e.target.value === 'new')
+        projectCollapsible.expand();
+      else
+        projectCollapsible.collapse();
+    });
   }
 
   /**
@@ -449,6 +476,15 @@ class App {
    *   should be inserted.
    */
   _createRecurringDateForm(parent) {
+  }
+
+  /**
+   * Create the form elements for adding a new project. This method only
+   * creates a short form, just asking for the project name.
+   * @param {HTMLElement} parent The parent DOM node under which the form
+   *   should be inserted.
+   */
+  _createShortAddProjectForm(parent) {
   }
 
   /**
