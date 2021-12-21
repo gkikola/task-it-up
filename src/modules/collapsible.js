@@ -106,11 +106,10 @@ class Collapsible {
    * whenever the panel's content is altered.
    */
   update() {
-    if (document.readyState !== 'loading') {
-      let height = '0';
-      if (!this._collapsed)
-        height = `${this._content.offsetHeight}px`;
-      this._container.style.height = height;
+    if (this._collapsed) {
+      this._container.style.height = '0';
+    } else if (document.readyState !== 'loading') {
+      this._container.style.height = `${this._content.offsetHeight}px`;
     } else {
       document.addEventListener('DOMContentLoaded',
         () => this.update(), { once: true });
