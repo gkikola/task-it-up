@@ -206,8 +206,20 @@ button {
   margin-bottom: 8px;
 }
 
+.form-input-label-inline {
+  font-family: var(--label-font);
+  font-size: 14px;
+}
+
 .form-input, .form-select, .form-textarea {
   width: 100%;
+}
+
+.form-input,
+.form-input-inline,
+.form-select,
+.form-select-inline,
+.form-textarea {
   padding: 8px;
   border: 1px solid black;
   border-radius: 8px;
@@ -229,6 +241,10 @@ button {
   padding-left: 8px;
   font-family: var(--label-font);
   font-size: 14px;
+}
+
+.form-input-inline.form-input-count {
+  width: 80px;
 }
 
 .flatpickr-wrapper {

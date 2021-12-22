@@ -476,6 +476,49 @@ class App {
    *   should be inserted.
    */
   _createRecurringDateForm(parent) {
+    let container = document.createElement('div');
+    let element = document.createElement('span');
+    element.textContent = 'Repeat every ';
+    element.classList.add('form-input-label-inline');
+    container.appendChild(element);
+
+    element = document.createElement('input');
+    element.id = 'recurring-date-interval-length';
+    element.name = element.id;
+    element.classList.add('form-input-inline', 'form-input-count');
+    element.type = 'number';
+    element.min = 1;
+    element.defaultValue = 1;
+    element.value = element.defaultValue;
+    container.appendChild(element);
+
+    element = document.createElement('span');
+    element.textContent = ' ';
+    element.classList.add('form-input-label-inline');
+    container.appendChild(element);
+
+    let options = [
+      { value: 'day', label: 'Day' },
+      { value: 'week', label: 'Week', selected: true },
+      { value: 'month', label: 'Month' },
+      { value: 'year', label: 'Year' },
+    ];
+    element = document.createElement('select');
+    element.id = 'recurring-date-interval-unit';
+    element.name = element.id;
+    element.classList.add('form-select-inline');
+    options.forEach(option => {
+      const optElem = document.createElement('option');
+      optElem.value = option.value;
+      optElem.textContent = option.label;
+      if (option.selected) {
+        optElem.defaultSelected = true;
+        optElem.selected = true;
+      }
+      element.appendChild(optElem);
+    });
+    container.appendChild(element);
+    parent.appendChild(container);
   }
 
   /**
