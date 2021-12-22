@@ -1,4 +1,6 @@
 import App from './modules/app.js';
 
-let app = new App(document.body);
+const fragment = document.createDocumentFragment();
+const app = new App(fragment);
+document.body.appendChild(fragment);
 app.run();
