@@ -547,17 +547,24 @@ class App {
     const radioAttr = '[type="radio"]';
     const textQuery = `input:not(${checkAttr}):not(${radioAttr})`;
     const checkRadioQuery = `input${checkAttr}, input${radioAttr}`;
+    const changeEvent = new Event('change');
     modal.content.querySelectorAll(textQuery).forEach(elem => {
       elem.value = elem.defaultValue;
+      elem.dispatchEvent(changeEvent);
     });
     modal.content.querySelectorAll(checkRadioQuery).forEach(elem => {
       elem.checked = elem.defaultChecked;
+      elem.dispatchEvent(changeEvent);
     });
     modal.content.querySelectorAll('option').forEach(elem => {
       elem.selected = elem.defaultSelected;
     });
+    modal.content.querySelectorAll('select').forEach(elem => {
+      elem.dispatchEvent(changeEvent);
+    });
     modal.content.querySelectorAll('textarea').forEach(elem => {
       elem.value = elem.textContent;
+      elem.dispatchEvent(changeEvent);
     });
     modal.content.scrollTop = 0;
     modal.content.scrollLeft = 0;
