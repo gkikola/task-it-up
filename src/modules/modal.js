@@ -212,9 +212,16 @@ class Modal {
    * @param {string} type The type of event to listen for.
    * @param {Function} listener The event listener to be called when the event
    *   is fired.
+   * @param {Object} [options={}] An object specifying options for the event
+   *   listener.
+   * @property {boolean} [options.once=false] If true, the listener will not be
+   *   invoked more than once. When invoked, it is automatically removed.
    */
-  addEventListener(type, listener) {
-    this._eventEmitter.on(type, listener);
+  addEventListener(type, listener, options = {}) {
+    if (options.once)
+      this._eventEmitter.once(type, listener);
+    else
+      this._eventEmitter.on(type, listener);
   }
 }
 
