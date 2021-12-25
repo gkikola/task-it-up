@@ -81,25 +81,13 @@ class App {
     this._filterMenu = null;
 
     /**
-     * Stores information about a modal dialog.
-     * @typedef {Object} module:app~App~modalInfo
-     * @property {module:modal~Modal} modal The
-     *   [Modal]{@link module:modal~Modal} instance for the dialog.
-     * @property {Object} collapsibles Holds references to the collapsible
-     *   panels contained in the modal's contents.
-     */
-
-    /**
      * Stores references to the modal dialogs.
      * @type {Object}
-     * @property {module:app~App~modalInfo} addTask Holds information about the
-     *   modal that is shown for creating a new task.
+     * @property {module:modal~Modal} addTask The modal shown for adding a new
+     *   task.
      */
     this._modals = {
-      addTask: {
-        modal: null,
-        collapsibles: { recurrence: null, addProject: null },
-      },
+      addTask: null,
     };
 
     this._createPageElements(parent);
@@ -143,7 +131,7 @@ class App {
     const addTaskIcon
       = mainPanelHeader.querySelector('.icon[data-icon-type="add"]');
     addTaskIcon.addEventListener('click', () => {
-      this._modals.addTask.modal.show();
+      this._modals.addTask.show();
     });
 
     this._initDatePicker();
@@ -380,7 +368,7 @@ class App {
     modal.title = 'Add Task';
     modal.addEventListener('show', () => this._resetModal(modal));
     modal.addEventListener('cancel', () => modal.hide());
-    this._modals.addTask.modal = modal;
+    this._modals.addTask = modal;
 
     let selectBox = content.querySelector('#task-recurring-date');
     let selectBoxParent = selectBox.parentNode;
@@ -388,7 +376,6 @@ class App {
     const recurrenceCollapsible = new Collapsible(selectBoxParent,
       insertionPoint, { collapsed: true });
     this._createRecurringDateForm(recurrenceCollapsible.content);
-    this._modals.addTask.collapsibles.recurrence = recurrenceCollapsible;
     selectBox.addEventListener('change', e => {
       if (e.target.value === 'custom')
         recurrenceCollapsible.expand();
@@ -402,7 +389,6 @@ class App {
     const projectCollapsible = new Collapsible(selectBoxParent,
       insertionPoint, { collapsed: true });
     this._createShortAddProjectForm(projectCollapsible.content);
-    this._modals.addTask.collapsibles.addProject = projectCollapsible;
     selectBox.addEventListener('change', e => {
       if (e.target.value === 'new')
         projectCollapsible.expand();
