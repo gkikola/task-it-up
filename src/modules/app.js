@@ -369,32 +369,6 @@ class App {
     modal.addEventListener('show', () => this._resetModal(modal));
     modal.addEventListener('cancel', () => modal.hide());
     this._modals.addTask = modal;
-
-    let selectBox = content.querySelector('#task-recurring-date');
-    let selectBoxParent = selectBox.parentNode;
-    let insertionPoint = selectBox.nextSibling;
-    const recurrenceCollapsible = new Collapsible(selectBoxParent,
-      insertionPoint, { collapsed: true });
-    this._createRecurringDateForm(recurrenceCollapsible.content);
-    selectBox.addEventListener('change', e => {
-      if (e.target.value === 'custom')
-        recurrenceCollapsible.expand();
-      else
-        recurrenceCollapsible.collapse();
-    });
-
-    selectBox = content.querySelector('#task-project');
-    selectBoxParent = selectBox.parentNode;
-    insertionPoint = selectBox.nextSibling;
-    const projectCollapsible = new Collapsible(selectBoxParent,
-      insertionPoint, { collapsed: true });
-    this._createShortAddProjectForm(projectCollapsible.content);
-    selectBox.addEventListener('change', e => {
-      if (e.target.value === 'new')
-        projectCollapsible.expand();
-      else
-        projectCollapsible.collapse();
-    });
   }
 
   /**
@@ -421,6 +395,7 @@ class App {
       label: labelType('Due Date'),
       container: containerType,
     }));
+
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-recurring-date',
@@ -437,6 +412,18 @@ class App {
         { value: 'custom', label: 'Custom Recurrence...' },
       ],
     }));
+
+    const recurrenceSelect = parent.querySelector('#task-recurring-date');
+    const recurrenceCollapsible = new Collapsible(recurrenceSelect.parentNode,
+      null, { collapsed: true });
+    this._createRecurrenceForm(recurrenceCollapsible.content);
+    recurrenceSelect.addEventListener('change', e => {
+      if (e.target.value === 'custom')
+        recurrenceCollapsible.expand();
+      else
+        recurrenceCollapsible.collapse();
+    });
+
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-priority',
@@ -452,6 +439,7 @@ class App {
         { value: 'very-low', label: 'Very Low' },
       ],
     }));
+
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-project',
@@ -464,6 +452,18 @@ class App {
         { value: 'new', label: 'New Project...' },
       ],
     }));
+
+    const projectSelect = parent.querySelector('#task-project');
+    const projectCollapsible = new Collapsible(projectSelect.parentNode,
+      null, { collapsed: true });
+    this._createShortAddProjectForm(projectCollapsible.content);
+    projectSelect.addEventListener('change', e => {
+      if (e.target.value === 'new')
+        projectCollapsible.expand();
+      else
+        projectCollapsible.collapse();
+    });
+
     parent.appendChild(createFormControl({
       type: 'textarea',
       id: 'task-description',
@@ -476,11 +476,11 @@ class App {
   }
 
   /**
-   * Create the form elements for setting a recurring due date.
+   * Create the form elements for setting a recurring date.
    * @param {HTMLElement} parent The parent DOM node under which the form
    *   should be inserted.
    */
-  _createRecurringDateForm(parent) {
+  _createRecurrenceForm(parent) {
     let container = document.createElement('div');
     container.appendChild(createFormControl({
       type: 'number',
