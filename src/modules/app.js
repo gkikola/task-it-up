@@ -9,7 +9,7 @@ import Collapsible from './collapsible';
 import FilterMenu from './filterMenu';
 import Modal from './modal';
 import TaskList from './taskList';
-import { createFormField, createIconButton, getDateFormat } from './utility';
+import { createFormControl, createIconButton } from './utility';
 
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
@@ -417,22 +417,32 @@ class App {
    *   should be inserted.
    */
   _createAddTaskForm(parent) {
-    parent.appendChild(createFormField('text', {
+    const containerType = { classList: ['form-input-container'] };
+    const labelType = value => ({ value, classList: ['form-input-label'] });
+    parent.appendChild(createFormControl({
+      type: 'text',
       id: 'task-name',
       name: 'task-name',
-      label: 'Name',
+      classList: ['form-input'],
+      label: labelType('Name'),
+      container: containerType,
     }));
-    parent.appendChild(createFormField('text', {
+    parent.appendChild(createFormControl({
+      type: 'text',
       id: 'task-due-date',
       name: 'task-due-date',
-      label: 'Due Date',
-      classList: ['date-input'],
+      classList: ['form-input', 'date-input'],
+      label: labelType('Due Date'),
+      container: containerType,
     }));
-    parent.appendChild(createFormField('select', {
+    parent.appendChild(createFormControl({
+      type: 'select',
       id: 'task-recurring-date',
       name: 'task-recurring-date',
-      label: 'Recurrence',
-      items: [
+      classList: ['form-select'],
+      label: labelType('Recurrence'),
+      container: containerType,
+      menuItems: [
         { value: 'none', label: 'Never Repeat', selected: true },
         { value: 'daily', label: 'Repeat Daily' },
         { value: 'weekly', label: 'Repeat Weekly' },
@@ -441,11 +451,14 @@ class App {
         { value: 'custom', label: 'Custom Recurrence...' },
       ],
     }));
-    parent.appendChild(createFormField('select', {
+    parent.appendChild(createFormControl({
+      type: 'select',
       id: 'task-priority',
       name: 'task-priority',
-      label: 'Priority',
-      items: [
+      classList: ['form-select'],
+      label: labelType('Priority'),
+      container: containerType,
+      menuItems: [
         { value: 'very-high', label: 'Very High' },
         { value: 'high', label: 'High' },
         { value: 'medium', label: 'Medium', selected: true },
@@ -453,19 +466,25 @@ class App {
         { value: 'very-low', label: 'Very Low' },
       ],
     }));
-    parent.appendChild(createFormField('select', {
+    parent.appendChild(createFormControl({
+      type: 'select',
       id: 'task-project',
       name: 'task-project',
-      label: 'Project',
-      items: [
+      classList: ['form-select'],
+      label: labelType('Project'),
+      container: containerType,
+      menuItems: [
         { value: 'none', label: 'None', selected: true },
         { value: 'new', label: 'New Project...' },
       ],
     }));
-    parent.appendChild(createFormField('textarea', {
+    parent.appendChild(createFormControl({
+      type: 'textarea',
       id: 'task-description',
       name: 'task-description',
-      label: 'Description',
+      classList: ['form-textarea'],
+      label: labelType('Description'),
+      container: containerType,
       size: { rows: 4, cols: 20 },
     }));
   }
@@ -477,47 +496,35 @@ class App {
    */
   _createRecurringDateForm(parent) {
     let container = document.createElement('div');
-    let element = document.createElement('span');
-    element.textContent = 'Repeat every ';
-    element.classList.add('form-input-label-inline');
-    container.appendChild(element);
-
-    element = document.createElement('input');
-    element.id = 'recurring-date-interval-length';
-    element.name = element.id;
-    element.classList.add('form-input-inline', 'form-input-count');
-    element.type = 'number';
-    element.min = 1;
-    element.defaultValue = 1;
-    element.value = element.defaultValue;
-    container.appendChild(element);
-
-    element = document.createElement('span');
-    element.textContent = ' ';
-    element.classList.add('form-input-label-inline');
-    container.appendChild(element);
-
-    let options = [
-      { value: 'day', label: 'Day' },
-      { value: 'week', label: 'Week', selected: true },
-      { value: 'month', label: 'Month' },
-      { value: 'year', label: 'Year' },
-    ];
-    element = document.createElement('select');
-    element.id = 'recurring-date-interval-unit';
-    element.name = element.id;
-    element.classList.add('form-select-inline');
-    options.forEach(option => {
-      const optElem = document.createElement('option');
-      optElem.value = option.value;
-      optElem.textContent = option.label;
-      if (option.selected) {
-        optElem.defaultSelected = true;
-        optElem.selected = true;
-      }
-      element.appendChild(optElem);
-    });
-    container.appendChild(element);
+    container.appendChild(createFormControl({
+      type: 'number',
+      id: 'recurring-date-interval-length',
+      name: 'recurring-date-interval-length',
+      value: '1',
+      classList: ['form-input-inline', 'form-input-count'],
+      container: { inline: true },
+      label: {
+        value: 'Repeat every ',
+        classList: ['form-input-label-inline'],
+      },
+    }));
+    container.appendChild(createFormControl({
+      type: 'select',
+      id: 'recurring-date-interval-unit',
+      name: 'recurring-date-interval-unit',
+      classList: ['form-select-inline'],
+      container: { inline: true },
+      label: {
+        value: ' ',
+        classList: ['form-input-label-inline'],
+      },
+      menuItems: [
+        { value: 'day', label: 'Day' },
+        { value: 'week', label: 'Week', selected: true },
+        { value: 'month', label: 'Month' },
+        { value: 'year', label: 'Year' },
+      ],
+    }));
     parent.appendChild(container);
   }
 

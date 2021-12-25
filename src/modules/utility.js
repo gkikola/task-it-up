@@ -4,116 +4,94 @@
  */
 
 /**
- * Create an input field in a form.
- * @param {string} inputType The type of input element to create. For most text
- *   or numeric forms of input, this value is used as the 'type' attribute in
- *   an 'input' form element. If this is set to 'select', then a 'select' box
- *   is created. If this is set to 'textarea', then a 'textarea' is created.
- * @param {Object} [options={}] An object holding additional options to control
- *   the creation of the input element.
- * @param {string} [options.id] The identifier for the input element. If the
- *   input type is 'checkbox' or 'radio', this is ignored since there may be
- *   multiple buttons in the group.
- * @param {string} [options.name] The name of the input element. For an input
- *   type of 'checkbox', each checkbox should be named individually and this
- *   property is ignored.
- * @param {string} [options.value] The initial value of the input element. This
- *   is ignored for input types of 'checkbox', 'radio', or 'select'.
- * @param {string} [options.label] An optional label that will be displayed
- *   before the input element.
- * @param {string[]} [options.classList] An array of class names to apply to
- *   the element. For 'checkbox' or 'radio' inputs, the class names will apply
- *   to each input item in the group.
- * @param {Object} [options.size] An object containing size information for the
+ * Specifies options for creating input controls in a form.
+ * @typedef {Object} module:utility~formControlOptions
+ * @property {string} [type=text] The type of input. For most text or numeric
+ *   forms of input, this value is used as the 'type' attribute on an 'input'
+ *   element. Setting this to 'select' indicates that a 'select' element should
+ *   be created. Setting this to 'textarea' indicates that a 'textarea' element
+ *   should be created.
+ * @property {string} [id] The identifier for the input element.
+ * @property {string} [name] The name of the input element, used in form
+ *   submission and for grouping radio buttons.
+ * @property {string} [value] The initial value of the input element, or a
+ *   value identifying a checkbox or radio button option. This property is
+ *   ignored for the 'select' input type.
+ * @property {string[]} [classList=[]] An array of class names to apply to the
+ *   input element.
+ * @property {boolean} [checked=false] If true, indicates that the control
+ *   should be checked by default. This applies only to the 'checkbox' and
+ *   'radio' input types.
+ * @property {Object} [label] An object specifying information about the label
+ *   for the input element.
+ * @property {string} [label.value] The text content of the label that should
+ *   be displayed on the page.
+ * @property {string} [label.placement=auto] Determines whether the label
+ *   should be placed before or after the input control. Valid values are
+ *   'before', 'after', and 'auto' (the default). If set to 'auto', then the
+ *   label is placed after the element if the input type is 'radio' or
+ *   'checkbox', and before the element in all other cases.
+ * @property {string[]} [label.classList=[]] An array of class names to apply
+ *   to the label element.
+ * @property {Object} [size] An object containing size information for the
  *   input element. This is only used for the 'textarea' input type.
- * @param {number} [options.size.rows] The number of rows that a textarea
- *   should have.
- * @param {number} [options.size.cols] The number of columns that a textarea
- *   should have.
- * @param {string} [options.containerId] The identifier for the container
- *   holding the input element and label.
- * @param {Object[]} [options.items] This property is ignored unless the input
- *   type is 'select', 'checkbox', or 'radio'. In these cases, this property
- *   can be set to an object holding information for the individual buttons in
- *   a checkbox or radio group, or for the options in a select box.
- * @param {string} [options.items[].id] The identifier for the checkbox or
- *   radio item. This property is ignored for the 'select' input type.
- * @param {string} [options.items[].name] For checkboxes only, this specifies
- *   the form name for the checkbox item. This property is ignored for other
- *   input types.
- * @param {string} [options.items[].value] The form value that is used when the
- *   item is selected.
- * @param {string} options.items[].label The label that will be displayed for
+ * @property {number} [size.rows] The number of rows that a textarea should
+ *   have.
+ * @property {number} [size.cols] The number of columns that a textarea should
+ *   have.
+ * @property {Object} [container] An object containing information about the
+ *   container holding the input element and its label.
+ * @property {string} [container.id] The identifier for the container.
+ * @property {string[]} [container.classList=[]] An array of class names to
+ *   apply to the container.
+ * @property {boolean} [container.inline=false] If set to true, indicates that
+ *   the container should be an inline element rather than a block element.
+ * @property {Object[]} [menuItems] An array of objects containing information
+ *   about options for a select control. This property is ignored unless the
+ *   input type is 'select'.
+ * @property {string} [menuItems.value] The form value identifying the item.
+ * @property {string} menuItems.label The label that will be displayed for
  *   the item.
- * @param {boolean} [options.items[].selected] If true, indicates that the item
- *   should be selected or checked by default.
- * @returns {HTMLElement} The container holding the input and its label.
+ * @property {boolean} [menuItems.selected=false] If true, indicates that the
+ *   item should be selected by default.
  */
-function createFormField(inputType, options = {}) {
-  inputType = inputType.toLowerCase();
-  const container = document.createElement('div');
-  if (options.containerId)
-    container.id = options.containerId;
-  container.classList.add('form-input-container');
 
-  if (options.label) {
-    const labelElem = document.createElement('label');
-    labelElem.classList.add('form-input-label');
-    labelElem.textContent = options.label;
-    if (options.id && inputType !== 'checkbox' && inputType !== 'radio')
-      labelElem.htmlFor = options.id;
-    container.appendChild(labelElem);
+/**
+ * Create an input control in a form, optionally including a label.
+ * @param {module:utility~formControlOptions} [options={}] An object specifying
+ *   options for the input element.
+ * @returns {HTMLElement} The container holding the input element and its
+ *   label. If no label and no container id were specified, then the form
+ *   element is not placed in a container and is instead returned directly.
+ */
+function createFormControl(options = {}) {
+  const type = options.type?.toLowerCase() || 'text';
+  let container = null;
+  if (options.label || options.container) {
+    const containerTag = options.container?.inline ? 'span' : 'div';
+    container = document.createElement(containerTag);
+    if (options.container?.id)
+      container.id = options.container.id;
+    if (options.container?.classList)
+      container.classList.add(...options.container.classList);
   }
 
-  switch (inputType) {
-    case 'checkbox':
-    case 'radio': {
-      if (options.items) {
-        options.items.forEach(item => {
-          const itemContainer = document.createElement('div');
-          itemContainer.classList.add('form-input-item-container');
-          container.appendChild(itemContainer);
+  let label = null;
+  if (options.label) {
+    label = document.createElement('label');
+    label.textContent = options.label.value || '';
+    if (options.label.classList)
+      label.classList.add(...options.label.classList);
+    if (options.id)
+      label.htmlFor = options.id;
+  }
 
-          const input = document.createElement('input');
-          const labelElem = document.createElement('label');
-          input.type = inputType;
-          input.classList.add('form-input-item');
-          if (options.classList)
-            input.classList.add(...options.classList);
-          if (item.id) {
-            input.id = item.id;
-            labelElem.htmlFor = item.id;
-          }
-          if (item.name)
-            input.name = item.name;
-          if (options.name && inputType === 'radio')
-            input.name = options.name;
-          if (item.value)
-            input.value = item.value;
-          if (item.selected) {
-            input.defaultChecked = true;
-            input.checked = true;
-          }
-          itemContainer.appendChild(input);
-
-          labelElem.classList.add('form-input-item-label');
-          labelElem.textContent = item.label;
-          itemContainer.appendChild(labelElem);
-        });
-      }
-      break;
-    }
-    case 'select': {
-      const select = document.createElement('select');
-      select.classList.add('form-select');
-      if (options.classList)
-        select.classList.add(...options.classList);
-      if (options.id)
-        select.id = options.id;
-      if (options.name)
-        select.name = options.name;
-      if (options.items) {
-        options.items.forEach(item => {
+  let input = null;
+  switch (type) {
+    case 'select':
+      input = document.createElement('select');
+      if (options.menuItems) {
+        options.menuItems.forEach(item => {
           const opt = document.createElement('option');
           if (item.value)
             opt.value = item.value;
@@ -122,51 +100,60 @@ function createFormField(inputType, options = {}) {
             opt.selected = true;
           }
           opt.textContent = item.label;
-          select.appendChild(opt);
+          input.appendChild(opt);
         });
       }
-      container.appendChild(select);
       break;
-    }
-    case 'textarea': {
-      const input = document.createElement('textarea');
-      input.classList.add('form-textarea');
-      if (options.classList)
-        input.classList.add(...options.classList);
-      if (options.id)
-        input.id = options.id;
-      if (options.name)
-        input.name = options.name;
-      if (options.value)
-        input.textContent = value;
+    case 'textarea':
+      input = document.createElement('textarea');
+      input.textContent = options.value || '';
       if (options.size) {
         if (options.size.rows) input.rows = options.size.rows;
         if (options.size.cols) input.cols = options.size.cols;
       }
-      container.appendChild(input);
       break;
-    }
-    case 'text':
-    default: {
-      const input = document.createElement('input');
-      input.classList.add('form-input');
-      if (options.classList)
-        input.classList.add(...options.classList);
-      if (options.id)
-        input.id = options.id;
-      if (options.name)
-        input.name = options.name;
+    default:
+      input = document.createElement('input');
+      input.type = type;
       if (options.value) {
         input.defaultValue = options.value;
         input.value = options.value;
       }
-      input.type = inputType;
-      container.appendChild(input);
-      break;
-    }
   }
 
-  return container;
+  if (options.id)
+    input.id = options.id;
+  if (options.name)
+    input.name = options.name;
+  if (options.classList)
+    input.classList.add(...options.classList);
+
+  const checkable = type === 'checkbox' || type === 'radio';
+  if (checkable && options.checked) {
+    input.defaultChecked = true;
+    input.checked = true;
+  }
+
+  if (label) {
+    let placement = options.label.placement || 'auto';
+    if (placement === 'auto')
+      placement = checkable ? 'after' : 'before';
+
+    if (placement === 'after') {
+      container.appendChild(input);
+      container.appendChild(label);
+    } else {
+      container.appendChild(label);
+      container.appendChild(input);
+    }
+
+    return container;
+  } else if (container) {
+    container.appendChild(input);
+    return container;
+  }
+
+  return input;
 }
 
 /**
@@ -242,4 +229,4 @@ function getDateFormat(locale, options = { dateStyle: 'short' }) {
   }).join('');
 }
 
-export { createFormField, createIconButton, getDateFormat };
+export { createFormControl, createIconButton, getDateFormat };
