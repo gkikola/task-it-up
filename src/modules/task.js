@@ -9,14 +9,14 @@
 class Task {
   /**
    * Create a task.
-   * @param {string} title The title of the task.
+   * @param {string} name The name of the task.
    */
-  constructor(title) {
+  constructor(name) {
     /**
-     * The title of the task.
+     * The name of the task.
      * @type {string}
      */
-    this.title = title;
+    this.name = name;
 
     /**
      * The date when the task is due, if any.
@@ -62,7 +62,7 @@ class Task {
    * @returns {string} A string representation of the task.
    */
   toString() {
-    return this.title ? `Task: ${this.title}` : 'Task: (untitled)';
+    return this.name ? `Task: ${this.name}` : 'Task: (untitled)';
   }
 }
 
