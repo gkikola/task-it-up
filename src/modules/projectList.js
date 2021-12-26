@@ -30,7 +30,9 @@ class ProjectList {
   }
 
   /**
-   * Add a project to the list.
+   * Add a project to the list. In order to prevent unintentional external
+   * modification of the project, a deep copy is made, and the original object
+   * is not kept.
    * @param {module:project~Project} project The project to add.
    * @returns {string} The identifier of the newly-added project.
    */
@@ -41,7 +43,7 @@ class ProjectList {
       id = uuid();
     } while (this._projects.find(proj => proj.id === id));
 
-    const value = { id, project };
+    const value = { id, project: _.cloneDeep(project) };
 
     // Maintain sort order on insertion
     const index = _.sortedIndexBy(this._projects, value,
