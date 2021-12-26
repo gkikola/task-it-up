@@ -58,6 +58,45 @@ class Task {
   }
 
   /**
+   * The priority of the task represented as a string value. This corresponds
+   * to the numerical [priority]{@link module:task~Task~priority} property,
+   * with the following correspondence: 'very-low' = -2, 'low' = -1, 'medium' =
+   * 0, 'high' = 1, and 'very-high' = 2.
+   * @type {string}
+   */
+  get priorityString() {
+    switch (this.priority) {
+      case -2: return 'very-low';
+      case -1: return 'low';
+      case 0: return 'medium';
+      case 1: return 'high';
+      case 2: return 'very-high';
+      default: return 'unknown';
+    }
+  }
+
+  set priorityString(priority) {
+    switch (priority) {
+      case 'very-low':
+        this.priority = -2;
+        break;
+      case 'low':
+        this.priority = -1;
+        break;
+      default:
+      case 'medium':
+        this.priority = 0;
+        break;
+      case 'high':
+        this.priority = 1;
+        break;
+      case 'very-high':
+        this.priority = 2;
+        break;
+    }
+  }
+
+  /**
    * Get a string representation of the task.
    * @returns {string} A string representation of the task.
    */
