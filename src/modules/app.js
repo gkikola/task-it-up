@@ -8,6 +8,8 @@ import '../styles/main.css';
 import Collapsible from './collapsible';
 import FilterMenu from './filterMenu';
 import Modal from './modal';
+import Project from './project';
+import ProjectList from './projectList';
 import Task from './task';
 import TaskList from './taskList';
 import { createFormControl, createIconButton } from './utility';
@@ -38,6 +40,12 @@ class App {
      * @type {module:taskList~TaskList}
      */
     this._tasks = new TaskList();
+
+    /**
+     * Holds the project container.
+     * @type {module:projectList~ProjectList}
+     */
+    this._projects = new ProjectList();
 
     /**
      * Information about the currently selected filter.
