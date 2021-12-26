@@ -450,6 +450,11 @@ class App {
       ],
     }));
 
+    const projectItems = [{ value: 'none', label: 'None', selected: true }];
+    this._projects.forEach(entry => {
+      projectItems.push({ value: entry.id, label: entry.project.name });
+    });
+    projectItems.push({ value: 'new', label: 'New Project...' });
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-project',
@@ -457,10 +462,7 @@ class App {
       classList: ['form-select'],
       label: labelType('Project'),
       container: containerType,
-      menuItems: [
-        { value: 'none', label: 'None', selected: true },
-        { value: 'new', label: 'New Project...' },
-      ],
+      menuItems: projectItems,
     }));
 
     const projectSelect = parent.querySelector('#task-project');
