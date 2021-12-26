@@ -4,7 +4,6 @@
  */
 
 import { createIconButton } from './utility';
-import EventEmitter from 'events';
 
 const FOCUSABLE_ELEMS = [
   'a[href]',
@@ -20,56 +19,62 @@ const FOCUSABLE_SELECTOR = FOCUSABLE_ELEMS.join(', ');
  */
 class Modal {
   /**
-   * Event that is fired when the user selects the okay button to confirm their
-   * selections in the dialog.
-   * @event module:modal~Modal~confirm
-   * @type {Object}
-   * @property {string} type The event type: confirm.
-   * @property {module:modal~Modal} target The modal that fired the event.
+   * Holds configuration options that can be passed to the constructor.
+   * @typedef {Object} module:modal~Modal~options
+   * @property {HTMLElement} [parentNode=document.body] The parent DOM node
+   *   that will contain the modal.
+   * @property {HTMLElement} [backgroundContainer] The DOM node containing
+   *   background elements that should be hidden from screen readers and made
+   *   unfocusable while the modal is open.
+   * @property {HTMLElement} [content] An element containing the contents of
+   *   the modal dialog. This element will be inserted as a child of the
+   *   modal's container element, and the 'modal-content' class will be applied
+   *   to it. If this property is not set, then an empty container will be
+   *   created. The content container can be later accessed through the
+   *   [content]{@link module:modal~Modal~content} property.
+   * @property {string} [title] The title of the modal, displayed at the top of
+   *   the dialog.
+   * @property {Object} [confirm] An object holding options for handling
+   *   confirmation in the modal.
+   * @property {string} [confirm.label=Okay] The label used for the confirm
+   *   button, shown at the bottom of the modal.
+   * @property {Function} [confirm.callback] A callback function that is
+   *   invoked when the user selects the confirm button. The function is passed
+   *   an [action]{@link module:modal~Modal~action} object.
+   * @property {Object} [cancel] An object holding options for handling
+   *   cancelling the modal.
+   * @property {string} [cancel.label=Cancel] The label used for the cancel
+   *   button, shown at the bottom of the modal.
+   * @property {boolean} [cancel.hideButton=false] If set to true, the cancel
+   *   button will be hidden.
+   * @property {Function} [cancel.callback] A callback function that is invoked
+   *   when the user cancels the modal. This occurs when the user selects the
+   *   cancel button, or selects the close icon in the upper-right corner of
+   *   the dialog. The function is passed an
+   *   [action]{@link module:modal~Modal~action} object.
    */
 
   /**
-   * Event that is fired when the user attempts to cancel the modal dialog.
-   * This can occur when the user clicks the X icon in the corner, or selects
-   * the cancel button.
-   * @event module:modal~Modal~cancel
-   * @type {Object}
-   * @property {string} type The event type: cancel.
-   * @property {module:modal~Modal} target The modal that fired the event.
+   * Holds information about a modal action performed by the user.
+   * @typedef {Object} module:modal~Modal~action
+   * @property {string} type The type of action performed. This will be set to
+   *   'confirm' if the modal was confirmed and 'cancel' if the modal was
+   *   cancelled.
+   * @property {module:modal~Modal} modal A reference to the modal in which the
+   *   action was performed.
    */
 
   /**
-   * Event that is fired when the modal is shown.
-   * @event module:modal~Modal~show
-   * @type {Object}
-   * @property {string} type The event type: show.
-   * @property {module:modal~Modal} target The modal that fired the event.
+   * Create and display the modal.
+   * @param {module:modal~Modal~options} [options={}] An object containing
+   *   configuration options for the modal.
    */
-
-  /**
-   * Event that is fired when the modal is hidden.
-   * @event module:modal~Modal~hide
-   * @type {Object}
-   * @property {string} type The event type: hide.
-   * @property {module:modal~Modal} target The modal that fired the event.
-   */
-
-  /**
-   * Create the modal. It will be hidden by default.
-   * @param {HTMLElement} parent The parent DOM node that will contain the
-   *   modal.
-   * @param {HTMLElement} [background] The DOM node containing background
-   *   elements that should be hidden from screen readers and made unfocusable
-   *   while the modal is open.
-   * @fires module:modal~Modal~confirm
-   * @fires module:modal~Modal~cancel
-   */
-  constructor(parent, background) {
+  constructor(options = {}) {
     const overlay = document.createElement('div');
-    overlay.classList.add('modal-overlay', 'closed');
+    overlay.classList.add('modal-overlay');
 
     const modal = document.createElement('div');
-    modal.classList.add('modal', 'closed');
+    modal.classList.add('modal');
     overlay.appendChild(modal);
 
     const titleBar = document.createElement('div');
@@ -78,12 +83,13 @@ class Modal {
 
     const titleText = document.createElement('div');
     titleText.classList.add('modal-title');
-    titleText.textContent = '';
+    titleText.textContent = options.title || '';
     titleBar.appendChild(titleText);
     const closeIcon = createIconButton('close');
+    closeIcon.addEventListener('click', () => this.cancel());
     titleBar.appendChild(closeIcon);
 
-    const content = document.createElement('div');
+    const content = options.content || document.createElement('div');
     content.classList.add('modal-content');
     modal.appendChild(content);
 
@@ -91,16 +97,21 @@ class Modal {
     buttonContainer.classList.add('modal-button-container');
     modal.appendChild(buttonContainer);
 
-    const cancelButton = document.createElement('button');
-    cancelButton.classList.add('modal-button');
-    cancelButton.textContent = 'Cancel';
-    buttonContainer.appendChild(cancelButton);
+    if (!options.cancel?.hideButton) {
+      const cancelButton = document.createElement('button');
+      cancelButton.classList.add('modal-button');
+      cancelButton.textContent = options.cancel?.label || 'Cancel';
+      cancelButton.addEventListener('click', () => this.cancel());
+      buttonContainer.appendChild(cancelButton);
+    }
 
     const okayButton = document.createElement('button');
     okayButton.classList.add('modal-button', 'modal-okay');
-    okayButton.textContent = 'Okay';
+    okayButton.textContent = options.confirm?.label || 'Okay';
+    okayButton.addEventListener('click', () => this.confirm());
     buttonContainer.appendChild(okayButton);
 
+    const parent = options.parentNode || document.body;
     parent.appendChild(overlay);
 
     /**
@@ -122,33 +133,25 @@ class Modal {
     this._content = content;
 
     /**
-     * The DOM element displaying the title for the modal.
-     * @type {HTMLElement}
-     */
-    this._titleElem = titleText;
-
-    /**
      * A reference to the container for background elements that should be
      * disabled while the modal is open.
      * @type {?HTMLElement}
      */
-    this._background = background;
+    this._background = options.backgroundContainer || null;
 
     /**
-     * The event emitter, for dispatching events.
-     * @type {EventEmitter}
+     * The callback function to invoke when the modal is confirmed.
+     * @type {?Function}
      */
-    this._eventEmitter = new EventEmitter();
+    this._confirmCallback = options.confirm?.callback || null;
 
-    const fireEvent = type => {
-      return () => this._eventEmitter.emit(type, {
-        type,
-        target: this,
-      });
-    }
-    okayButton.addEventListener('click', fireEvent('confirm'));
-    cancelButton.addEventListener('click', fireEvent('cancel'));
-    closeIcon.addEventListener('click', fireEvent('cancel'));
+    /**
+     * The callback function to invoke when the modal is cancelled.
+     * @type {?Function}
+     */
+    this._cancelCallback = options.cancel?.callback || null;
+
+    this._hideBackground();
   }
 
   /**
@@ -160,68 +163,59 @@ class Modal {
   }
 
   /**
-   * The title of the modal.
-   * @type {string}
+   * Confirm the modal. This closes the modal and invokes the associated
+   * callback, if any.
    */
-  get title() {
-    return this._titleElem.textContent;
-  }
+  confirm() {
+    if (this._confirmCallback)
+      this._confirmCallback({ type: 'confirm', modal: this });
 
-  set title(label) {
-    this._titleElem.textContent = label;
+    this._close();
   }
 
   /**
-   * Display the modal.
-   * @fires module:modal~Modal~show
+   * Cancel the modal. This closes the modal and invokes the associated
+   * callback, if any.
    */
-  show() {
-    this._overlay.classList.remove('closed');
-    this._modal.classList.remove('closed');
+  cancel() {
+    if (this._cancelCallback)
+      this._cancelCallback({ type: 'cancel', modal: this });
 
+    this._close();
+  }
+
+  /**
+   * Close the modal.
+   */
+  _close() {
+    if (this._overlay.parentNode)
+      this._overlay.parentNode.removeChild(this._overlay);
+
+    this._restoreBackground();
+  }
+
+  /**
+   * Hide background elements from screen readers and make them unfocusable.
+   */
+  _hideBackground() {
     if (this._background) {
       this._background.setAttribute('aria-hidden', 'true');
       this._background.querySelectorAll(FOCUSABLE_SELECTOR).forEach(elem => {
         elem.setAttribute('tabindex', '-1');
       });
     }
-
-    this._eventEmitter.emit('show', { type: 'show', target: this });
   }
 
   /**
-   * Hide the modal.
-   * @fires module:modal~Modal~hide
+   * Restore background element visibility and interactivity.
    */
-  hide() {
-    this._overlay.classList.add('closed');
-    this._modal.classList.add('closed');
-
+  _restoreBackground() {
     if (this._background) {
       this._background.removeAttribute('aria-hidden');
       this._background.querySelectorAll(FOCUSABLE_SELECTOR).forEach(elem => {
         elem.removeAttribute('tabindex');
       });
     }
-
-    this._eventEmitter.emit('hide', { type: 'hide', target: this });
-  }
-
-  /**
-   * Add an event listener to the modal dialog.
-   * @param {string} type The type of event to listen for.
-   * @param {Function} listener The event listener to be called when the event
-   *   is fired.
-   * @param {Object} [options={}] An object specifying options for the event
-   *   listener.
-   * @property {boolean} [options.once=false] If true, the listener will not be
-   *   invoked more than once. When invoked, it is automatically removed.
-   */
-  addEventListener(type, listener, options = {}) {
-    if (options.once)
-      this._eventEmitter.once(type, listener);
-    else
-      this._eventEmitter.on(type, listener);
   }
 }
 

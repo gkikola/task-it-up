@@ -8,6 +8,7 @@ import '../styles/main.css';
 import Collapsible from './collapsible';
 import FilterMenu from './filterMenu';
 import Modal from './modal';
+import Task from './task';
 import TaskList from './taskList';
 import { createFormControl, createIconButton } from './utility';
 
@@ -50,6 +51,12 @@ class App {
     };
 
     /**
+     * Holds a reference to the DOM node holding the page elements for the app.
+     * @type {HTMLElement}
+     */
+    this._appContainer = null;
+
+    /**
      * Holds a reference to the side panel element in the DOM.
      * @type {HTMLElement}
      */
@@ -79,16 +86,6 @@ class App {
      * @type {module:filterMenu~FilterMenu}
      */
     this._filterMenu = null;
-
-    /**
-     * Stores references to the modal dialogs.
-     * @type {Object}
-     * @property {module:modal~Modal} addTask The modal shown for adding a new
-     *   task.
-     */
-    this._modals = {
-      addTask: null,
-    };
 
     this._createPageElements(parent);
   }
@@ -131,10 +128,8 @@ class App {
     const addTaskIcon
       = mainPanelHeader.querySelector('.icon[data-icon-type="add"]');
     addTaskIcon.addEventListener('click', () => {
-      this._modals.addTask.show();
+      this._showAddTaskModal();
     });
-
-    this._initDatePicker();
   }
 
   /**
@@ -199,6 +194,7 @@ class App {
   _createPageElements(parent) {
     const container = document.createElement('div');
     container.id = 'app';
+    this._appContainer = container;
 
     this._createHeader(container);
 
@@ -212,8 +208,6 @@ class App {
     this._createFooter(container);
 
     parent.appendChild(container);
-
-    this._createModals(parent, container);
   }
 
   /**
@@ -344,31 +338,39 @@ class App {
   }
 
   /**
-   * Create the modal dialogs for the app.
-   * @param {HTMLElement} parent The parent element under which the modals are
-   *   to be inserted.
-   * @param {HTMLElement} background The container node for background elements
-   *   that should be hidden when modals are open.
+   * Display the modal dialog for adding a new task. After the user confirms
+   * the dialog, the task is added to the task list. If the user cancels, the
+   * modal is closed and nothing happens.
    */
-  _createModals(parent, background) {
-    this._createAddTaskModal(parent, background);
-  }
+  _showAddTaskModal() {
+    const container = document.createElement('div');
+    this._createAddTaskForm(container);
+    this._initDatePicker(container);
 
-  /**
-   * Create the modal dialog for adding a new task.
-   * @param {HTMLElement} parent The parent element under which the modal
-   *   should be inserted.
-   * @param {HTMLElement} background The container node for background elements
-   *   that should be hidden when the modal is open.
-   */
-  _createAddTaskModal(parent, background) {
-    const modal = new Modal(parent, background);
-    const content = modal.content;
-    this._createAddTaskForm(content);
-    modal.title = 'Add Task';
-    modal.addEventListener('show', () => this._resetModal(modal));
-    modal.addEventListener('cancel', () => modal.hide());
-    this._modals.addTask = modal;
+    const controls = {
+      name: container.querySelector('#task-name'),
+      dueDate: container.querySelector('#task-due-date'),
+      recurringDate: container.querySelector('#task-recurring-date'),
+      priority: container.querySelector('#task-priority'),
+      project: container.querySelector('#task-project'),
+      description: container.querySelector('#task-description'),
+    };
+
+    const modal = new Modal({
+      parentNode: this._appContainer.parentNode || document.body,
+      backgroundContainer: this._appContainer,
+      content: container,
+      title: 'Add Task',
+      confirm: {
+        label: 'Add',
+        callback: () => {
+          const task = new Task(controls.name.value);
+          task.priorityString = controls.priority.value;
+          task.description = controls.description.value || null;
+          this._tasks.addTask(task);
+        },
+      },
+    });
   }
 
   /**
@@ -557,14 +559,20 @@ class App {
   }
 
   /**
-   * Associate a date picker with each date input field.
+   * Associate a date picker with each date input field. An 'input' element is
+   * considered to be a date field if it has the 'date-input' class.
+   * @param {HTMLElement} [container=document.body] The container element in
+   *   which to look for date fields.
    */
-  _initDatePicker() {
-    flatpickr('.form-input.date-input', {
+  _initDatePicker(container = document.body) {
+    const pickerOptions = {
       allowInput: true,
       static: true,
       formatDate: undefined,
       parseDate: undefined,
+    };
+    container.querySelectorAll('input.date-input').forEach(input => {
+      flatpickr(input, pickerOptions);
     });
   }
 
