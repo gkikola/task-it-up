@@ -55,6 +55,8 @@ class ModalStack {
   /**
    * A modal dialog box instance.
    * @typedef {Object} module:modalStack~ModalStack~modal
+   * @property {HTMLElement} wrapper The outer wrapper node which contains the
+   *   modal window container.
    * @property {HTMLElement} container The container node holding the modal
    *   dialog.
    * @property {HTMLElement} content The DOM node holding the main contents of
@@ -87,6 +89,12 @@ class ModalStack {
     this._overlay = overlay;
 
     /**
+     * The parent element under which modals should be inserted.
+     * @type {HTMLElement}
+     */
+    this._parent = parent;
+
+    /**
      * Container holding background elements that should be hidden when a modal
      * is open.
      * @type {HTMLElement}
@@ -109,11 +117,15 @@ class ModalStack {
    *   containing options for controlling creation of the modal dialog.
    */
   showModal(content, options = {}) {
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('modal-wrapper');
+    wrapper.style.zIndex = this._getZIndex(this._modals.length + 1);
+
     const container = document.createElement('div');
     if (options.id)
       container.id = options.id;
     container.classList.add('modal');
-    container.style.zIndex = this._getZIndex(this._modals.length + 1);
+    wrapper.appendChild(container);
 
     const titleBar = document.createElement('div');
     titleBar.classList.add('modal-title-bar');
@@ -149,6 +161,7 @@ class ModalStack {
     buttonContainer.appendChild(okayButton);
 
     const modal = {
+      wrapper,
       container,
       content,
       id: options.id || null,
@@ -156,7 +169,7 @@ class ModalStack {
     };
 
     this._modals.push(modal);
-    this._overlay.appendChild(container);
+    this._parent.appendChild(wrapper);
     this._hideBackground();
   }
 
@@ -171,7 +184,7 @@ class ModalStack {
 
     if (index >= 0) {
       const modal = this._modals[index];
-      this._overlay.removeChild(modal.container);
+      this._parent.removeChild(modal.wrapper);
       this._modals.splice(index, 1);
       this._restoreBackground();
     }
@@ -225,7 +238,7 @@ class ModalStack {
     if (this._modals.length <= 1)
       toHide = this._background;
     else // Otherwise, hide the modal below the topmost one
-      toHide = this._modals[this._modals.length - 2];
+      toHide = this._modals[this._modals.length - 2].wrapper;
 
     if (toHide) {
       toHide.setAttribute('aria-hidden', 'true');
@@ -249,7 +262,7 @@ class ModalStack {
     if (this._modals.length === 0)
       toRestore = this._background;
     else
-      toRestore = this._modals[this._modals.length - 1];
+      toRestore = this._modals[this._modals.length - 1].wrapper;
 
     if (toRestore) {
       toRestore.removeAttribute('aria-hidden');
