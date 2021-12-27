@@ -7,7 +7,7 @@ import '../styles/reset.css';
 import '../styles/main.css';
 import Collapsible from './collapsible';
 import FilterMenu from './filterMenu';
-import Modal from './modal';
+import ModalStack from './modalStack';
 import Project from './project';
 import ProjectList from './projectList';
 import Task from './task';
@@ -69,6 +69,12 @@ class App {
      * @type {HTMLElement}
      */
     this._sidePanel = null;
+
+    /**
+     * The stack of modal dialogs.
+     * @type {module:modalStack~ModalStack}
+     */
+    this._modalStack = null;
 
     /**
      * Holds a reference to the resizing bar element for the side panel.
@@ -216,6 +222,8 @@ class App {
     this._createFooter(container);
 
     parent.appendChild(container);
+
+    this._modalStack = new ModalStack(parent, container);
   }
 
   /**
@@ -364,20 +372,18 @@ class App {
       description: container.querySelector('#task-description'),
     };
 
-    const modal = new Modal({
-      parentNode: this._appContainer.parentNode || document.body,
-      backgroundContainer: this._appContainer,
-      content: container,
+    this._modalStack.showModal(container, {
       title: 'Add Task',
-      confirm: {
-        label: 'Add',
-        callback: () => {
+      id: 'add-task',
+      callback: action => {
+        if (action.type === 'confirm') {
           const task = new Task(controls.name.value);
           task.priorityString = controls.priority.value;
           task.description = controls.description.value || null;
           this._tasks.addTask(task);
-        },
+        }
       },
+      confirmLabel: 'Add',
     });
   }
 
