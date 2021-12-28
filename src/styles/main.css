@@ -107,6 +107,25 @@ button {
   display: none;
 }
 
+.toggle-button {
+  padding: 6px;
+
+  font-family: var(--label-font);
+  font-size: 14px;
+
+  color: black;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 6px;
+
+  transition: color 100ms, background-color 100ms;
+}
+
+.toggle-button.active {
+  color: white;
+  background-color: #2323d3;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

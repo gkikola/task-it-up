@@ -161,13 +161,52 @@ function createFormControl(options = {}) {
  * @param {string} iconType The type of icon to display. This is stored in the
  *   data-icon-type attribute of the button and also indicates the icon to use
  *   from the Google Material Icons font.
- * @returns {HTMLElement} The newly created button element.
+ * @returns {HTMLElement} The newly-created button element.
  */
 function createIconButton(iconType) {
   const button = document.createElement('button');
   button.classList.add('icon', 'material-icons');
   button.dataset.iconType = iconType;
   button.textContent = iconType;
+  return button;
+}
+
+/**
+ * Create a button that can be toggled on and off.
+ * @param {string} label The button label.
+ * @param {Object} [options={}] An object holding configuration options
+ *   controlling the button creation.
+ * @param {string} [options.id] The identifier for the button.
+ * @param {string} [options.name] The form name for the button.
+ * @param {string} [options.value] The form value associated with the button.
+ * @param {string} [options.initialState=off] The initial state of the button,
+ *   either 'on' or 'off'.
+ * @param {string[]} [options.classList] An array of class names to apply to
+ *   the button. If not specified, the button will receive the 'toggle-button'
+ *   class.
+ * @param {string} [options.activeClass=active] The CSS class to  apply when
+ *   the button is active (on).
+ * @returns {HTMLElement} The newly-created button element.
+ */
+function createToggleButton(label, options = {}) {
+  const button = document.createElement('button');
+  if (options.id)
+    button.id = options.id;
+  if (options.name)
+    button.name = options.name;
+  if (options.value)
+    button.value = options.value;
+  if (options.classList)
+    button.classList.add(...options.classList);
+  else
+    button.classList.add('toggle-button');
+  button.textContent = label;
+
+  const activeClass = options.activeClass || 'active';
+  if (options.initialState === 'on')
+    button.classList.add(activeClass);
+
+  button.addEventListener('click', () => button.classList.toggle(activeClass));
   return button;
 }
 
@@ -229,4 +268,9 @@ function getDateFormat(locale, options = { dateStyle: 'short' }) {
   }).join('');
 }
 
-export { createFormControl, createIconButton, getDateFormat };
+export {
+  createFormControl,
+  createIconButton,
+  createToggleButton,
+  getDateFormat
+};
