@@ -10,12 +10,18 @@ import FilterMenu from './filterMenu';
 import ModalStack from './modalStack';
 import Project from './project';
 import ProjectList from './projectList';
+import RecurringDate from './recurringDate';
 import Task from './task';
 import TaskList from './taskList';
-import { createFormControl, createIconButton } from './utility';
+import {
+  createFormControl,
+  createIconButton,
+  createToggleButton,
+} from './utility';
 
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
+import ordinal from 'ordinal';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -372,6 +378,36 @@ class App {
       description: container.querySelector('#task-description'),
     };
 
+    let customRecurrence = null;
+    let recurrenceSelectValue = controls.recurringDate.value;
+    const processRecurrence = recurrence => {
+      customRecurrence = recurrence;
+
+      // Update select box options
+      const selector = 'option[value="custom-result"]';
+      let optElem = controls.recurringDate.querySelector(selector);
+      if (!optElem) {
+        optElem = document.createElement('option');
+        optElem.value = 'custom-result';
+      }
+      optElem.textContent = recurrence.toString();
+      controls.recurringDate.insertBefore(optElem,
+        controls.recurringDate.lastChild);
+      controls.recurringDate.value = 'custom-result';
+    };
+    const cancelRecurrence = () => {
+      controls.recurringDate.value = recurrenceSelectValue;
+    };
+    controls.recurringDate.addEventListener('change', e => {
+      if (e.target.value === 'custom') {
+        this._showRecurringDateModal(processRecurrence, cancelRecurrence,
+          customRecurrence);
+        controls.recurringDate.value = recurrenceSelectValue;
+      } else {
+        recurrenceSelectValue = e.target.value;
+      }
+    });
+
     this._modalStack.showModal(container, {
       title: 'Add Task',
       id: 'add-task',
@@ -380,10 +416,60 @@ class App {
           const task = new Task(controls.name.value);
           task.priorityString = controls.priority.value;
           task.description = controls.description.value || null;
+
+          let recurrence = null;
+          switch (controls.recurringDate.value) {
+            case 'daily':
+              break;
+            case 'weekly':
+              break;
+            case 'monthly':
+              break;
+            case 'annually':
+              break;
+            case 'custom-result':
+              recurrence = customRecurrence;
+              break;
+            default:
+            case 'none':
+              break;
+          }
+          task.recurringDate = recurrence;
+
           this._tasks.addTask(task);
         }
       },
       confirmLabel: 'Add',
+    });
+  }
+
+  /**
+   * Display the modal dialog for selecting a recurring date.
+   * @param {Function} [confirmCallback] A callback function that will receive
+   *   the recurring date that the user selected.
+   * @param {Function} [cancelCallback] A callback function that will be
+   *   invoked when the modal is canceled.
+   * @param {module:recurringDate~RecurringDate} [base] A recurring date to use
+   *   as default values for the form controls.
+   */
+  _showRecurringDateModal(confirmCallback, cancelCallback, base) {
+    const container = document.createElement('div');
+    this._createRecurrenceForm(container);
+    this._initDatePicker(container);
+
+    const getElement = id => container.querySelector(`#recurring-date-${id}`);
+    const controls = {
+      intervalLength: getElement('interval-length'),
+      intervalUnit: getElement('interval-unit'),
+    };
+
+    this._modalStack.showModal(container, {
+      title: 'Edit Recurring Date',
+      id: 'recurring-date',
+      callback: action => {
+        if (action.type === 'confirm') {
+        }
+      },
     });
   }
 
@@ -411,7 +497,6 @@ class App {
       label: labelType('Due Date'),
       container: containerType,
     }));
-
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-recurring-date',
@@ -428,18 +513,6 @@ class App {
         { value: 'custom', label: 'Custom Recurrence...' },
       ],
     }));
-
-    const recurrenceSelect = parent.querySelector('#task-recurring-date');
-    const recurrenceCollapsible = new Collapsible(recurrenceSelect.parentNode,
-      null, { collapsed: true });
-    this._createRecurrenceForm(recurrenceCollapsible.content);
-    recurrenceSelect.addEventListener('change', e => {
-      if (e.target.value === 'custom')
-        recurrenceCollapsible.expand();
-      else
-        recurrenceCollapsible.collapse();
-    });
-
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-priority',
@@ -500,6 +573,7 @@ class App {
    */
   _createRecurrenceForm(parent) {
     let container = document.createElement('div');
+    container.classList.add('form-input-container');
     container.appendChild(createFormControl({
       type: 'number',
       id: 'recurring-date-interval-length',
@@ -524,11 +598,241 @@ class App {
       },
       menuItems: [
         { value: 'day', label: 'Day' },
-        { value: 'week', label: 'Week', selected: true },
+        { value: 'week', label: 'Week' },
         { value: 'month', label: 'Month' },
         { value: 'year', label: 'Year' },
       ],
     }));
+    parent.appendChild(container);
+
+    const dayContainer = document.createElement('div');
+    parent.appendChild(dayContainer);
+
+    const endContainer = document.createElement('div');
+    endContainer.classList.add('form-input-container');
+
+    let label, optionContainer;
+    label = document.createElement('div');
+    label.classList.add('form-input-label-inline');
+    label.textContent = 'Stop repeating';
+    endContainer.appendChild(label);
+
+    endContainer.appendChild(createFormControl({
+      type: 'radio',
+      id: 'recurring-date-end-type-never',
+      name: 'recurring-date-end-type',
+      value: 'never',
+      checked: true,
+      label: { value: 'Never', classList: ['form-input-label-inline'] },
+      container: { classList: ['form-input-item-container'] },
+    }));
+
+    optionContainer = document.createElement('div');
+    optionContainer.classList.add('form-input-item-container');
+    optionContainer.appendChild(createFormControl({
+      type: 'radio',
+      id: 'recurring-date-end-type-date',
+      name: 'recurring-date-end-type',
+      value: 'date',
+    }));
+
+    label = document.createElement('label');
+    label.classList.add('form-input-label-inline');
+    label.htmlFor = 'recurring-date-end-type-date';
+    label.textContent = 'On date ';
+    optionContainer.appendChild(label);
+
+    optionContainer.appendChild(createFormControl({
+      type: 'text',
+      id: 'recurring-date-end-date',
+      name: 'recurring-date-end-date',
+      classList: ['form-input-inline', 'date-input'],
+    }));
+
+    endContainer.appendChild(optionContainer);
+
+    optionContainer = document.createElement('div');
+    optionContainer.classList.add('form-input-item-container');
+    optionContainer.appendChild(createFormControl({
+      type: 'radio',
+      id: 'recurring-date-end-type-count',
+      name: 'recurring-date-end-type',
+      value: 'count',
+    }));
+
+    label = document.createElement('label');
+    label.classList.add('form-input-label-inline');
+    label.htmlFor = 'recurring-date-end-type-count';
+    label.textContent = 'After ';
+    optionContainer.appendChild(label);
+
+    optionContainer.appendChild(createFormControl({
+      type: 'number',
+      id: 'recurring-date-end-count',
+      name: 'recurring-date-end-count',
+      value: '1',
+      classList: ['form-input-inline', 'form-input-count'],
+    }));
+
+    label = document.createElement('span');
+    label.classList.add('form-input-label-inline');
+    label.textContent = ' occurrences';
+    optionContainer.appendChild(label);
+
+    endContainer.appendChild(optionContainer);
+
+    parent.appendChild(endContainer);
+
+    const unitSelect = parent.querySelector('#recurring-date-interval-unit');
+    unitSelect.addEventListener('change', e => {
+      dayContainer.innerHTML = '';
+      switch (e.target.value) {
+        case 'week':
+          this._createRecurrenceWeekdayForm(dayContainer);
+          break;
+        case 'month':
+          this._createRecurrenceMonthlyForm(dayContainer);
+          break;
+      }
+    });
+  }
+
+  /**
+   * Create the form elements for selecting days of the week in a recurrence.
+   * @param {HTMLElement} parent The parent DOM node under which the form
+   *   should be inserted.
+   */
+  _createRecurrenceWeekdayForm(parent) {
+    const container = document.createElement('div');
+    container.classList.add('form-input-container');
+
+    const label = document.createElement('div');
+    label.classList.add('form-input-label-inline');
+    label.textContent = 'Repeat on';
+    container.appendChild(label);
+    const days = [
+      { name: 'Sunday', value: 'sunday', short: 'Sun' },
+      { name: 'Monday', value: 'monday', short: 'Mon' },
+      { name: 'Tuesday', value: 'tuesday', short: 'Tue' },
+      { name: 'Wednesday', value: 'wednesday', short: 'Wed' },
+      { name: 'Thursday', value: 'thursday', short: 'Thu' },
+      { name: 'Friday', value: 'friday', short: 'Fri' },
+      { name: 'Saturday', value: 'saturday', short: 'Sat' },
+    ];
+    days.forEach(day => {
+      container.appendChild(createToggleButton(day.short, {
+        id: `recurring-date-weekday-${day.value}`,
+        name: 'recurring-date-weekday',
+        value: day.value,
+        classList: ['toggle-button', 'form-weekday-button'],
+      }));
+    });
+    parent.appendChild(container);
+  }
+
+  /**
+   * Create the form elements for selecting a day of the month in a recurrence.
+   * @param {HTMLElement} parent The parent DOM node under which the form
+   *   should be inserted.
+   */
+  _createRecurrenceMonthlyForm(parent) {
+    const container = document.createElement('div');
+    container.classList.add('form-input-container');
+
+    let label, optionContainer, selectItems;
+
+    label = document.createElement('div');
+    label.classList.add('form-input-label-inline');
+    label.textContent = 'Repeat on';
+    container.appendChild(label);
+
+    optionContainer = document.createElement('div');
+    optionContainer.classList.add('form-input-item-container');
+    optionContainer.appendChild(createFormControl({
+      type: 'radio',
+      id: 'recurring-date-month-type-day',
+      name: 'recurring-date-month-type',
+      value: 'day-of-month',
+      checked: true,
+    }));
+
+    label = document.createElement('span');
+    label.classList.add('form-input-label-inline');
+    label.textContent = 'The ';
+    optionContainer.appendChild(label);
+
+    selectItems = [];
+    for (let day = 1; day <= 31; day++)
+      selectItems.push({ value: day.toString(), label: ordinal(day) });
+    optionContainer.appendChild(createFormControl({
+      type: 'select',
+      id: 'recurring-date-month-day',
+      name: 'recurring-date-month-day',
+      classList: ['form-select-inline'],
+      menuItems: selectItems,
+    }));
+
+    label = document.createElement('span');
+    label.classList.add('form-input-label-inline');
+    label.textContent = ' day of the month';
+    optionContainer.appendChild(label);
+
+    container.appendChild(optionContainer);
+
+    optionContainer = document.createElement('div');
+    optionContainer.classList.add('form-input-item-container');
+    optionContainer.appendChild(createFormControl({
+      type: 'radio',
+      id: 'recurring-date-month-type-week',
+      name: 'recurring-date-month-type',
+      value: 'week-of-month',
+    }));
+
+    label = document.createElement('span');
+    label.classList.add('form-input-label-inline');
+    label.textContent = 'The ';
+    optionContainer.appendChild(label);
+
+    selectItems = [];
+    for (let week = 1; week <= 5; week++)
+      selectItems.push({ value: week.toString(), label: ordinal(week) });
+    optionContainer.appendChild(createFormControl({
+      type: 'select',
+      id: 'recurring-date-month-week-number',
+      name: 'recurring-date-month-week-number',
+      classList: ['form-select-inline'],
+      menuItems: selectItems,
+    }));
+
+    label = document.createElement('span');
+    label.classList.add('form-input-label-inline');
+    label.textContent = ' ';
+    optionContainer.appendChild(label);
+
+    selectItems = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ].map(day => ({ value: day.toLowerCase(), label: day }));
+    optionContainer.appendChild(createFormControl({
+      type: 'select',
+      id: 'recurring-date-month-week-day',
+      name: 'recurring-date-month-week-day',
+      classList: ['form-select-inline'],
+      menuItems: selectItems,
+    }));
+
+    label = document.createElement('span');
+    label.classList.add('form-input-label-inline');
+    label.textContent = ' of the month';
+    optionContainer.appendChild(label);
+
+    container.appendChild(optionContainer);
+
     parent.appendChild(container);
   }
 
