@@ -6,6 +6,7 @@
 import '../styles/reset.css';
 import '../styles/main.css';
 import Collapsible from './collapsible';
+import DatePicker from './datePicker';
 import FilterMenu from './filterMenu';
 import ModalStack from './modalStack';
 import Project from './project';
@@ -364,9 +365,12 @@ class App {
    *   the function.
    * @param {Function} [cancelCallback] A callback function to be invoked when
    *   the user cancels the modal.
+   * @param {Date} [startDate] The date that will be initially selected. If not
+   *   given, then the present date is used.
    */
-  _showDatePickerModal(confirmCallback, cancelCallback) {
+  _showDatePickerModal(confirmCallback, cancelCallback, startDate) {
     const container = document.createElement('div');
+    const picker = new DatePicker(container, startDate);
 
     this._modalStack.showModal(container, {
       title: 'Select Date',

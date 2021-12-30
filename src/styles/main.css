@@ -299,7 +299,7 @@ input[type="radio"], input[type="checkbox"] {
 }
 
 .form-input-inline.form-input-count {
-  width: 80px;
+  width: 90px;
 }
 
 .form-weekday-button {
@@ -334,6 +334,59 @@ input[type="radio"], input[type="checkbox"] {
 .collapsible {
   overflow: hidden;
   transition: height 250ms ease-out;
+}
+
+.date-picker-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.date-picker-heading select, .date-picker-heading input {
+  font-size: 16px;
+}
+
+.date-picker-grid {
+  margin: 12px 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.date-picker-day-header, .date-picker-day {
+  width: 40px;
+  height: 40px;
+  line-height: 32px;
+  padding: 4px;
+  font-family: var(--label-font);
+  font-size: 16px;
+  text-align: center;
+
+  border-radius: 20px;
+}
+
+.date-picker-day-header {
+  font-weight: bold;
+}
+
+.date-picker-day.selected {
+  color: white;
+  background-color: rgb(35, 35, 211);
+  font-weight: bold;
+}
+
+.date-picker-day.today {
+  font-weight: bold;
+  border: 1px solid black;
+}
+
+.date-picker-day.different-month {
+  color: #707070;
+}
+
+.date-picker-day.selected.different-month {
+  color: white;
+  background-color: rgba(35, 35, 211, 0.5);
 }
 
 .title-container {
