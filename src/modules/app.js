@@ -19,8 +19,6 @@ import {
   createToggleButton,
 } from './utility';
 
-import flatpickr from 'flatpickr';
-import 'flatpickr/dist/flatpickr.css';
 import ordinal from 'ordinal';
 
 const APP_NAME = 'Task It Up';
@@ -360,6 +358,24 @@ class App {
   }
 
   /**
+   * Display the modal dialog for selecting a date.
+   * @param {Function} [confirmCallback] A callback function to be invoked when
+   *   the user confirms the date selection. The chosen date will be passed to
+   *   the function.
+   * @param {Function} [cancelCallback] A callback function to be invoked when
+   *   the user cancels the modal.
+   */
+  _showDatePickerModal(confirmCallback, cancelCallback) {
+    const container = document.createElement('div');
+
+    this._modalStack.showModal(container, {
+      title: 'Select Date',
+      id: 'date-picker',
+      callback: action => { },
+    });
+  }
+
+  /**
    * Display the modal dialog for adding a new task. After the user confirms
    * the dialog, the task is added to the task list. If the user cancels, the
    * modal is closed and nothing happens.
@@ -367,7 +383,6 @@ class App {
   _showAddTaskModal() {
     const container = document.createElement('div');
     this._createAddTaskForm(container);
-    this._initDatePicker(container);
 
     const controls = {
       name: container.querySelector('#task-name'),
@@ -455,7 +470,6 @@ class App {
   _showRecurringDateModal(confirmCallback, cancelCallback, base) {
     const container = document.createElement('div');
     this._createRecurrenceForm(container);
-    this._initDatePicker(container);
 
     const getElement = id => container.querySelector(`#recurring-date-${id}`);
     const controls = {
@@ -489,14 +503,10 @@ class App {
       label: labelType('Name'),
       container: containerType,
     }));
-    parent.appendChild(createFormControl({
-      type: 'text',
+    this._createDateInputField(parent, {
       id: 'task-due-date',
-      name: 'task-due-date',
-      classList: ['form-input', 'date-input'],
-      label: labelType('Due Date'),
-      container: containerType,
-    }));
+      label: 'Due Date',
+    });
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-recurring-date',
@@ -642,12 +652,10 @@ class App {
     label.textContent = 'On date ';
     optionContainer.appendChild(label);
 
-    optionContainer.appendChild(createFormControl({
-      type: 'text',
+    this._createDateInputField(optionContainer, {
       id: 'recurring-date-end-date',
-      name: 'recurring-date-end-date',
-      classList: ['form-input-inline', 'date-input'],
-    }));
+      inline: true,
+    });
 
     endContainer.appendChild(optionContainer);
 
@@ -879,21 +887,72 @@ class App {
   }
 
   /**
-   * Associate a date picker with each date input field. An 'input' element is
-   * considered to be a date field if it has the 'date-input' class.
-   * @param {HTMLElement} [container=document.body] The container element in
-   *   which to look for date fields.
+   * Create an input field for entering dates. This will create a text input
+   * control together with a button that will open the date picker modal when
+   * clicked.
+   * @param {HTMLElement} parent The DOM element under which the input elements
+   *   should be inserted.
+   * @param {Object} [options={}] An object holding configuration options for
+   *   controlling the form element creation.
+   * @param {string} [options.id] The identifier for the text input control.
+   * @param {string} [options.value] The default value for the text input
+   *   control.
+   * @param {string} [options.label] The label for the input element.
+   * @param {boolean} [options.inline=false] If true, the form elements are
+   *   placed in an inline container. Otherwise, a block container is used.
+   *   This also affects the CSS classes that are applied to the elements.
    */
-  _initDatePicker(container = document.body) {
-    const pickerOptions = {
-      allowInput: true,
-      static: true,
-      formatDate: undefined,
-      parseDate: undefined,
-    };
-    container.querySelectorAll('input.date-input').forEach(input => {
-      flatpickr(input, pickerOptions);
+  _createDateInputField(parent, options = {}) {
+    const container = document.createElement(options.inline ? 'span' : 'div');
+    if (!options.inline)
+      container.classList.add('form-input-container');
+    else
+      container.classList.add('form-input-date-container-inline');
+
+    if (options.label) {
+      const label = document.createElement('label');
+      if (options.id)
+        label.htmlFor = options.id;
+      if (options.inline)
+        label.classList.add('form-input-label-inline');
+      else
+        label.classList.add('form-input-label');
+      label.textContent = options.label;
+      container.appendChild(label);
+    }
+
+    let flex = null;
+    if (!options.inline) {
+      flex = document.createElement('div');
+      flex.classList.add('form-input-date-container');
+      container.appendChild(flex);
+    }
+
+    const input = createFormControl({
+      type: 'text',
+      id: options.id || null,
+      name: options.id || null,
+      value: options.value || null,
+      classList: ['form-input-inline'],
     });
+
+    const button = document.createElement('button');
+    button.classList.add('form-button');
+    button.textContent = 'Choose...';
+    button.addEventListener('click', () => {
+      const value = input.value;
+      this._showDatePickerModal();
+    });
+
+    if (flex) {
+      flex.appendChild(input);
+      flex.appendChild(button);
+    } else {
+      container.appendChild(input);
+      container.appendChild(button);
+    }
+
+    parent.appendChild(container);
   }
 
   /**

@@ -229,12 +229,23 @@ input[type="radio"], input[type="checkbox"] {
   background-color: #2323d3;
 }
 
-.form-input-container .flatpickr-wrapper {
-  display: inline;
-}
-
 .form-input-container {
   margin: 12px 0 24px;
+}
+
+.form-input-date-container {
+  display: flex;
+  width: 100%;
+}
+
+.form-input-date-container input {
+  flex: auto;
+  margin-right: 6px;
+}
+
+.form-input-date-container-inline input {
+  width: 150px;
+  margin-right: 6px;
 }
 
 .form-input-label {
@@ -258,7 +269,8 @@ input[type="radio"], input[type="checkbox"] {
 .form-input-inline,
 .form-select,
 .form-select-inline,
-.form-textarea {
+.form-textarea,
+.form-button {
   padding: 8px;
   border: 1px solid black;
   border-radius: 8px;
@@ -270,6 +282,10 @@ input[type="radio"], input[type="checkbox"] {
 .form-textarea {
   width: 100%;
   resize: vertical;
+}
+
+.form-button {
+  background-color: white;
 }
 
 .form-input-item-container {
@@ -289,10 +305,6 @@ input[type="radio"], input[type="checkbox"] {
 .form-weekday-button {
   margin: 8px 6px 8px 0;
   border-radius: 10px;
-}
-
-.flatpickr-wrapper {
-  width: 100%;
 }
 
 .resizer {
