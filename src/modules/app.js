@@ -460,6 +460,12 @@ class App {
 
         this._tasks.addTask(task);
       },
+      validate: () => {
+        if (!controls.name.reportValidity())
+          return false;
+
+        return true;
+      },
       confirmLabel: 'Add',
     });
   }
@@ -504,6 +510,7 @@ class App {
       id: 'task-name',
       name: 'task-name',
       classList: ['form-input'],
+      required: true,
       label: labelType('Name'),
       container: containerType,
     }));
@@ -899,8 +906,12 @@ class App {
    * @param {Object} [options={}] An object holding configuration options for
    *   controlling the form element creation.
    * @param {string} [options.id] The identifier for the text input control.
+   * @param {string} [options.title] The title of the input control, usually
+   *   displayed by the browser as a tooltip.
    * @param {string} [options.value] The default value for the text input
    *   control.
+   * @param {boolean} [options.required=false] If true, indicates that the date
+   *   is a required field.
    * @param {string} [options.label] The label for the input element.
    * @param {boolean} [options.inline=false] If true, the form elements are
    *   placed in an inline container. Otherwise, a block container is used.
@@ -936,8 +947,10 @@ class App {
       type: 'text',
       id: options.id || null,
       name: options.id || null,
+      title: options.title || null,
       value: options.value || null,
       classList: ['form-input-inline'],
+      required: options.required || false,
     });
 
     const button = document.createElement('button');

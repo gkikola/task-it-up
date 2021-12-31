@@ -30,6 +30,14 @@ a:hover {
   text-decoration: underline;
 }
 
+input:focus, select:focus, textarea:focus, button:focus {
+  outline: 1px solid blue;
+}
+
+input:invalid, select:invalid, textarea:invalid {
+  outline: 1px solid red;
+}
+
 button {
   background-color: transparent;
   border-style: none;
