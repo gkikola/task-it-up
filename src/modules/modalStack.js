@@ -34,6 +34,14 @@ class ModalStack {
    * @property {Function} [cancelCallback] A callback function that is invoked
    *   when the user cancels the modal. The function is passed a
    *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
+   * @property {Function} [validate] A callback function used to validate the
+   *   user's selections. The function will be invoked when the user attempts
+   *   to confirm the modal. If the function returns true, then the selections
+   *   are confirmed, the associated confirmation callback function is invoked
+   *   (if any), and then the modal is closed. If the function returns false,
+   *   then the confirmation is aborted and the modal remains open. The
+   *   function is passed a
+   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
    * @property {string} [confirmLabel=Okay] The label used for the confirm
    *   button, shown at the bottom of the modal.
    * @property {string} [cancelLabel=Cancel] The label used for the cancel
@@ -46,8 +54,9 @@ class ModalStack {
    * in a modal dialog.
    * @typedef {Object} module:modalStack~ModalStack~modalAction
    * @property {string} type The type of action performed. This is set to
-   *   'confirm' if the user confirmed the modal, and 'cancel' if the user
-   *   canceled the modal.
+   *   'confirm' if the user successfully confirmed the modal, 'cancel' if the
+   *   user canceled the modal, and 'validate' if the user attempted to confirm
+   *   the modal but their input first needs to be validated.
    * @property {string} id The identifier for the modal in which the action was
    *   performed.
    * @property {HTMLElement} content A reference to the container element that
@@ -70,6 +79,10 @@ class ModalStack {
    * @property {Function} [cancelCallback] A callback function that is invoked
    *   when the user cancels the modal. The function is passed a
    *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
+   * @property {Function} [validate] A callback function used to validate the
+   *   user's selections. The function is passed a
+   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
+   *   The function should return true if the user's selections are valid.
    */
 
   /**
@@ -171,6 +184,7 @@ class ModalStack {
       id: options.id || null,
       confirmCallback: options.confirmCallback || null,
       cancelCallback: options.cancelCallback || null,
+      validate: options.validate || null,
     };
 
     this._modals.push(modal);
@@ -196,13 +210,30 @@ class ModalStack {
   }
 
   /**
-   * Confirm a modal dialog. If the appropriate callback function was provided
-   * for the modal, it will be invoked.
+   * Confirm a modal dialog. If a validation function was provided, then it
+   * will first be called to determine whether the user's selections are valid.
+   * If the modal passes validation (or if no validation function was
+   * provided), then the associated confirmation callback function is invoked
+   * (if any), and then the modal is closed.
    * @param {string} [id] The identifier for the modal to confirm. If not
    *   given, then the topmost modal will be confirmed.
+   * @returns {boolean} True if the modal was successfully confirmed, and false
+   *   if the modal failed validation.
    */
   confirmModal(id) {
     const modal = this._getModal(id);
+
+    if (modal?.validate) {
+      const valid = modal.validate({
+        type: 'validate',
+        id: modal.id,
+        content: modal.content,
+      });
+
+      if (!valid)
+        return false;
+    }
+
     if (modal?.confirmCallback) {
       modal.confirmCallback({
         type: 'confirm',
@@ -212,6 +243,7 @@ class ModalStack {
     }
 
     this.closeModal(id);
+    return true;
   }
 
   /**
