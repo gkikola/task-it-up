@@ -14,6 +14,8 @@
  * @property {string} [id] The identifier for the input element.
  * @property {string} [name] The name of the input element, used in form
  *   submission and for grouping radio buttons.
+ * @property {string} [title] The title of the input element, usually displayed
+ *   by the browser as a tooltip.
  * @property {string} [value] The initial value of the input element, or a
  *   value identifying a checkbox or radio button option. This property is
  *   ignored for the 'select' input type.
@@ -22,6 +24,20 @@
  * @property {boolean} [checked=false] If true, indicates that the control
  *   should be checked by default. This applies only to the 'checkbox' and
  *   'radio' input types.
+ * @property {boolean} [required=false] If true, indicates that the control
+ *   is a required field.
+ * @property {string} [pattern] Specifies a regular expression that the input
+ *   control's value should match in order to be considered valid.
+ * @property {number|string} [min] Sets the minimum acceptable value for a
+ *   numeric input field.
+ * @property {number|string} [max] Sets the maximum acceptable value for a
+ *   numeric input field.
+ * @property {number|string} [step] Sets the acceptable increments for values
+ *   in a numeric input field. This can be a number or the string 'any'.
+ * @property {number} [minLength] Sets the minimum acceptable length for an
+ *   input field.
+ * @property {number} [maxLength] Sets the maximum acceptable length for an
+ *   input field.
  * @property {Object} [label] An object specifying information about the label
  *   for the input element.
  * @property {string} [label.value] The text content of the label that should
@@ -119,14 +135,31 @@ function createFormControl(options = {}) {
         input.defaultValue = options.value;
         input.value = options.value;
       }
+
+      if (options.pattern)
+        input.pattern = options.pattern;
+      if (options.min)
+        input.min = options.min;
+      if (options.max)
+        input.max = options.max;
+      if (options.step)
+        input.step = options.step;
   }
 
   if (options.id)
     input.id = options.id;
   if (options.name)
     input.name = options.name;
+  if (options.title)
+    input.title = options.title;
   if (options.classList)
     input.classList.add(...options.classList);
+  if (options.required)
+    input.required = true;
+  if (type !== 'select' && options.minLength)
+    input.minLength = options.minLength;
+  if (type !== 'select' && options.maxLength)
+    input.maxLength = options.maxLength;
 
   const checkable = type === 'checkbox' || type === 'radio';
   if (checkable && options.checked) {
@@ -161,13 +194,22 @@ function createFormControl(options = {}) {
  * @param {string} iconType The type of icon to display. This is stored in the
  *   data-icon-type attribute of the button and also indicates the icon to use
  *   from the Google Material Icons font.
+ * @param {Object} [options={}] An object holding configuration options
+ *   controlling the button creation.
+ * @param {string} [options.id] The identifier for the button.
+ * @param {string} [options.title] The title of the button, usually displayed
+ *   by the browser as a tooltip.
  * @returns {HTMLElement} The newly-created button element.
  */
-function createIconButton(iconType) {
+function createIconButton(iconType, options = {}) {
   const button = document.createElement('button');
   button.classList.add('icon', 'material-icons');
   button.dataset.iconType = iconType;
   button.textContent = iconType;
+  if (options.id)
+    button.id = options.id;
+  if (options.title)
+    button.title = options.title;
   return button;
 }
 
@@ -178,6 +220,8 @@ function createIconButton(iconType) {
  *   controlling the button creation.
  * @param {string} [options.id] The identifier for the button.
  * @param {string} [options.name] The form name for the button.
+ * @param {string} [options.title] The title of the button, usually displayed
+ *   by the browser as a tooltip.
  * @param {string} [options.value] The form value associated with the button.
  * @param {string} [options.initialState=off] The initial state of the button,
  *   either 'on' or 'off'.
@@ -194,6 +238,8 @@ function createToggleButton(label, options = {}) {
     button.id = options.id;
   if (options.name)
     button.name = options.name;
+  if (options.title)
+    button.title = options.title;
   if (options.value)
     button.value = options.value;
   if (options.classList)
