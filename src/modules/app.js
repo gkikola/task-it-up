@@ -375,7 +375,11 @@ class App {
     this._modalStack.showModal(container, {
       title: 'Select Date',
       id: 'date-picker',
-      callback: action => { },
+      confirmCallback: () => {
+        if (confirmCallback)
+          confirmCallback(picker.date);
+      },
+      cancelCallback: () => { if (cancelCallback) cancelCallback(); },
     });
   }
 
@@ -430,33 +434,31 @@ class App {
     this._modalStack.showModal(container, {
       title: 'Add Task',
       id: 'add-task',
-      callback: action => {
-        if (action.type === 'confirm') {
-          const task = new Task(controls.name.value);
-          task.priorityString = controls.priority.value;
-          task.description = controls.description.value || null;
+      confirmCallback: () => {
+        const task = new Task(controls.name.value);
+        task.priorityString = controls.priority.value;
+        task.description = controls.description.value || null;
 
-          let recurrence = null;
-          switch (controls.recurringDate.value) {
-            case 'daily':
-              break;
-            case 'weekly':
-              break;
-            case 'monthly':
-              break;
-            case 'annually':
-              break;
-            case 'custom-result':
-              recurrence = customRecurrence;
-              break;
-            default:
-            case 'none':
-              break;
-          }
-          task.recurringDate = recurrence;
-
-          this._tasks.addTask(task);
+        let recurrence = null;
+        switch (controls.recurringDate.value) {
+          case 'daily':
+            break;
+          case 'weekly':
+            break;
+          case 'monthly':
+            break;
+          case 'annually':
+            break;
+          case 'custom-result':
+            recurrence = customRecurrence;
+            break;
+          default:
+          case 'none':
+            break;
         }
+        task.recurringDate = recurrence;
+
+        this._tasks.addTask(task);
       },
       confirmLabel: 'Add',
     });
@@ -484,9 +486,7 @@ class App {
     this._modalStack.showModal(container, {
       title: 'Edit Recurring Date',
       id: 'recurring-date',
-      callback: action => {
-        if (action.type === 'confirm') {
-        }
+      confirmCallback: () => {
       },
     });
   }

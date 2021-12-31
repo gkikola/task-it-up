@@ -28,10 +28,12 @@ class ModalStack {
    * @property {string} [id] An identifier for the modal. This is set as the
    *   id of the modal container and is passed to the provided callback
    *   function, if any, when the modal is closed.
-   * @property {Function} [callback] A callback function that is invoked when
-   *   the user performs an action that closes the modal. The function is
-   *   passed a [modalAction]{@link module:modalStack~ModalStack~modalAction}
-   *   object.
+   * @property {Function} [confirmCallback] A callback function that is invoked
+   *   when the user confirms the modal. The function is passed a
+   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
+   * @property {Function} [cancelCallback] A callback function that is invoked
+   *   when the user cancels the modal. The function is passed a
+   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
    * @property {string} [confirmLabel=Okay] The label used for the confirm
    *   button, shown at the bottom of the modal.
    * @property {string} [cancelLabel=Cancel] The label used for the cancel
@@ -62,10 +64,12 @@ class ModalStack {
    * @property {HTMLElement} content The DOM node holding the main contents of
    *   the modal dialog.
    * @property {string} [id] An identifier for the modal.
-   * @property {Function} [callback] A callback function that is invoked when
-   *   the user performs an action that closes the modal. The function is
-   *   passed a [modalAction]{@link module:modalStack~ModalStack~modalAction}
-   *   object.
+   * @property {Function} [confirmCallback] A callback function that is invoked
+   *   when the user confirms the modal. The function is passed a
+   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
+   * @property {Function} [cancelCallback] A callback function that is invoked
+   *   when the user cancels the modal. The function is passed a
+   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
    */
 
   /**
@@ -165,7 +169,8 @@ class ModalStack {
       container,
       content,
       id: options.id || null,
-      callback: options.callback || null,
+      confirmCallback: options.confirmCallback || null,
+      cancelCallback: options.cancelCallback || null,
     };
 
     this._modals.push(modal);
@@ -191,15 +196,15 @@ class ModalStack {
   }
 
   /**
-   * Confirm a modal dialog. If a callback function was provided for the modal,
-   * it will be invoked.
+   * Confirm a modal dialog. If the appropriate callback function was provided
+   * for the modal, it will be invoked.
    * @param {string} [id] The identifier for the modal to confirm. If not
    *   given, then the topmost modal will be confirmed.
    */
   confirmModal(id) {
     const modal = this._getModal(id);
-    if (modal?.callback) {
-      modal.callback({
+    if (modal?.confirmCallback) {
+      modal.confirmCallback({
         type: 'confirm',
         id: modal.id,
         content: modal.content,
@@ -210,15 +215,15 @@ class ModalStack {
   }
 
   /**
-   * Cancel a modal dialog. If a callback function was provided for the modal,
-   * it will be invoked.
+   * Cancel a modal dialog. If the appropriate callback function was provided
+   * for the modal, it will be invoked.
    * @param {string} [id] The identifier for the modal to cancel. If not given,
    *   then the topmost modal will be canceled.
    */
   cancelModal(id) {
     const modal = this._getModal(id);
-    if (modal?.callback) {
-      modal.callback({
+    if (modal?.cancelCallback) {
+      modal.cancelCallback({
         type: 'cancel',
         id: modal.id,
         content: modal.content,
