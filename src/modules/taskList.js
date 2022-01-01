@@ -11,6 +11,13 @@ import { v4 as uuid } from 'uuid';
  */
 class TaskList {
   /**
+   * Wrapper object holding a task along with its UUID.
+   * @typedef {Object} module:taskList~TaskList~taskWrapper
+   * @property {string} id The unique identifier for the task.
+   * @property {module:task~Task} task The task instance.
+   */
+
+  /**
    * Create a task list.
    */
   constructor() {
@@ -38,6 +45,16 @@ class TaskList {
     // Add task to task map
     this._tasks.set(id, _.cloneDeep(task));
     return id;
+  }
+
+  /**
+   * Iterate over the task list. Each iteration yields a wrapper containing the
+   * identifier of the task along with the task itself.
+   * @yields {module:taskList~TaskList~taskWrapper} The next task in the list.
+   */
+  *[Symbol.iterator]() {
+    for (const entry of this._tasks)
+      yield { id: entry[0], task: _.cloneDeep(entry[1]) };
   }
 }
 
