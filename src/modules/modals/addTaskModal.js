@@ -238,7 +238,7 @@ class AddTaskModal {
       priority: parent.querySelector('#task-priority'),
       project: parent.querySelector('#task-project'),
       description: parent.querySelector('#task-description'),
-    }
+    };
     this._addListeners(modalStack);
   }
 
