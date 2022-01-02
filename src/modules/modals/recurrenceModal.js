@@ -77,29 +77,27 @@ class RecurrenceModal {
     };
 
     /**
-     * An object holding the form input elements for the modal.
+     * An object holding the various container elements used in the modal's
+     * contents.
      * @type {Object}
-     * @property {HTMLElement} intervalLength The number input element
-     *   controlling the recurrence interval length.
-     * @property {HTMLElement} intervalUnit The select element controlling the
-     *   recurrence interval unit.
-     * @property {HTMLElement} contextContainer The container element that
-     *   holds context-sensitive options based on the selected interval unit.
-     * @property {HTMLElement} weekContextOptions The container element holding
-     *   options specific to weekly recurrences.
-     * @property {HTMLElement} monthContextOptions The container element
-     *   holding options specific to monthly recurrences.
-     * @property {HTMLElement} yearContextOptions The container element holding
-     *   options specific to yearly recurrences.
+     * @property {HTMLElement} parent The parent container element holding all
+     *   the form elements.
+     * @property {HTMLElement} context The container element holding
+     *   context-sensitive options that depend on the selected interval unit.
+     * @property {HTMLElement} weekOptions The container element holding the
+     *   form elements specific to weekly recurrences.
+     * @property {HTMLElement} monthOptions The container element holding the
+     *   form elements specific to monthly recurrences.
+     * @property {HTMLElement} yearOptions The container element holding the
+     *   form elements specific to yearly recurrences.
      */
-    this._controls = {
-      intervalLength: null,
-      intervalUnit: null,
-      contextContainer: null,
-      weekContextOptions: null,
-      monthContextOptions: null,
-      yearContextOptions: null,
-    }
+    this._containers = {
+      parent: null,
+      context: null,
+      weekOptions: null,
+      monthOptions: null,
+      yearOptions: null,
+    };
   }
 
   get title() {
@@ -324,19 +322,17 @@ class RecurrenceModal {
 
     parent.appendChild(container);
 
-    const weekContextOptions = this._createWeekContextForm();
-    const monthContextOptions = this._createMonthContextForm();
-    const yearContextOptions = this._createYearContextForm();
+    const weekOptions = this._createWeekContextForm();
+    const monthOptions = this._createMonthContextForm();
+    const yearOptions = this._createYearContextForm();
 
-    const getControl = id => parent.querySelector(`#${id}`);
-    this._controls = {
-      intervalLength: getControl('recurring-date-interval-length'),
-      intervalUnit: getControl('recurring-date-interval-unit'),
-      contextContainer,
-      weekContextOptions,
-      monthContextOptions,
-      yearContextOptions,
-    }
+    this._containers = {
+      parent,
+      context: contextContainer,
+      weekOptions,
+      monthOptions,
+      yearOptions,
+    };
 
     this._initFormValues();
     this._addListeners();
@@ -354,6 +350,16 @@ class RecurrenceModal {
 
   validate() {
     return true;
+  }
+
+  /**
+   * Select a form control in the modal.
+   * @param {string} idSuffix The identifier of the control to retrieve,
+   *   without the 'recurring-date-' prefix.
+   * @returns {HTMLElement} The requested element, or undefined if not found.
+   */
+  _getControl(idSuffix) {
+    return this._containers.parent.querySelector(`#recurring-date-${idSuffix}`);
   }
 
   /**
@@ -614,9 +620,7 @@ class RecurrenceModal {
    * Add the event listeners to the form controls in the modal.
    */
   _addListeners() {
-    const controls = this._controls;
-
-    controls.intervalUnit.addEventListener('change', () => {
+    this._getControl('interval-unit').addEventListener('change', () => {
       this._updateContextContainer();
     });
   }
@@ -626,21 +630,21 @@ class RecurrenceModal {
    * based on the selected interval unit.
    */
   _updateContextContainer() {
-    const controls = this._controls;
-    const contextContainer = controls.contextContainer;
+    const containers = this._containers;
+    const contextContainer = containers.context;
 
     while (contextContainer.firstChild)
       contextContainer.removeChild(contextContainer.firstChild);
 
-    switch (controls.intervalUnit.value) {
+    switch (this._getControl('interval-unit').value) {
       case 'week':
-        contextContainer.appendChild(controls.weekContextOptions);
+        contextContainer.appendChild(containers.weekOptions);
         break;
       case 'month':
-        contextContainer.appendChild(controls.monthContextOptions);
+        contextContainer.appendChild(containers.monthOptions);
         break;
       case 'year':
-        contextContainer.appendChild(controls.yearContextOptions);
+        contextContainer.appendChild(containers.yearOptions);
         break;
     }
   }
