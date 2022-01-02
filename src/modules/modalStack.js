@@ -17,72 +17,76 @@ const Z_INDEX_STEP = 100;
 const Z_INDEX_OVERLAY_STEP = 50;
 
 /**
+ * Interface for classes that represent a modal dialog.
+ * @interface Modal
+ */
+
+/**
+ * The title of the modal.
+ * @member {string} module:modalStack~Modal#title
+ */
+
+/**
+ * The label that should be used for the confirm button, shown at the bottom of
+ * the modal.
+ * @member {string} module:modalStack~Modal#confirmLabel
+ */
+
+/**
+ * The label that should be used for the cancel button, shown at the bottom of
+ * the modal.
+ * @member {string} module:modalStack~Modal#cancelLabel
+ */
+
+/**
+ * Indicates whether to show the cancel button in the modal window. If set to
+ * true, then the button should not be displayed.
+ * @member {boolean} module:modalStack~Modal#noCancelButton
+ */
+
+/**
+ * Create and display the modal's main content.
+ * @function module:modalStack~Modal#addContent
+ * @param {HTMLElement} parent The parent DOM node under which the modal's main
+ *   content will be inserted.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal is being inserted.
+ */
+
+/**
+ * Confirm the modal. This method should be invoked when the modal is
+ * succesfully confirmed by the user.
+ * @function module:modalStack~Modal#confirm
+ */
+
+/**
+ * Cancel the modal. This method should be invoked when the modal is canceled
+ * by the user.
+ * @function module:modalStack~Modal#cancel
+ */
+
+/**
+ * Validate the modal. This method should be invoked when the user attempts to
+ * confirm the modal.
+ * @function module:modalStack~Modal#validate
+ * @returns {boolean} True if the user's selections have passed validation, and
+ *   false otherwise.
+ */
+
+/**
  * Manages and displays a stack of modal dialog windows.
  */
 class ModalStack {
   /**
-   * Holds configuration options for modal dialog creation.
-   * @typedef {Object} module:modalStack~ModalStack~modalOptions
-   * @property {string} [title] The title of the modal, displayed at the top of
-   *   the dialog.
-   * @property {string} [id] An identifier for the modal. This is set as the
-   *   id of the modal container and is passed to the provided callback
-   *   function, if any, when the modal is closed.
-   * @property {Function} [confirmCallback] A callback function that is invoked
-   *   when the user confirms the modal. The function is passed a
-   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
-   * @property {Function} [cancelCallback] A callback function that is invoked
-   *   when the user cancels the modal. The function is passed a
-   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
-   * @property {Function} [validate] A callback function used to validate the
-   *   user's selections. The function will be invoked when the user attempts
-   *   to confirm the modal. If the function returns true, then the selections
-   *   are confirmed, the associated confirmation callback function is invoked
-   *   (if any), and then the modal is closed. If the function returns false,
-   *   then the confirmation is aborted and the modal remains open. The
-   *   function is passed a
-   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
-   * @property {string} [confirmLabel=Okay] The label used for the confirm
-   *   button, shown at the bottom of the modal.
-   * @property {string} [cancelLabel=Cancel] The label used for the cancel
-   *   button, shown at the bottom of the modal. If set to an empty string, the
-   *   button will not be shown.
-   */
-
-  /**
-   * Information that is passed to callbacks when the user performs an action
-   * in a modal dialog.
-   * @typedef {Object} module:modalStack~ModalStack~modalAction
-   * @property {string} type The type of action performed. This is set to
-   *   'confirm' if the user successfully confirmed the modal, 'cancel' if the
-   *   user canceled the modal, and 'validate' if the user attempted to confirm
-   *   the modal but their input first needs to be validated.
-   * @property {string} id The identifier for the modal in which the action was
-   *   performed.
-   * @property {HTMLElement} content A reference to the container element that
-   *   holds the modal's contents.
-   */
-
-  /**
-   * A modal dialog box instance.
-   * @typedef {Object} module:modalStack~ModalStack~modal
+   * Holds information about a modal dialog in the stack.
+   * @typedef {Object} module:modalStack~ModalStack~modalInfo
+   * @property {module:modalStack~Modal} modal The modal instance.
    * @property {HTMLElement} wrapper The outer wrapper node which contains the
    *   modal window container.
    * @property {HTMLElement} container The container node holding the modal
    *   dialog.
    * @property {HTMLElement} content The DOM node holding the main contents of
    *   the modal dialog.
-   * @property {string} [id] An identifier for the modal.
-   * @property {Function} [confirmCallback] A callback function that is invoked
-   *   when the user confirms the modal. The function is passed a
-   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
-   * @property {Function} [cancelCallback] A callback function that is invoked
-   *   when the user cancels the modal. The function is passed a
-   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
-   * @property {Function} [validate] A callback function used to validate the
-   *   user's selections. The function is passed a
-   *   [modalAction]{@link module:modalStack~ModalStack~modalAction} object.
-   *   The function should return true if the user's selections are valid.
    */
 
   /**
@@ -119,28 +123,22 @@ class ModalStack {
     this._background = background || null;
 
     /**
-     * The stack of modal instances.
-     * @type {module:modalStack~ModalStack~modal[]}
+     * The stack of modal dialogs.
+     * @type {module:modalStack~ModalStack~modalInfo[]}
      */
     this._modals = [];
   }
 
   /**
-   * Create and display a modal dialog.
-   * @param {HTMLElement} content An element containing the contents of the
-   *   modal. This will be inserted as a child of the modal dialog container.
-   *   The 'modal-content' class will also be applied to the element.
-   * @param {module:modalStack~ModalStack~modalOptions} [options={}] An object
-   *   containing options for controlling creation of the modal dialog.
+   * Display a modal dialog.
+   * @param {module:modalStack~Modal} modal The modal dialog to show.
    */
-  showModal(content, options = {}) {
+  showModal(modal) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('modal-wrapper');
     wrapper.style.zIndex = this._getZIndex(this._modals.length + 1);
 
     const container = document.createElement('div');
-    if (options.id)
-      container.id = options.id;
     container.classList.add('modal');
     wrapper.appendChild(container);
 
@@ -150,119 +148,95 @@ class ModalStack {
 
     const titleText = document.createElement('div');
     titleText.classList.add('modal-title');
-    titleText.textContent = options.title || '';
+    titleText.textContent = modal.title;
     titleBar.appendChild(titleText);
     const closeIcon = createIconButton('close');
     closeIcon.addEventListener('click', () => this.cancelModal());
     titleBar.appendChild(closeIcon);
 
+    const content = document.createElement('div');
     content.classList.add('modal-content');
+    modal.addContent(content, this);
     container.appendChild(content);
 
     const buttonContainer = document.createElement('div');
     buttonContainer.classList.add('modal-button-container');
     container.appendChild(buttonContainer);
 
-    if (!options.cancelLabel || options.cancelLabel !== '') {
+    if (modal.cancelLabel) {
       const cancelButton = document.createElement('button');
       cancelButton.classList.add('modal-button');
-      cancelButton.textContent = options.cancelLabel || 'Cancel';
+      cancelButton.textContent = modal.cancelLabel;
       cancelButton.addEventListener('click', () => this.cancelModal());
       buttonContainer.appendChild(cancelButton);
     }
 
     const okayButton = document.createElement('button');
     okayButton.classList.add('modal-button', 'modal-okay');
-    okayButton.textContent = options.confirmLabel || 'Okay';
+    okayButton.textContent = modal.confirmLabel;
     okayButton.addEventListener('click', () => this.confirmModal());
     buttonContainer.appendChild(okayButton);
 
-    const modal = {
+    const modalInfo = {
+      modal,
       wrapper,
       container,
       content,
-      id: options.id || null,
-      confirmCallback: options.confirmCallback || null,
-      cancelCallback: options.cancelCallback || null,
-      validate: options.validate || null,
     };
 
-    this._modals.push(modal);
+    this._modals.push(modalInfo);
     this._parent.appendChild(wrapper);
     this._hideBackground();
   }
 
   /**
-   * Close a modal dialog. This will not invoke the associated callback
-   * function.
-   * @param {string} [id] The identifier for the modal to be closed. If not
-   *   given, then the topmost modal will be closed.
+   * Close the topmost modal dialog. This will not invoke the associated
+   * callback function.
    */
-  closeModal(id) {
-    const index = this._getModalIndex(id);
-
-    if (index >= 0) {
-      const modal = this._modals[index];
-      this._parent.removeChild(modal.wrapper);
-      this._modals.splice(index, 1);
+  closeModal() {
+    const modalInfo = this._modals.pop();
+    if (modalInfo) {
+      this._parent.removeChild(modalInfo.wrapper);
       this._restoreBackground();
     }
   }
 
   /**
-   * Confirm a modal dialog. If a validation function was provided, then it
-   * will first be called to determine whether the user's selections are valid.
-   * If the modal passes validation (or if no validation function was
-   * provided), then the associated confirmation callback function is invoked
-   * (if any), and then the modal is closed.
-   * @param {string} [id] The identifier for the modal to confirm. If not
-   *   given, then the topmost modal will be confirmed.
+   * Attempt to confirm the topmost modal dialog. The modal's
+   * [validate]{@link module:modalStack~Modal#validate} method will first be
+   * invoked. If the modal passes validation, then its
+   * [confirm]{@link module:modalStack~Modal#confirm} method is invoked, and
+   * then the modal is closed.
    * @returns {boolean} True if the modal was successfully confirmed, and false
    *   if the modal failed validation.
    */
-  confirmModal(id) {
-    const modal = this._getModal(id);
+  confirmModal() {
+    if (this._modals.length === 0)
+      return false;
 
-    if (modal?.validate) {
-      const valid = modal.validate({
-        type: 'validate',
-        id: modal.id,
-        content: modal.content,
-      });
+    const modal = this._modals[this._modals.length - 1].modal;
+    if (!modal.validate())
+      return false;
 
-      if (!valid)
-        return false;
-    }
-
-    if (modal?.confirmCallback) {
-      modal.confirmCallback({
-        type: 'confirm',
-        id: modal.id,
-        content: modal.content,
-      });
-    }
-
-    this.closeModal(id);
+    modal.confirm();
+    this.closeModal();
     return true;
   }
 
   /**
-   * Cancel a modal dialog. If the appropriate callback function was provided
-   * for the modal, it will be invoked.
-   * @param {string} [id] The identifier for the modal to cancel. If not given,
-   *   then the topmost modal will be canceled.
+   * Cancel the topmost modal dialog. This will invoke the modal's
+   * [cancel]{@link module:modalStack~Modal#cancel} method, and then the modal
+   * will be closed.
+   * @returns {boolean} This method will return false if it is called when
+   *   there are no modals in the stack. Otherwise it returns true.
    */
-  cancelModal(id) {
-    const modal = this._getModal(id);
-    if (modal?.cancelCallback) {
-      modal.cancelCallback({
-        type: 'cancel',
-        id: modal.id,
-        content: modal.content,
-      });
-    }
+  cancelModal() {
+    if (this._modals.length === 0)
+      return false;
 
-    this.closeModal(id);
+    this._modals[this._modals.length - 1].modal.cancel();
+    this.closeModal();
+    return true;
   }
 
   /**
@@ -325,34 +299,6 @@ class ModalStack {
     } else {
       this._overlay.classList.add('closed');
     }
-  }
-
-  /**
-   * Find a modal in the stack.
-   * @param {string} [id] The identifier of the modal to find. If not given,
-   *   then the topmost modal is returned.
-   * @returns {?module:modalStack~ModalStack~modal} The
-   *   [modal]{@link module:modalStack~ModalStack~modal} instance. If an
-   *   invalid identifier is given, or if the stack is empty, then null is
-   *   returned.
-   */
-  _getModal(id) {
-    const index = this._getModalIndex(id);
-
-    return (index >= 0) ? this._modals[index] : null;
-  }
-
-  /**
-   * Find the index of a modal in the stack.
-   * @param {string} [id] The identifier of the modal whose index is to be
-   *   found. If not given, then the index of the topmost modal is returned.
-   * @returns {number} The index of the specified modal, or -1 if not found.
-   */
-  _getModalIndex(id) {
-    if (id)
-      return this._modals.findIndex(modal => modal.id === id);
-    else
-      return this._modals.length - 1;
   }
 
   /**
