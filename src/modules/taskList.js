@@ -48,6 +48,38 @@ class TaskList {
   }
 
   /**
+   * Get a task in the task list. This method only returns a copy of the task,
+   * not an actual reference to the task itself. To modify a task in the list,
+   * use the [updateTask]{module:taskList~TaskList~updateTask} method.
+   * @param {string} id The unique identifier of the task to retrieve.
+   * @returns {?module:task~Task} The requested task, or undefined if it could
+   *   not be found.
+   */
+  getTask(id) {
+    const task = this._tasks.get(id);
+    if (task)
+      return _.cloneDeep(task);
+
+    return undefined;
+  }
+
+  /**
+   * Update a task in the task list.
+   * @param {string} id The unique identifier of the task to replace.
+   * @param {module:task~Task} task The new task to associate with the given
+   *   identifier.
+   * @returns {boolean} Returns true if the task was replaced successfully. If
+   *   the given id is invalid, returns false.
+   */
+  updateTask(id, task) {
+    if (!this._tasks.has(id))
+      return false;
+
+    this._tasks.set(id, _.cloneDeep(task));
+    return true;
+  }
+
+  /**
    * Iterate over the task list. Each iteration yields a wrapper containing the
    * identifier of the task along with the task itself.
    * @yields {module:taskList~TaskList~taskWrapper} The next task in the list.
