@@ -4,6 +4,110 @@
  */
 
 /**
+ * Specifies options for creating a date input field in a form.
+ * @typedef {Object} module:utility~dateInputOptions
+ * @property {string} [id] The identifier for the text input element.
+ * @property {string} [name] The name of the text input element.
+ * @property {string} [title] The title of the text input element, usually
+ *   displayed by the browser as a tooltip.
+ * @property {string} [value] The initial value of the text input element.
+ * @property {string[]} [classList=[]] An array of class names to apply to the
+ *   text input element.
+ * @property {boolean} [required=false] If true, indicates that the input
+ *   control is a required field.
+ * @property {string} [pattern] Specifies a regular expression that the input
+ *   control's value should match in order to be considered valid.
+ * @property {number} [minLength] Sets the minimum acceptable length for the
+ *   text input field.
+ * @property {number} [maxLength] Sets the maximum acceptable length for the
+ *   text input field.
+ * @property {Object} [label] An object specifying information about the label
+ *   for the input field.
+ * @property {string} [label.value] The text content of the label that should
+ *   be displayed on the page.
+ * @property {string[]} [label.classList=[]] An array of class names to apply
+ *   to the label element.
+ * @property {Object} [container] An object containing information about the
+ *   container holding the input field.
+ * @property {string} [container.id] The identifier for the container.
+ * @property {string[]} [container.classList=[]] An array of class names to
+ *   apply to the container.
+ * @property {boolean} [container.inline=false] If set to true, indicates that
+ *   the container should be an inline element rather than a block element.
+ * @property {Object} [button] An object containing information about the
+ *   button element.
+ * @property {string} [button.id] The identifier for the button.
+ * @property {string} [button.name] The form name for the button.
+ * @property {string} [button.title] The title for the button, usually
+ *   displayed by the browser as a tooltip.
+ * @property {string} [button.label=Choose...] The label to be displayed in the
+ *   button.
+ * @property {string[]} [button.classList] An array of class names to apply to
+ *   the button element.
+ * @property {Function} [button.callback] A callback function to be invoked
+ *   when the button is clicked or activated. The function will be passed a
+ *   reference to the text input element as an argument.
+ */
+
+/**
+ * Create an input field for entering dates. This will create a text input
+ * control together with a button that can invoke a callback allowing for the
+ * caller to open a date picker.
+ * @param {module:utility~dateInputOptions} [options={}] An object specifying
+ *   options for the input field.
+ * @returns {HTMLElement} The container holding the input elements and label.
+ */
+function createDateInputField(options = {}) {
+  const containerTag = options.container?.inline ? 'span' : 'div';
+  const container = document.createElement(containerTag);
+  if (options.container?.id)
+    container.id = options.container.id;
+  if (options.container?.classList)
+    container.classList.add(...options.container.classList);
+
+  if (options.label) {
+    const label = document.createElement('label');
+    if (options.id)
+      label.htmlFor = options.id;
+    if (options.label.classList)
+      label.classList.add(...options.label.classList);
+    label.textContent = options.label.value || '';
+    container.appendChild(label);
+  }
+
+  container.appendChild(createFormControl({
+    type: 'text',
+    id: options.id || null,
+    name: options.name || null,
+    title: options.title || null,
+    value: options.value || null,
+    classList: options.classList || null,
+    required: options.required || false,
+    pattern: options.pattern || null,
+    minLength: options.minLength || null,
+    maxLength: options.maxLength || null,
+  }));
+
+  const button = document.createElement('button');
+  if (options.button?.id)
+    button.id = options.button.id;
+  if (options.button?.name)
+    button.name = options.button.name;
+  if (options.button?.title)
+    button.title = options.button.title;
+  if (options.button?.classList)
+    button.classList.add(...options.button.classList);
+  button.textContent = options.button?.label || 'Choose...';
+  if (options.button?.callback) {
+    const input = container.querySelector('input');
+    button.addEventListener('click', () => options.button.callback(input));
+  }
+  container.appendChild(button);
+
+  return container;
+}
+
+/**
  * Specifies options for creating input controls in a form.
  * @typedef {Object} module:utility~formControlOptions
  * @property {string} [type=text] The type of input. For most text or numeric
@@ -228,7 +332,7 @@ function createIconButton(iconType, options = {}) {
  * @param {string[]} [options.classList] An array of class names to apply to
  *   the button. If not specified, the button will receive the 'toggle-button'
  *   class.
- * @param {string} [options.activeClass=active] The CSS class to  apply when
+ * @param {string} [options.activeClass=active] The CSS class to apply when
  *   the button is active (on).
  * @returns {HTMLElement} The newly-created button element.
  */
@@ -315,6 +419,7 @@ function getDateFormat(locale, options = { dateStyle: 'short' }) {
 }
 
 export {
+  createDateInputField,
   createFormControl,
   createIconButton,
   createToggleButton,
