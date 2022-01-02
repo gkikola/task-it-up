@@ -287,6 +287,10 @@ input[type="radio"], input[type="checkbox"] {
   font-size: 14px;
 }
 
+.form-select {
+  text-overflow: ellipsis;
+}
+
 .form-textarea {
   width: 100%;
   resize: vertical;
