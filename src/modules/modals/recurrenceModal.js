@@ -39,6 +39,13 @@ const MONTHS = [
   'December',
 ];
 
+const UNITS = [
+  { value: 'day', singular: 'Day', plural: 'Days' },
+  { value: 'week', singular: 'Week', plural: 'Weeks' },
+  { value: 'month', singular: 'Month', plural: 'Months' },
+  { value: 'year', singular: 'Year', plural: 'Years' },
+];
+
 /**
  * A modal dialog for selecting a recurring date.
  * @implements {module:modalStack~Modal}
@@ -143,12 +150,10 @@ class RecurrenceModal {
       id: 'recurring-date-interval-unit',
       name: 'recurring-date-interval-unit',
       classList: ['form-select-inline'],
-      menuItems: [
-        { value: 'day', label: 'Day' },
-        { value: 'week', label: 'Week', selected: true },
-        { value: 'month', label: 'Month' },
-        { value: 'year', label: 'Year' },
-      ],
+      menuItems: UNITS.map(unit => {
+        const selected = unit.value === 'week';
+        return { value: unit.value, label: unit.singular, selected };
+      }),
     }));
     parent.appendChild(container);
 
@@ -228,6 +233,7 @@ class RecurrenceModal {
     }));
 
     label = document.createElement('label');
+    label.id = 'recurring-date-end-count-label';
     label.classList.add('form-input-label-inline');
     label.htmlFor = 'recurring-date-end-count';
     label.textContent = ' occurrences';
@@ -619,19 +625,39 @@ class RecurrenceModal {
    * that was passed to the constructor, if any.
    */
   _initFormValues() {
-    this._updateContextContainer();
   }
 
   /**
    * Add the event listeners to the form controls in the modal.
    */
   _addListeners() {
-    this._getControl('interval-unit').addEventListener('change', () => {
-      this._updateContextContainer();
-    });
-
     const parent = this._containers.parent;
     const fireEvent = input => input.dispatchEvent(new Event('change'));
+
+    // Make units singular or plural based on length
+    const lengthSelect = this._getControl('interval-length');
+    const unitSelect = this._getControl('interval-unit');
+    lengthSelect.addEventListener('change', e => {
+      const length = Number.parseInt(e.target.value);
+
+      if (Number.isFinite(length)) {
+        const plural = length !== 1;
+        UNITS.forEach(unit => {
+          const selector = `option[value="${unit.value}"]`;
+          const option = unitSelect.querySelector(selector);
+          const label = plural ? unit.plural : unit.singular;
+          if (option.textContent !== label)
+            option.textContent = label;
+        });
+      }
+    });
+    fireEvent(lengthSelect);
+
+    unitSelect.addEventListener('change', () => {
+      this._updateContextContainer();
+    });
+    fireEvent(unitSelect);
+
     const radioSelector = 'input[type="radio"]';
 
     const weekOptions = this._containers.weekOptions;
@@ -674,6 +700,16 @@ class RecurrenceModal {
       if (radio.checked)
         fireEvent(radio);
     });
+
+    const endCount = this._getControl('end-count');
+    endCount.addEventListener('change', e => {
+      const count = Number.parseInt(e.target.value);
+      if (Number.isFinite(count)) {
+        const label = count === 1 ? ' occurrence' : ' occurrences';
+        this._getControl('end-count-label').textContent = label;
+      }
+    });
+    fireEvent(endCount);
 
     const endRadioSelector = 'input[name="recurring-date-end-type"]';
     const endTypeListener = e => {
