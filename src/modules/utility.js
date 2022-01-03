@@ -3,6 +3,8 @@
  * @module utility
  */
 
+import { format as dfFormat, parse as dfParse } from 'date-fns';
+
 /**
  * Specifies options for creating a date input field in a form.
  * @typedef {Object} module:utility~dateInputOptions
@@ -360,7 +362,23 @@ function createToggleButton(label, options = {}) {
   return button;
 }
 
-const REFERENCE_DATE = new Date(2020, 0, 1, 14, 5, 5);
+/**
+ * Format a date into a string representation according to a given pattern.
+ * @param {Date} date The date to be formatted.
+ * @param {string} [format] The format string to use as a pattern. If not
+ *   given, then the format from the browser's default locale is used. The
+ *   format tokens are the same as used by the
+ *   [date-fns]{@link https://date-fns.org/} library, as specified in the
+ *   documentation for the
+ *   [format function]{@link https://date-fns.org/v2.28.0/docs/format}.
+ * @returns {string} The formatted date string.
+ */
+function formatDate(date, format) {
+  if (!format)
+    format = getDateFormat();
+
+  return dfFormat(date, format);
+}
 
 /**
  * Retrieve the date format for a given locale, or for the default locale.
@@ -369,15 +387,19 @@ const REFERENCE_DATE = new Date(2020, 0, 1, 14, 5, 5);
  *   If not given, then the browser's default locale is used.
  * @param {Object} [options] An object with formatting options.
  * @param {string} [options.dateStyle] The date formatting style: short,
- *   medium, long, or full.
+ *   medium, long, or full. If no date style is specified, but a time style is
+ *   given, then the date will be excluded from the format string.
  * @param {string} [options.timeStyle] The time formatting style: short,
- *   medium, long, or full.
+ *   medium, long, or full. If not given, then the time will not be included in
+ *   the format string.
  * @param {boolean} [options.hour12] Indicates whether to use a 12-hour clock.
  *   If false, the 24-hour clock is used. If not provided, then the local
  *   default is used.
  * @returns The date format string.
  */
 function getDateFormat(locale, options = { dateStyle: 'short' }) {
+  const REFERENCE_DATE = new Date(2020, 0, 1, 14, 5, 5);
+
   if (!locale)
     locale = [];
   const formatter = new Intl.DateTimeFormat(locale, options);
@@ -418,10 +440,32 @@ function getDateFormat(locale, options = { dateStyle: 'short' }) {
   }).join('');
 }
 
+/**
+ * Parse a date from a string according to a given pattern.
+ * @param {string} dateString The string to parse.
+ * @param {string} [format] The format string to use as a pattern. If not
+ *   given, then the format from the browser's default locale is used. The
+ *   format tokens are the same as used by the
+ *   [date-fns]{@link https://date-fns.org/} library, as specified in the
+ *   documentation for the
+ *   [format function]{@link https://date-fns.org/v2.28.0/docs/format}.
+ * @returns {Date} The parsed date, or null if the string does not match the
+ *   pattern.
+ */
+function parseDate(dateString, format) {
+  if (!format)
+    format = getDateFormat();
+
+  const result = dfParse(dateString, format, new Date());
+  return Number.isFinite(result.getTime()) ? result : null;
+}
+
 export {
   createDateInputField,
   createFormControl,
   createIconButton,
   createToggleButton,
-  getDateFormat
+  formatDate,
+  getDateFormat,
+  parseDate,
 };
