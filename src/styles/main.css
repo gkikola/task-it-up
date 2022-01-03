@@ -319,6 +319,18 @@ input[type="radio"], input[type="checkbox"] {
   border-radius: 10px;
 }
 
+.form-input:disabled,
+.form-input-inline:disabled,
+.form-select:disabled,
+.form-select-inline:disabled,
+.form-textarea:disabled,
+.form-button:disabled,
+.toggle-button:disabled {
+  color: #707070;
+  background-color: #e2e2e2;
+  border-color: #e2e2e2;
+}
+
 .resizer {
   background-color: var(--side-panel-bg-color);
   width: 8px;
