@@ -356,10 +356,14 @@ class RecurrenceModal {
    * Select a form control in the modal.
    * @param {string} idSuffix The identifier of the control to retrieve,
    *   without the 'recurring-date-' prefix.
+   * @param {string} [container] The container in which to look for the
+   *   control. If not given, then the modal content container is used.
    * @returns {HTMLElement} The requested element, or undefined if not found.
    */
-  _getControl(idSuffix) {
-    return this._containers.parent.querySelector(`#recurring-date-${idSuffix}`);
+  _getControl(idSuffix, container) {
+    if (!container)
+      container = this._containers.parent;
+    return container.querySelector(`#recurring-date-${idSuffix}`);
   }
 
   /**
