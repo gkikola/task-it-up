@@ -439,7 +439,50 @@ function getDateFormat(locale, options = {}) {
   if (!locale)
     locale = [];
   const formatter = new Intl.DateTimeFormat(locale, formatterOptions);
-  return formatter.formatToParts(REFERENCE_DATE).map(({ type, value }) => {
+
+  let parts;
+
+  // Fallback if browser doesn't support formatToParts - use en-US
+  if (!('formatToParts' in formatter)) {
+    const dateParts = [
+      { type: 'month', value: '1' },
+      { type: 'literal', value: '/' },
+      { type: 'day', value: '1' },
+      { type: 'literal', value: '/' },
+      { type: 'year', value: '20' },
+    ];
+
+    let timeParts = [
+      { type: 'hour', value: '2' },
+      { type: 'literal', value: ':' },
+      { type: 'minute', value: '05' },
+    ];
+
+    if (formatter.resolvedOptions().hour12) {
+      timeParts = timeParts.concat([
+        { type: 'literal', value: ' ' },
+        { type: 'dayPeriod', value: 'am' },
+      ]);
+    }
+
+    const hasDate = options.dateStyle !== 'none';
+    const hasTime = options.timeStyle !== 'none';
+    if (hasDate && hasTime) {
+      parts = [
+        ...dateParts,
+        { type: 'literal', value: ' ' },
+        ...timeParts,
+      ]
+    } else if (hasTime) {
+      parts = timeParts;
+    } else {
+      parts = dateParts;
+    }
+  } else { // Browser supports formatToParts
+    parts = formatter.formatToParts(REFERENCE_DATE);
+  }
+
+  return parts.map(({ type, value }) => {
     let token = '', count = 1;
     switch (type) {
       case 'literal':
