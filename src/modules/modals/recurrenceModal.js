@@ -197,6 +197,7 @@ class RecurrenceModal {
         inline: true,
       },
       button: {
+        id: 'recurring-date-end-date-button',
         classList: ['form-button'],
         callback: input => this._pickDate(input, modalStack),
       },
@@ -268,6 +269,7 @@ class RecurrenceModal {
         inline: true,
       },
       button: {
+        id: 'recurring-date-start-date-button',
         classList: ['form-button'],
         callback: input => this._pickDate(input, modalStack),
       },
@@ -627,6 +629,81 @@ class RecurrenceModal {
     this._getControl('interval-unit').addEventListener('change', () => {
       this._updateContextContainer();
     });
+
+    const parent = this._containers.parent;
+    const fireEvent = input => input.dispatchEvent(new Event('change'));
+    const radioSelector = 'input[type="radio"]';
+
+    const weekOptions = this._containers.weekOptions;
+    const weekTypeListener = e => {
+      const buttons = weekOptions.querySelectorAll('.form-weekday-button');
+      const enable = e.target.value === 'select-days';
+      buttons.forEach(button => button.disabled = !enable);
+    };
+    weekOptions.querySelectorAll(radioSelector).forEach(radio => {
+      radio.addEventListener('change', weekTypeListener);
+      if (radio.checked)
+        fireEvent(radio);
+    });
+
+    const monthOptions = this._containers.monthOptions;
+    const monthTypeListener = e => {
+      const daySelect = this._getControl('month-day', monthOptions);
+      const weekNumberSelect = this._getControl('month-week-number',
+        monthOptions);
+      const weekDaySelect = this._getControl('month-week-day', monthOptions);
+
+      daySelect.disabled = e.target.value !== 'day-of-month';
+      weekNumberSelect.disabled = e.target.value !== 'week-of-month';
+      weekDaySelect.disabled = e.target.value !== 'week-of-month';
+    };
+    monthOptions.querySelectorAll(radioSelector).forEach(radio => {
+      radio.addEventListener('change', monthTypeListener);
+      if (radio.checked)
+        fireEvent(radio);
+    });
+
+    const yearOptions = this._containers.yearOptions;
+    const yearTypeListener = e => {
+      const selectBoxes = yearOptions.querySelectorAll('select');
+      const enable = e.target.value === 'month-and-day';
+      selectBoxes.forEach(select => select.disabled = !enable);
+    };
+    yearOptions.querySelectorAll(radioSelector).forEach(radio => {
+      radio.addEventListener('change', yearTypeListener);
+      if (radio.checked)
+        fireEvent(radio);
+    });
+
+    const endRadioSelector = 'input[name="recurring-date-end-type"]';
+    const endTypeListener = e => {
+      const dateInput = this._getControl('end-date');
+      const dateButton = this._getControl('end-date-button');
+      const countInput = this._getControl('end-count');
+
+      dateInput.disabled = e.target.value !== 'date';
+      dateButton.disabled = e.target.value !== 'date';
+      countInput.disabled = e.target.value !== 'count';
+    }
+    parent.querySelectorAll(endRadioSelector).forEach(radio => {
+      radio.addEventListener('change', endTypeListener);
+      if (radio.checked)
+        fireEvent(radio);
+    });
+
+    const useDateCheckbox = this._getControl('use-start-date');
+    useDateCheckbox.addEventListener('change', e => {
+      const enable = e.target.checked;
+      this._getControl('start-date').disabled = !enable;
+      this._getControl('start-date-button').disabled = !enable;
+    });
+    fireEvent(useDateCheckbox);
+
+    const noWeekendCheckbox = this._getControl('no-weekend');
+    noWeekendCheckbox.addEventListener('change', e => {
+      this._getControl('weekend-select').disabled = !e.target.checked;
+    });
+    fireEvent(noWeekendCheckbox);
   }
 
   /**

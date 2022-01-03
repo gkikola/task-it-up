@@ -16,6 +16,8 @@ html {
   --footer-height: 44px;
   --side-panel-bg-color: #f4f4f4;
   --modal-accent-color: #d4d4d4;
+  --input-disabled-color: #707070;
+  --input-disabled-bg-color: #e2e2e2;
 }
 
 body {
@@ -136,6 +138,11 @@ input[type="radio"], input[type="checkbox"] {
 .toggle-button.active {
   color: white;
   background-color: #2323d3;
+}
+
+.toggle-button.active:disabled {
+  color: var(--input-disabled-color);
+  background-color: #c8c8f4;
 }
 
 .modal-overlay {
@@ -326,9 +333,9 @@ input[type="radio"], input[type="checkbox"] {
 .form-textarea:disabled,
 .form-button:disabled,
 .toggle-button:disabled {
-  color: #707070;
-  background-color: #e2e2e2;
-  border-color: #e2e2e2;
+  color: var(--input-disabled-color);
+  background-color: var(--input-disabled-bg-color);
+  border-color: var(--input-disabled-bg-color);
 }
 
 .resizer {
