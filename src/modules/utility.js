@@ -382,61 +382,150 @@ function formatDate(date, format) {
 
 /**
  * Retrieve the date format for a given locale, or for the default locale.
- * For example, the format string for en-US should look like MM/dd/yy.
+ * For example, the format string for en-US should look like M/d/yy.
  * @param {string} [locale] The locale whose date format is to be retrieved.
  *   If not given, then the browser's default locale is used.
- * @param {Object} [options] An object with formatting options.
- * @param {string} [options.dateStyle] The date formatting style: short,
- *   medium, long, or full. If no date style is specified, but a time style is
- *   given, then the date will be excluded from the format string.
- * @param {string} [options.timeStyle] The time formatting style: short,
- *   medium, long, or full. If not given, then the time will not be included in
- *   the format string.
- * @param {boolean} [options.hour12] Indicates whether to use a 12-hour clock.
- *   If false, the 24-hour clock is used. If not provided, then the local
- *   default is used.
+ * @param {Object} [options={}] An object with formatting options.
+ * @param {string} [options.dateStyle=short] The date formatting style:
+ *   'short', 'medium', 'long', 'full', or 'none'.
+ * @param {string} [options.timeStyle=none] The time formatting style: 'short',
+ *   'medium', 'long', 'full', or 'none'.
+ * @param {string} [options.tokenStyle=internal] The type of format tokens to
+ *   use. Valid values are 'internal' and 'human'. If set to 'internal' (the
+ *   default), then the function uses the same format tokens that the
+ *   [date-fns]{@link https://date-fns.org/} library uses. If set to 'human',
+ *   then more human-readable tokens are used: for example, a human-readable
+ *   format string might look like 'YYYY-MM-DD hh:mm:ss' or
+ *   'MM/DD/YYYY hh:mm a'.
+ * @param {boolean|string} [options.fullYear=auto] Indicates whether or not to
+ *   use a full four-digit year instead of a two-digit abbreviation. If set to
+ *   'auto', then the local default is used.
+ * @param {boolean|string} [options.padMonths=auto] Indicates whether or not to
+ *   pad single-digit months with a leading zero. If set to 'auto', then the
+ *   local default is used.
+ * @param {boolean|string} [options.padDays=auto] Indicates whether or not to
+ *   pad single-digit days with a leading zero. If set to 'auto', then the
+ *   local default is used.
+ * @param {boolean|string} [options.padHours=auto] Indicates whether or not to
+ *   pad single-digit hours with a leading zero. If set to 'auto', then the
+ *   local default is used.
+ * @param {boolean|string} [options.padMinutes=auto] Indicates whether or not
+ *   to pad single-digit minutes with a leading zero. If set to 'auto', then
+ *   the local default is used.
+ * @param {boolean|string} [options.padSeconds=auto] Indicates whether or not
+ *   to pad single-digit seconds with a leading zero. If set to 'auto', then
+ *   the local default is used.
+ * @param {number|string} [options.hourSystem=auto] Indicates whether to use a
+ *   12- or 24-hour clock. Valid values are 12 for a 12-hour clock, 24 for a
+ *   24-hour clock, or the string 'auto' to use the local default.
  * @returns The date format string.
  */
-function getDateFormat(locale, options = { dateStyle: 'short' }) {
+function getDateFormat(locale, options = {}) {
   const REFERENCE_DATE = new Date(2020, 0, 1, 14, 5, 5);
+
+  if (!options.dateStyle)
+    options.dateStyle = 'short';
+  if (!options.timeStyle)
+    options.timeStyle = 'none';
+
+  const formatterOptions = {};
+  if (options.dateStyle !== 'none')
+    formatterOptions.dateStyle = options.dateStyle;
+  if (options.timeStyle !== 'none')
+    formatterOptions.timeStyle = options.timeStyle;
+  if (options.hourSystem && options.hourSystem !== 'auto')
+    formatterOptions.hour12 = options.hourSystem === 12;
 
   if (!locale)
     locale = [];
-  const formatter = new Intl.DateTimeFormat(locale, options);
+  const formatter = new Intl.DateTimeFormat(locale, formatterOptions);
   return formatter.formatToParts(REFERENCE_DATE).map(({ type, value }) => {
+    let token = '', count = 1;
     switch (type) {
       case 'literal':
-        if (/[A-Za-z]/.test(value))
-          return `'${value.replace(/\'/g, "''")}'`;
+        if (options.tokenStyle !== 'human' && /[A-Za-z]/.test(value))
+          token = `'${value.replace(/\'/g, "''")}'`;
         else
-          return value;
+          token = value;
+        break;
       case 'day':
-        return 'd'.repeat(value.length);
+        token = options.tokenStyle === 'human' ? 'D' : 'd';
+        if (options.padDays === true)
+          count = 2;
+        else if (options.padDays === false)
+          count = 1;
+        else
+          count = value.length;
+        break;
       case 'era':
-        return 'G';
+        token = 'G';
+        break;
       case 'month':
-        return 'M'.repeat(value.length);
+        token = 'M';
+        if (value.length > 3)
+          count = 4;
+        else if (value.length === 3)
+          count = 3;
+        else if (options.padMonths === true)
+          count = 2;
+        else if (options.padMonths === false)
+          count = 1;
+        else
+          count = value.length;
+        break;
       case 'relatedYear':
       case 'year':
-        return 'y'.repeat(value.length);
-      case 'dayPeriod':
-        return 'a';
-      case 'fractionalSecond':
-        return 'S'.repeat(value.length);
-      case 'hour':
-        if (formatter.resolvedOptions().hour12)
-          return 'h'.repeat(value.length);
+        token = options.tokenStyle === 'human' ? 'Y' : 'y';
+        if (options.fullYear === true)
+          count = 4;
+        else if (options.fullYear === false)
+          count = 2;
         else
-          return 'H'.repeat(value.length);
+          count = value.length;
+        break;
+      case 'dayPeriod':
+        token = 'a';
+        break;
+      case 'fractionalSecond':
+        token = 'S';
+        count = value.length;
+        break;
+      case 'hour':
+        if (options.tokenStyle === 'human')
+          token = 'h';
+        else
+          token = formatter.resolvedOptions().hour12 ? 'h' : 'H';
+
+        if (options.padHours === true)
+          count = 2;
+        else if (options.padHours === false)
+          count = 1;
+        else
+          count = value.length;
+        break;
       case 'minute':
-        return 'm'.repeat(value.length);
+        token = 'm';
+        if (options.padMinutes === true)
+          count = 2;
+        else if (options.padMinutes === false)
+          count = 1;
+        else
+          count = value.length;
+        break;
       case 'second':
-        return 's'.repeat(value.length);
+        token = 's';
+        if (options.padSeconds === true)
+          count = 2;
+        else if (options.padSeconds === false)
+          count = 1;
+        else
+          count = value.length;
+        break;
       case 'weekday':
-        return 'eeee';
-      default:
-        return '';
+        token = 'e';
+        count = 4;
     }
+    return token.repeat(count);
   }).join('');
 }
 
