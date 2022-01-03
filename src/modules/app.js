@@ -27,6 +27,20 @@ const NARROW_LAYOUT_CUTOFF = 700;
  */
 class App {
   /**
+   * Holds user app settings.
+   * @typedef {Object} module:app~App~settings
+   * @property {Object} dateFormat An object holding settings related to date
+   *   and time formats.
+   * @property {string} dateFormat.internal The internal date format string
+   *   used for formatting and parsing dates.
+   * @property {string} dateFormat.visual The date format as a pattern that can
+   *   be shown to the user.
+   * @property {string} dateFormat.type The type of date format. Valid values
+   *   are 'local', 'iso', 'month-day-year', 'day-month-year', and
+   *   'year-month-day'.
+   */
+
+  /**
    * Append the DOM elements for the app to the given parent node.
    * @param {HTMLElement} parent The DOM node where the app elements should be
    *   appended.
@@ -97,6 +111,18 @@ class App {
      * @type {module:filterMenu~FilterMenu}
      */
     this._filterMenu = null;
+
+    /**
+     * Holds user app settings.
+     * @type {module:app~App~settings}
+     */
+    this._settings = {
+      dateFormat: {
+        internal: 'yyyy-MM-dd',
+        visual: 'YYYY-MM-DD',
+        type: 'iso',
+      },
+    };
 
     this._createPageElements(parent);
   }
