@@ -13,6 +13,8 @@ import { format as dfFormat, parse as dfParse } from 'date-fns';
  * @property {string} [title] The title of the text input element, usually
  *   displayed by the browser as a tooltip.
  * @property {string} [value] The initial value of the text input element.
+ * @property {string} [placeholder] A hint string used as a placeholder for the
+ *   text input element.
  * @property {string[]} [classList=[]] An array of class names to apply to the
  *   text input element.
  * @property {boolean} [required=false] If true, indicates that the input
@@ -83,6 +85,7 @@ function createDateInputField(options = {}) {
     name: options.name || null,
     title: options.title || null,
     value: options.value || null,
+    placeholder: options.placeholder || null,
     classList: options.classList || null,
     required: options.required || false,
     pattern: options.pattern || null,
@@ -125,6 +128,8 @@ function createDateInputField(options = {}) {
  * @property {string} [value] The initial value of the input element, or a
  *   value identifying a checkbox or radio button option. This property is
  *   ignored for the 'select' input type.
+ * @property {string} [placeholder] A hint string used as a placeholder for
+ *   text-based input elements.
  * @property {string[]} [classList=[]] An array of class names to apply to the
  *   input element.
  * @property {boolean} [checked=false] If true, indicates that the control
@@ -272,6 +277,9 @@ function createFormControl(options = {}) {
     input.defaultChecked = true;
     input.checked = true;
   }
+
+  if (options.placeholder && !checkable && type !== 'select')
+    input.placeholder = options.placeholder;
 
   if (label) {
     let placement = options.label.placement || 'auto';
