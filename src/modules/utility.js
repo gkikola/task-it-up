@@ -391,9 +391,9 @@ function formatDate(date, format) {
  * @param {string} [options.timeStyle=none] The time formatting style: 'short',
  *   'medium', 'long', 'full', or 'none'.
  * @param {string} [options.tokenStyle=internal] The type of format tokens to
- *   use. Valid values are 'internal' and 'human'. If set to 'internal' (the
+ *   use. Valid values are 'internal' and 'visual'. If set to 'internal' (the
  *   default), then the function uses the same format tokens that the
- *   [date-fns]{@link https://date-fns.org/} library uses. If set to 'human',
+ *   [date-fns]{@link https://date-fns.org/} library uses. If set to 'visual',
  *   then more human-readable tokens are used: for example, a human-readable
  *   format string might look like 'YYYY-MM-DD hh:mm:ss' or
  *   'MM/DD/YYYY hh:mm a'.
@@ -486,13 +486,13 @@ function getDateFormat(locale, options = {}) {
     let token = '', count = 1;
     switch (type) {
       case 'literal':
-        if (options.tokenStyle !== 'human' && /[A-Za-z]/.test(value))
+        if (options.tokenStyle !== 'visual' && /[A-Za-z]/.test(value))
           token = `'${value.replace(/\'/g, "''")}'`;
         else
           token = value;
         break;
       case 'day':
-        token = options.tokenStyle === 'human' ? 'D' : 'd';
+        token = options.tokenStyle === 'visual' ? 'D' : 'd';
         if (options.padDays === true)
           count = 2;
         else if (options.padDays === false)
@@ -518,7 +518,7 @@ function getDateFormat(locale, options = {}) {
         break;
       case 'relatedYear':
       case 'year':
-        token = options.tokenStyle === 'human' ? 'Y' : 'y';
+        token = options.tokenStyle === 'visual' ? 'Y' : 'y';
         if (options.fullYear === true)
           count = 4;
         else if (options.fullYear === false)
@@ -534,7 +534,7 @@ function getDateFormat(locale, options = {}) {
         count = value.length;
         break;
       case 'hour':
-        if (options.tokenStyle === 'human')
+        if (options.tokenStyle === 'visual')
           token = 'h';
         else
           token = formatter.resolvedOptions().hour12 ? 'h' : 'H';
