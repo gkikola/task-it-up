@@ -7,7 +7,12 @@ import Task from '../task';
 import DatePickerModal from './datePickerModal';
 import RecurrenceModal from './recurrenceModal';
 import Settings from '../settings';
-import { createDateInputField, createFormControl } from '../utility';
+import {
+  createDateInputField,
+  createFormControl,
+  formatDate,
+  parseDate,
+} from '../utility';
 
 /**
  * A modal dialog for adding or editing a task.
@@ -250,6 +255,7 @@ class AddTaskModal {
       project: parent.querySelector('#task-project'),
       description: parent.querySelector('#task-description'),
     };
+    this._initFormValues();
     this._addListeners(modalStack);
   }
 
@@ -282,6 +288,40 @@ class AddTaskModal {
       return false;
 
     return true;
+  }
+
+  /**
+   * Initialize the values of the form elements based on the initial task that
+   * was passed to the constructor, if any.
+   */
+  _initFormValues() {
+    const controls = this._controls;
+    let task = null;
+    if (this._taskId)
+      task = this._tasks.getTask(this._taskId);
+
+    if (task?.name)
+      controls.name.value = task.name;
+
+    if (task?.dueDate) {
+      controls.dueDate.value = formatDate(task.dueDate,
+        this._dateFormat.internal);
+    }
+
+    if (task?.recurringDate) {
+      // TODO: initialize recurrence
+    }
+
+    if (task?.priorityString && task.priorityString !== 'unknown')
+      controls.priority.value = task.priorityString;
+
+    let projectId = this._projectId;
+    if (task?.project)
+      projectId = task.project;
+    controls.project.value = projectId;
+
+    if (task?.description)
+      controls.description.value = task.description;
   }
 
   /**
