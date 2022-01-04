@@ -6,6 +6,7 @@
 import Task from '../task';
 import DatePickerModal from './datePickerModal';
 import RecurrenceModal from './recurrenceModal';
+import Settings from '../settings';
 import { createDateInputField, createFormControl } from '../utility';
 
 /**
@@ -38,6 +39,9 @@ class AddTaskModal {
    *   to use as the default selection in the Project field. If not provided,
    *   then the task will default to having no project. This property is
    *   ignored if an existing task is being edited.
+   * @param {module:settings~Settings~dateFormat} [options.dateFormat] An
+   *   object holding information about the calendar date format to use for
+   *   date fields. If not given, then the browser default is used.
    */
   constructor(taskList, projectList, options = {}) {
     /**
@@ -77,6 +81,12 @@ class AddTaskModal {
      * @type {?module:recurringDate~RecurringDate}
      */
     this._customRecurrence = null;
+
+    /**
+     * An object holding date format information.
+     * @type {module:settings~Settings~dateFormat}
+     */
+    this._dateFormat = options.dateFormat || Settings.lookupDateFormat();
 
     /**
      * An object holding callback functions.
@@ -164,6 +174,7 @@ class AddTaskModal {
     dateContainer.appendChild(createDateInputField({
       id: 'task-due-date',
       name: 'task-due-date',
+      placeholder: this._dateFormat.visual,
       classList: ['form-input-inline'],
       container: { classList: ['form-input-date-container'] },
       button: {
