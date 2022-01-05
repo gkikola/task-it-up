@@ -309,7 +309,31 @@ class AddTaskModal {
     }
 
     if (task?.recurringDate) {
-      // TODO: initialize recurrence
+      let value;
+      if (task.recurringDate.isDefault()) {
+        switch (task.recurringDate.intervalUnit) {
+          case 'day':
+            value = 'daily';
+            break;
+          case 'week':
+            value = 'weekly';
+            break;
+          case 'month':
+            value = 'monthly';
+            break;
+          case 'year':
+            value = 'annually';
+            break;
+          default:
+            value = 'custom';
+            break;
+        }
+      } else {
+        value = 'custom';
+      }
+      controls.recurringDate.value = value;
+      if (value === 'custom')
+        this._customRecurrence = task.recurringDate;
     }
 
     if (task?.priorityString && task.priorityString !== 'unknown')
@@ -350,6 +374,10 @@ class AddTaskModal {
 
       this._customRecurrence = recurrence;
     };
+
+    if (this._customRecurrence)
+      processRecurrence(this._customRecurrence);
+
     const cancelRecurrence = () => recurringDate.value = recurrenceValue;
     recurringDate.addEventListener('change', e => {
       if (e.target.value === 'custom') {
