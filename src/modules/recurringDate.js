@@ -68,7 +68,7 @@ class RecurringDate {
      * (this can happen if the start date is in the past).
      * @type {boolean}
      */
-    this._allowPastOccurence = options.allowPastOccurrence || false;
+    this._allowPastOccurrence = options.allowPastOccurrence || false;
 
     /**
     * The number of the week within a month in which the recurring date should
