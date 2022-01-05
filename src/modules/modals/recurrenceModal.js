@@ -15,8 +15,8 @@ import {
   parseDate,
 } from '../utility';
 
+import _ from 'lodash';
 import ordinal from 'ordinal';
-import { create } from 'lodash';
 
 const WEEKDAYS = [
   'Sunday',
@@ -28,18 +28,18 @@ const WEEKDAYS = [
   'Saturday'
 ];
 const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  { name: 'January', maxDays: 31 },
+  { name: 'February', maxDays: 29 },
+  { name: 'March', maxDays: 31 },
+  { name: 'April', maxDays: 30 },
+  { name: 'May', maxDays: 31 },
+  { name: 'June', maxDays: 30 },
+  { name: 'July', maxDays: 31 },
+  { name: 'August', maxDays: 31 },
+  { name: 'September', maxDays: 30 },
+  { name: 'October', maxDays: 31 },
+  { name: 'November', maxDays: 30 },
+  { name: 'December', maxDays: 31 },
 ];
 
 const UNITS = [
@@ -604,7 +604,7 @@ class RecurrenceModal {
     optionContainer.appendChild(label);
 
     selectItems = MONTHS.map(month => {
-      return { value: month.toLowerCase(), label: month };
+      return { value: month.name.toLowerCase(), label: month.name };
     });
     optionContainer.appendChild(createFormControl({
       type: 'select',
@@ -684,7 +684,7 @@ class RecurrenceModal {
             this._getControl('year-type-day', context).checked = true;
             const monthSelect = this._getControl('year-month', context);
             const daySelect = this._getControl('year-day', context);
-            monthSelect.value = MONTHS[initial.month].toLowerCase();
+            monthSelect.value = MONTHS[initial.month].name.toLowerCase();
             daySelect.value = initial.dayOfMonth;
           } else {
             this._getControl('year-type-previous', context).checked = true;
@@ -753,6 +753,7 @@ class RecurrenceModal {
 
     const radioSelector = 'input[type="radio"]';
 
+    // Conditionally enable/disable controls for weekly recurrences
     const weekOptions = this._containers.weekOptions;
     const weekTypeListener = e => {
       const buttons = weekOptions.querySelectorAll('.form-weekday-button');
@@ -765,6 +766,7 @@ class RecurrenceModal {
         fireEvent(radio);
     });
 
+    // Conditionally enable/disable controls for monthly recurrences
     const monthOptions = this._containers.monthOptions;
     const monthTypeListener = e => {
       const daySelect = this._getControl('month-day', monthOptions);
@@ -782,6 +784,7 @@ class RecurrenceModal {
         fireEvent(radio);
     });
 
+    // Conditionally enable/disable controls for yearly recurrences
     const yearOptions = this._containers.yearOptions;
     const yearTypeListener = e => {
       const selectBoxes = yearOptions.querySelectorAll('select');
@@ -794,6 +797,32 @@ class RecurrenceModal {
         fireEvent(radio);
     });
 
+    // Update day select box based on the number of days in the selected month
+    const yearMonthSelect = this._getControl('year-month', yearOptions);
+    const yearDaySelect = this._getControl('year-day', yearOptions);
+    const yearMonthListener = e => {
+      const month = MONTHS.findIndex(info => {
+        return info.name.toLowerCase() === e.target.value;
+      });
+      const oldValue = Number.parseInt(yearDaySelect.value);
+      yearDaySelect.innerHTML = '';
+
+      const maxDays = MONTHS[month].maxDays;
+      _.range(1, maxDays + 1).forEach(day => {
+        const opt = document.createElement('option');
+        opt.value = day.toString();
+        opt.textContent = ordinal(day);
+        yearDaySelect.appendChild(opt);
+      });
+      if (oldValue <= maxDays)
+        yearDaySelect.value = oldValue;
+      else
+        yearDaySelect.value = maxDays;
+    }
+    yearMonthSelect.addEventListener('change', yearMonthListener);
+    fireEvent(yearMonthSelect);
+
+    // Make end count label singular/plural based on value
     const endCount = this._getControl('end-count');
     endCount.addEventListener('change', e => {
       const count = Number.parseInt(e.target.value);
@@ -804,6 +833,7 @@ class RecurrenceModal {
     });
     fireEvent(endCount);
 
+    // Conditionally enable/disable recurrence end controls
     const endRadioSelector = 'input[name="recurring-date-end-type"]';
     const endTypeListener = e => {
       const dateInput = this._getControl('end-date');
@@ -820,6 +850,7 @@ class RecurrenceModal {
         fireEvent(radio);
     });
 
+    // Conditionally enable/disable controls for checkbox options
     const useDateCheckbox = this._getControl('use-start-date');
     useDateCheckbox.addEventListener('change', e => {
       const enable = e.target.checked;
