@@ -145,6 +145,7 @@ class RecurrenceModal {
       name: 'recurring-date-interval-length',
       value: '1',
       classList: ['form-input-inline', 'form-input-count'],
+      required: true,
       min: 1,
       container: { inline: true },
       label: {
@@ -245,6 +246,7 @@ class RecurrenceModal {
       name: 'recurring-date-end-count',
       value: '1',
       classList: ['form-input-inline', 'form-input-count'],
+      required: true,
       min: 1,
     }));
 
