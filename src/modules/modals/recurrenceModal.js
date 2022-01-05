@@ -64,6 +64,9 @@ class RecurrenceModal {
    *   invoked when the user cancels the modal.
    * @param {module:recurringDate~RecurringDate} [options.initial] A recurring
    *   date to use as a default when initializing the form controls.
+   * @param {Date} [options.baseDate] The date to use as a default for
+   *   initializing certain fields. If not given, then the present date is
+   *   used.
    * @param {module:settings~Settings~dateFormat} [options.dateFormat] An
    *   object holding information about the calendar date format to use for
    *   date fields. If not given, then the browser default is used.
@@ -75,6 +78,12 @@ class RecurrenceModal {
      * @type {module:recurringDate~RecurringDate}
      */
     this._initialRecurrence = options.initial || null;
+
+    /**
+     * The date to use when initializing certain input fields.
+     * @type {Date}
+     */
+    this._baseDate = options.baseDate || new Date();
 
     /**
      * An object holding date format information.
@@ -812,10 +821,10 @@ class RecurrenceModal {
         this._getControl('weekend-select').value = initial.onWeekend;
       }
     } else { // No initial recurrence
-      const today = new Date();
-      const dayOfWeek = WEEKDAYS[today.getDay()].toLowerCase();
-      const dayOfMonth = today.getDate();
-      const month = MONTHS[today.getMonth()].name.toLowerCase();
+      const date = this._baseDate;
+      const dayOfWeek = WEEKDAYS[date.getDay()].toLowerCase();
+      const dayOfMonth = date.getDate();
+      const month = MONTHS[date.getMonth()].name.toLowerCase();
       const weekNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
 
       const weekOptions = containers.weekOptions;
