@@ -37,7 +37,8 @@ class RecurringDate {
    * @param {string} [options.onWeekend=no-change] Specifies what happens when
    *   the next recurrence falls on a weekend. If set to 'no-change', then the
    *   date is unaffected. If set to 'previous-weekday' or 'next-weekday', then
-   *   the previous or next weekday is used instead.
+   *   the previous or next weekday is used instead. If set to
+   *   'nearest-weekday', then the closest weekday is used instead.
    * @param {Date} [options.endDate] Indicates the date after which the
    *   repetition should stop.
    * @param {number} [options.maxCount] Indicates the maximum number of
@@ -106,7 +107,8 @@ class RecurringDate {
     * Specifies what happens when the next recurrence occurs on a weekend. If
     * set to 'no-change', then the date is unaffected. If set to
     * 'previous-weekday' or 'next-weekday', then the previous or next weekday
-    * is used instead.
+    * is used instead. If set to 'nearest-weekday', then the closest weekday is
+    * used instead.
     * @type {string}
     */
     this._onWeekend = options.onWeekend || 'no-change';
@@ -201,7 +203,8 @@ class RecurringDate {
   /**
    * Specifies what happens when the next recurrence falls on a weekend. If set
    * to 'no-change', then the date is unaffected. If set to 'previous-weekday'
-   * or 'next-weekday', then the previous or next weekday is used instead.
+   * or 'next-weekday', then the previous or next weekday is used instead. If
+   * set to 'nearest-weekday', then the closest weekday is used instead.
    * @type {string}
    */
   get onWeekend() {
@@ -295,6 +298,7 @@ class RecurringDate {
    *   the next recurrence occurs on a weekend. If set to 'no-change', then the
    *   date is unaffected. If set to 'previous-weekday', then the previous
    *   weekday is used instead. If set to 'next-weekday', then the next weekday
+   *   is used instead. If set to 'nearest-weekday', then the closest weekday
    *   is used instead.
    * @param {Date} [options.endDate] Specifies the date after which the
    *   repetitions should stop.
@@ -332,6 +336,7 @@ class RecurringDate {
    *   the next recurrence occurs on a weekend. If set to 'no-change', then the
    *   date is unaffected. If set to 'previous-weekday', then the previous
    *   weekday is used instead. If set to 'next-weekday', then the next weekday
+   *   is used instead. If set to 'nearest-weekday', then the closest weekday
    *   is used instead.
    * @param {Date} [options.endDate] Specifies the date after which the
    *   repetitions should stop.
@@ -376,6 +381,7 @@ class RecurringDate {
    *   the next recurrence occurs on a weekend. If set to 'no-change', then the
    *   date is unaffected. If set to 'previous-weekday', then the previous
    *   weekday is used instead. If set to 'next-weekday', then the next weekday
+   *   is used instead. If set to 'nearest-weekday', then the closest weekday
    *   is used instead.
    * @param {Date} [options.endDate] Specifies the date after which the
    *   repetitions should stop.
@@ -428,6 +434,7 @@ class RecurringDate {
    *   the next recurrence occurs on a weekend. If set to 'no-change', then the
    *   date is unaffected. If set to 'previous-weekday', then the previous
    *   weekday is used instead. If set to 'next-weekday', then the next weekday
+   *   is used instead. If set to 'nearest-weekday', then the closest weekday
    *   is used instead.
    * @param {Date} [options.endDate] Specifies the date after which the
    *   repetitions should stop.

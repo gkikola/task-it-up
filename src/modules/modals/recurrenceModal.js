@@ -334,7 +334,8 @@ class RecurrenceModal {
       name: 'recurring-date-weekend-select',
       classList: ['form-select-inline'],
       menuItems: [
-        { value: 'previous-weekday', label: 'previous', selected: true },
+        { value: 'nearest-weekday', label: 'nearest', selected: true },
+        { value: 'previous-weekday', label: 'previous' },
         { value: 'next-weekday', label: 'next' },
       ],
     }));
