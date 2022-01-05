@@ -337,8 +337,8 @@ function createIconButton(iconType, options = {}) {
  * @param {string} [options.title] The title of the button, usually displayed
  *   by the browser as a tooltip.
  * @param {string} [options.value] The form value associated with the button.
- * @param {string} [options.initialState=off] The initial state of the button,
- *   either 'on' or 'off'.
+ * @param {boolean} [options.defaultActive=false] Sets the initial state of the
+ *   button. If set to true, then the button will be active (on) by default.
  * @param {string[]} [options.classList] An array of class names to apply to
  *   the button. If not specified, the button will receive the 'toggle-button'
  *   class.
@@ -363,7 +363,7 @@ function createToggleButton(label, options = {}) {
   button.textContent = label;
 
   const activeClass = options.activeClass || 'active';
-  if (options.initialState === 'on')
+  if (options.defaultActive)
     button.classList.add(activeClass);
 
   button.addEventListener('click', () => button.classList.toggle(activeClass));
