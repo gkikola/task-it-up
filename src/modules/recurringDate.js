@@ -19,9 +19,9 @@ class RecurringDate {
    * @param {Date} [options.startDate] The initial date from which the next
    *   recurrence is calculated. If this is null, then the next date is
    *   calculated from the present time.
-   * @param {boolean} [options.skipPast=false] If this is true, then the
-   *   recurring date will never occur in the past (i.e. before the present
-   *   day), even if the start date is in the past.
+   * @param {boolean} [options.allowPastOccurrence=false] If this is true, then
+   *   the next occurrence is allowed to be in the past (this can happen if the
+   *   start date is in the past).
    * @param {number} [options.weekNumber] The number of the week within a month
    *   in which the recurring date should occur. A value of 1 indicates the
    *   first week of the month, 2 indicates the second, and so on.
@@ -62,11 +62,11 @@ class RecurringDate {
     this._startDate = options.startDate || null;
 
     /**
-     * If this is true, then the recurring date will never occur in the past
-     * (i.e. before the present day), even if the start date is in the past.
+     * If this is true, then the next occurrence is allowed to be in the past
+     * (this can happen if the start date is in the past).
      * @type {boolean}
      */
-    this._skipPast = options.skipPast || false;
+    this._allowPastOccurence = options.allowPastOccurrence || false;
 
     /**
     * The number of the week within a month in which the recurring date should
@@ -150,12 +150,12 @@ class RecurringDate {
   }
 
   /**
-   * If this is true, then the recurring date will never occur in the past
-   * (i.e. before the present day), even if the start date is in the past.
+   * If this is true, then the next occurrence is allowed to be in the past
+   * (this can happen if the start date is in the past).
    * @type {boolean}
    */
-  get skipPast() {
-    return this._skipPast;
+  get allowPastOccurrence() {
+    return this._allowPastOccurrence;
   }
 
   /**
@@ -255,9 +255,9 @@ class RecurringDate {
    * @param {Date} [options.startDate] The initial date from which the next
    *   recurrence will be calculated. If not given, then the next date is
    *   calculated from the present time.
-   * @param {boolean} [options.skipPast] If this is true, then the recurring
-   *   date will never occur in the past (i.e. before the present day), even if
-   *   the start date is in the past.
+   * @param {boolean} [options.allowPastOccurrence=false] If this is true, then
+   *   the next occurrence is allowed to be in the past (this can happen if the
+   *   start date is in the past).
    * @param {string} [options.onWeekend=no-change] Specifies what happens when
    *   the next recurrence occurs on a weekend. If set to 'no-change', then the
    *   date is unaffected. If set to 'previous-weekday', then the previous
@@ -274,7 +274,7 @@ class RecurringDate {
     return new RecurringDate('day', {
       intervalLength: options.intervalLength || 1,
       startDate: options.startDate || null,
-      skipPast: options.skipPast || false,
+      allowPastOccurrence: options.allowPastOccurrence || false,
       onWeekend: options.onWeekend || 'no-change',
       endDate: options.endDate || null,
       maxCount: options.maxCount || null,
@@ -289,9 +289,9 @@ class RecurringDate {
    * @param {Date} [options.startDate] The initial date from which the next
    *   recurrence will be calculated. If not given, then the next date is
    *   calculated from the present time.
-   * @param {boolean} [options.skipPast] If this is true, then the recurring
-   *   date will never occur in the past (i.e. before the present day), even if
-   *   the start date is in the past.
+   * @param {boolean} [options.allowPastOccurrence=false] If this is true, then
+   *   the next occurrence is allowed to be in the past (this can happen if the
+   *   start date is in the past).
    * @param {number[]} [options.daysOfWeek] An array holding the days of the
    *   week on which the recurring date should occur. Each day is an integer
    *   from 0-6, where 0 represents Sunday, 1 represents Monday, and so on.
@@ -311,7 +311,7 @@ class RecurringDate {
     return new RecurringDate('week', {
       intervalLength: options.intervalLength || 1,
       startDate: options.startDate || null,
-      skipPast: options.skipPast || false,
+      allowPastOccurrence: options.allowPastOccurrence || false,
       daysOfWeek: options.daysOfWeek || null,
       onWeekend: options.onWeekend || 'no-change',
       endDate: options.endDate || null,
@@ -327,9 +327,9 @@ class RecurringDate {
    * @param {Date} [options.startDate] The initial date from which the next
    *   recurrence will be calculated. If not given, then the next date is
    *   calculated from the present time.
-   * @param {boolean} [options.skipPast] If this is true, then the recurring
-   *   date will never occur in the past (i.e. before the present day), even if
-   *   the start date is in the past.
+   * @param {boolean} [options.allowPastOccurrence=false] If this is true, then
+   *   the next occurrence is allowed to be in the past (this can happen if the
+   *   start date is in the past).
    * @param {number} [options.weekNumber] The number of the week within a month
    *   in which the recurring date should occur. A value of 1 indicates the
    *   first week of the month, 2 indicates the second, and so on.
@@ -359,7 +359,7 @@ class RecurringDate {
     return new RecurringDate('month', {
       intervalLength: options.intervalLength || 1,
       startDate: options.startDate || null,
-      skipPast: options.skipPast || false,
+      allowPastOccurrence: options.allowPastOccurrence || false,
       weekNumber: options.weekNumber || null,
       daysOfWeek,
       dayOfMonth: options.dayOfMonth || null,
@@ -377,9 +377,9 @@ class RecurringDate {
    * @param {Date} [options.startDate] The initial date from which the next
    *   recurrence will be calculated. If not given, then the next date is
    *   calculated from the present time.
-   * @param {boolean} [options.skipPast] If this is true, then the recurring
-   *   date will never occur in the past (i.e. before the present day), even if
-   *   the start date is in the past.
+   * @param {boolean} [options.allowPastOccurrence=false] If this is true, then
+   *   the next occurrence is allowed to be in the past (this can happen if the
+   *   start date is in the past).
    * @param {number} [options.weekNumber] The number of the week within a month
    *   in which the recurring date should occur. A value of 1 indicates the
    *   first week of the month, 2 indicates the second, and so on.
@@ -415,7 +415,7 @@ class RecurringDate {
     return new RecurringDate('year', {
       intervalLength: options.intervalLength || 1,
       startDate: options.startDate || null,
-      skipPast: options.skipPast || false,
+      allowPastOccurrence: options.allowPastOccurrence || false,
       weekNumber: options.weekNumber || null,
       daysOfWeek,
       month,
