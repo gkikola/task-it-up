@@ -739,6 +739,32 @@ class RecurrenceModal {
         this._getControl('no-weekend').checked = true;
         this._getControl('weekend-select').value = initial.onWeekend;
       }
+    } else { // No initial recurrence
+      const today = new Date();
+      const dayOfWeek = WEEKDAYS[today.getDay()].toLowerCase();
+      const dayOfMonth = today.getDate();
+      const month = MONTHS[today.getMonth()].name.toLowerCase();
+      const weekNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
+
+      const weekOptions = containers.weekOptions;
+      const dayButton = this._getControl(`weekday-${dayOfWeek}`, weekOptions);
+      dayButton.classList.add('active');
+
+      const monthOptions = containers.monthOptions;
+      const monthDaySelect = this._getControl('month-day', monthOptions);
+      const monthWeekNumSelect = this._getControl('month-week-number',
+        monthOptions);
+      const monthWeekDaySelect = this._getControl('month-week-day',
+        monthOptions);
+      monthDaySelect.value = dayOfMonth.toString();
+      monthWeekNumSelect.value = weekNumber.toString();
+      monthWeekDaySelect.value = dayOfWeek;
+
+      const yearOptions = containers.yearOptions;
+      const yearMonthSelect = this._getControl('year-month', yearOptions);
+      const yearDaySelect = this._getControl('year-day', yearOptions);
+      yearMonthSelect.value = month;
+      yearDaySelect.value = dayOfMonth.toString();
     }
   }
 
