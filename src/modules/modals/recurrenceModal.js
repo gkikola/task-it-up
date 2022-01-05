@@ -6,10 +6,13 @@
 
 import DatePickerModal from './datePickerModal';
 import RecurringDate from '../recurringDate';
+import Settings from '../settings';
 import {
   createDateInputField,
   createFormControl,
   createToggleButton,
+  formatDate,
+  parseDate,
 } from '../utility';
 
 import ordinal from 'ordinal';
@@ -61,6 +64,9 @@ class RecurrenceModal {
    *   invoked when the user cancels the modal.
    * @param {module:recurringDate~RecurringDate} [options.initial] A recurring
    *   date to use as a default when initializing the form controls.
+   * @param {module:settings~Settings~dateFormat} [options.dateFormat] An
+   *   object holding information about the calendar date format to use for
+   *   date fields. If not given, then the browser default is used.
    */
   constructor(options = {}) {
     /**
@@ -69,6 +75,12 @@ class RecurrenceModal {
      * @type {module:recurringDate~RecurringDate}
      */
     this._initialRecurrence = options.initial || null;
+
+    /**
+     * An object holding date format information.
+     * @type {module:settings~Settings~dateFormat}
+     */
+    this._dateFormat = options.dateFormat || Settings.lookupDateFormat();
 
     /**
      * An object holding callback functions.
@@ -196,6 +208,7 @@ class RecurrenceModal {
     optionContainer.appendChild(createDateInputField({
       id: 'recurring-date-end-date',
       name: 'recurring-date-end-date',
+      placeholder: this._dateFormat.visual,
       classList: ['form-input-inline'],
       container: {
         classList: ['form-input-date-container-inline'],
@@ -269,6 +282,7 @@ class RecurrenceModal {
     optionContainer.appendChild(createDateInputField({
       id: 'recurring-date-start-date',
       name: 'recurring-date-start-date',
+      placeholder: this._dateFormat.visual,
       classList: ['form-input-inline'],
       container: {
         classList: ['form-input-date-container-inline'],
@@ -625,6 +639,85 @@ class RecurrenceModal {
    * that was passed to the constructor, if any.
    */
   _initFormValues() {
+    const containers = this._containers;
+    const initial = this._initialRecurrence;
+
+    if (initial) {
+      this._getControl('interval-length').value = initial.intervalLength;
+      this._getControl('interval-unit').value = initial.intervalUnit;
+
+      let context;
+      switch (initial.intervalUnit) {
+        case 'week':
+          context = containers.weekOptions;
+          if (initial.daysOfWeek) {
+            this._getControl('week-type-select-days', context).checked = true;
+            initial.daysOfWeek.forEach(day => {
+              const id = `weekday-${WEEKDAYS[day].toLowerCase()}`;
+              const button = this._getControl(id, context);
+              if (button)
+                button.classList.add('active');
+            });
+          } else {
+            this._getControl('week-type-previous', context).checked = true;
+          }
+          break;
+        case 'month':
+          context = containers.monthOptions;
+          if (initial.dayOfMonth) {
+            this._getControl('month-type-day', context).checked = true;
+            this._getControl('month-day', context).value = initial.dayOfMonth;
+          } else if (initial.weekNumber && initial.daysOfWeek
+            && initial.daysOfWeek.length === 1) {
+            this._getControl('month-type-week', context).checked = true;
+            const weekSelect = this._getControl('month-week-number', context);
+            const daySelect = this._getControl('month-week-day', context);
+            weekSelect.value = initial.weekNumber;
+            daySelect.value = WEEKDAYS[initial.daysOfWeek[0]].toLowerCase();
+          } else {
+            this._getControl('month-type-previous', context).checked = true;
+          }
+          break;
+        case 'year':
+          context = containers.yearOptions;
+          if (initial.month && initial.dayOfMonth) {
+            this._getControl('year-type-day', context).checked = true;
+            const monthSelect = this._getControl('year-month', context);
+            const daySelect = this._getControl('year-day', context);
+            monthSelect.value = MONTHS[initial.month].toLowerCase();
+            daySelect.value = initial.dayOfMonth;
+          } else {
+            this._getControl('year-type-previous', context).checked = true;
+          }
+          break;
+      }
+
+      if (initial.endDate) {
+        this._getControl('end-type-date').checked = true;
+        const input = this._getControl('end-date');
+        input.value = formatDate(initial.endDate, this._dateFormat.internal);
+      } else if (initial.maxCount) {
+        this._getControl('end-type-count').checked = true;
+        this._getControl('end-count').value = initial.maxCount;
+      } else {
+        this._getControl('end-type-never').checked = true;
+      }
+
+      if (initial.startDate) {
+        this._getControl('use-start-date').checked = true;
+        const input = this._getControl('start-date');
+        input.value = formatDate(initial.startDate, this._dateFormat.internal);
+      }
+
+      if (initial.allowPastOccurrence) {
+        this._getControl('allow-past').checked = true;
+      }
+
+      if (initial.onWeekend !== 'no-change') {
+        this._getControl('no-weekend').checked = true;
+        this._getControl('weekend-select').value = initial.onWeekend;
+      }
+    }
   }
 
   /**
