@@ -145,6 +145,7 @@ class RecurrenceModal {
       name: 'recurring-date-interval-length',
       value: '1',
       classList: ['form-input-inline', 'form-input-count'],
+      min: 1,
       container: { inline: true },
       label: {
         value: 'Repeat every ',
@@ -210,6 +211,7 @@ class RecurrenceModal {
       name: 'recurring-date-end-date',
       placeholder: this._dateFormat.visual,
       classList: ['form-input-inline'],
+      required: true,
       container: {
         classList: ['form-input-date-container-inline'],
         inline: true,
@@ -243,6 +245,7 @@ class RecurrenceModal {
       name: 'recurring-date-end-count',
       value: '1',
       classList: ['form-input-inline', 'form-input-count'],
+      min: 1,
     }));
 
     label = document.createElement('label');
@@ -284,6 +287,7 @@ class RecurrenceModal {
       name: 'recurring-date-start-date',
       placeholder: this._dateFormat.visual,
       classList: ['form-input-inline'],
+      required: true,
       container: {
         classList: ['form-input-date-container-inline'],
         inline: true,
@@ -371,6 +375,24 @@ class RecurrenceModal {
   }
 
   validate() {
+    if (!this._getControl('interval-length').reportValidity())
+      return false;
+
+    if (this._getControl('end-type-date').checked) {
+      if (!this._getControl('end-date').reportValidity())
+        return false;
+    }
+
+    if (this._getControl('end-type-count').checked) {
+      if (!this._getControl('end-count').reportValidity())
+        return false;
+    }
+
+    if (this._getControl('use-start-date').checked) {
+      if (!this._getControl('start-date').reportValidity())
+        return false;
+    }
+
     return true;
   }
 
@@ -864,6 +886,21 @@ class RecurrenceModal {
       this._getControl('weekend-select').disabled = !e.target.checked;
     });
     fireEvent(noWeekendCheckbox);
+
+    // Check date validity
+    const dateListener = e => {
+      const value = e.target.value;
+      if (value.length > 0) {
+        let message = '';
+        if (!parseDate(value, this._dateFormat.internal)) {
+          const format = this._dateFormat.visual;
+          message = `Please enter a valid date in ${format} format.`;
+        }
+        e.target.setCustomValidity(message);
+      }
+    };
+    this._getControl('end-date').addEventListener('change', dateListener);
+    this._getControl('start-date').addEventListener('change', dateListener);
   }
 
   /**
@@ -906,6 +943,7 @@ class RecurrenceModal {
     modalStack.showModal(new DatePickerModal({
       confirm: date => {
         input.value = formatDate(date, this._dateFormat.internal);
+        input.setCustomValidity('');
       },
       startDate,
     }));
