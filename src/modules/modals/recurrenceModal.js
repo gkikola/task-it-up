@@ -868,7 +868,16 @@ class RecurrenceModal {
    *   the modal has been inserted.
    */
   _pickDate(input, modalStack) {
-    modalStack.showModal(new DatePickerModal());
+    let startDate = null;
+    if (input.value)
+      startDate = parseDate(input.value, this._dateFormat.internal);
+
+    modalStack.showModal(new DatePickerModal({
+      confirm: date => {
+        input.value = formatDate(date, this._dateFormat.internal);
+      },
+      startDate,
+    }));
   }
 }
 
