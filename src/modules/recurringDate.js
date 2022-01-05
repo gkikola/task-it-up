@@ -3,6 +3,8 @@
  * @module recurringDate
  */
 
+import _ from 'lodash';
+
 /**
  * Represents a recurring date.
  */
@@ -237,6 +239,37 @@ class RecurringDate {
    * the starting date and remaining repetition count if appropriate.
    */
   advance() {
+  }
+
+  /**
+   * Determine whether or not the recurrence was created with the default
+   * options.
+   * @returns {boolean} True if the recurring date is a default recurrence, and
+   *   false otherwise.
+   */
+  isDefault() {
+    const def = new RecurringDate(this.intervalUnit);
+    if (this.intervalLength !== def.intervalLength)
+      return false;
+    if (this.startDate?.getTime() !== def.startDate?.getTime())
+      return false;
+    if (this.allowPastOccurrence !== def.allowPastOccurrence)
+      return false;
+    if (this.weekNumber !== def.weekNumber)
+      return false;
+    if (!_.isEqual(this.daysOfWeek, def.daysOfWeek))
+      return false;
+    if (this.month !== def.month)
+      return false;
+    if (this.dayOfMonth !== def.dayOfMonth)
+      return false;
+    if (this.onWeekend !== def.onWeekend)
+      return false;
+    if (this.endDate?.getTime() !== def.endDate?.getTime())
+      return false;
+    if (this.maxCount !== def.maxCount)
+      return false;
+    return true;
   }
 
   /**
