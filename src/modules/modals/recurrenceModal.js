@@ -368,8 +368,77 @@ class RecurrenceModal {
   }
 
   confirm() {
-    if (this._callbacks.confirm)
-      this._callbacks.confirm(new RecurringDate('day'));
+    if (this._callbacks.confirm) {
+      const unit = this._getControl('interval-unit').value;
+      const options = {};
+
+      const lengthInput = this._getControl('interval-length');
+      options.intervalLength = Number.parseInt(lengthInput.value);
+
+      let context;
+      const getDayIndex = day => WEEKDAYS.findIndex(name => {
+        return day === name.toLowerCase();
+      });
+      switch (unit) {
+        case 'week':
+          context = this._containers.weekOptions;
+          if (this._getControl('week-type-select-days', context).checked) {
+            const daysOfWeek = [];
+            context.querySelectorAll('.form-weekday-button').forEach(button => {
+              if (button.classList.contains('active'))
+                daysOfWeek.push(getDayIndex(button.value));
+            });
+            if (daysOfWeek.length > 0)
+              options.daysOfWeek = daysOfWeek;
+          }
+          break;
+        case 'month':
+          context = this._containers.monthOptions;
+          if (this._getControl('month-type-day', context).checked) {
+            const daySelect = this._getControl('month-day', context);
+            options.dayOfMonth = Number.parseInt(daySelect.value);
+          } else if (this._getControl('month-type-week', context).checked) {
+            const weekSelect = this._getControl('month-week-number', context);
+            const daySelect = this._getControl('month-week-day', context);
+            options.weekNumber = Number.parseInt(weekSelect.value);
+            options.daysOfWeek = [getDayIndex(daySelect.value)];
+          }
+          break;
+        case 'year':
+          context = this._containers.yearOptions;
+          if (this._getControl('year-type-day', context).checked) {
+            const monthSelect = this._getControl('year-month', context);
+            const daySelect = this._getControl('year-day', context);
+            options.month = MONTHS.findIndex(info => {
+              return info.name.toLowerCase() === monthSelect.value;
+            });
+            options.dayOfMonth = Number.parseInt(daySelect.value);
+          }
+          break;
+      }
+
+      if (this._getControl('end-type-date').checked) {
+        const input = this._getControl('end-date');
+        options.endDate = parseDate(input.value, this._dateFormat.internal);
+      } else if (this._getControl('end-type-count').checked) {
+        const input = this._getControl('end-count');
+        options.maxCount = Number.parseInt(input.value);
+      }
+
+      if (this._getControl('use-start-date').checked) {
+        const input = this._getControl('start-date');
+        options.startDate = parseDate(input.value, this._dateFormat.internal);
+      }
+
+      options.allowPastOccurrence = this._getControl('allow-past').checked;
+
+      if (this._getControl('no-weekend').checked) {
+        const value = this._getControl('weekend-select').value;
+        options.onWeekend = value;
+      }
+
+      this._callbacks.confirm(new RecurringDate(unit, options));
+    }
   }
 
   cancel() {
