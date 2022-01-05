@@ -318,7 +318,8 @@ class AddTaskModal {
     let projectId = this._projectId;
     if (task?.project)
       projectId = task.project;
-    controls.project.value = projectId;
+    if (projectId)
+      controls.project.value = projectId;
 
     if (task?.description)
       controls.description.value = task.description;
