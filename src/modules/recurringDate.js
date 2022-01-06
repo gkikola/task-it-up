@@ -25,8 +25,11 @@ class RecurringDate {
    *   the next occurrence is allowed to be in the past (this can happen if the
    *   start date is in the past).
    * @param {number} [options.weekNumber] The number of the week within a month
-   *   in which the recurring date should occur. A value of 1 indicates the
-   *   first week of the month, 2 indicates the second, and so on.
+   *   in which the recurring date should occur. Used in conjunction with
+   *   daysOfWeek. A value of 1 indicates the first occurrence of a day within
+   *   the month, 2 indicates the second occurrence, and so on. If this is set
+   *   to 5, then the 4th or 5th occurrence of the day may be used, depending
+   *   on how many such days are in a particular month.
    * @param {number[]} [options.daysOfWeek] An array holding the days of the
    *   week on which the recurring date should occur. Each day is an integer
    *   from 0-6, where 0 represents Sunday, 1 represents Monday, and so on.
@@ -52,16 +55,16 @@ class RecurringDate {
     this._intervalUnit = intervalUnit;
 
     /**
-    * The length of the repetition interval.
-    * @type {number}
-    */
+     * The length of the repetition interval.
+     * @type {number}
+     */
     this._intervalLength = options.intervalLength || 1;
 
     /**
-    * The initial date from which the next recurrence is calculated. If this
-    * is null, then the next date is calculated from the present time.
-    * @type {?Date}
-    */
+     * The initial date from which the next recurrence is calculated. If this
+     * is null, then the next date is calculated from the present time.
+     * @type {?Date}
+     */
     this._startDate = options.startDate || null;
 
     /**
@@ -72,19 +75,22 @@ class RecurringDate {
     this._allowPastOccurrence = options.allowPastOccurrence || false;
 
     /**
-    * The number of the week within a month in which the recurring date should
-    * occur. A value of 1 indicates the first week of the month, 2 indicates
-    * the second, and so on.
-    * @type {?number}
-    */
+     * The number of the week within a month in which the recurring date should
+     * occur. Used in conjunction with daysOfWeek. A value of 1 indicates the
+     * first occurrence of a day within the month, 2 indicates the second
+     * occurrence, and so on. If this is set to 5, then the 4th or 5th
+     * occurrence of the day may be used, depending on how many such days are
+     * in a particular month.
+     * @type {?number}
+     */
     this._weekNumber = options.weekNumber || null;
 
     /**
-    * An array holding the days of the week on which the recurring date should
-    * occur. Each day is an integer from 0-6, where 0 represents Sunday, 1
-    * represents Monday, and so on.
-    * @type {?number[]}
-    */
+     * An array holding the days of the week on which the recurring date should
+     * occur. Each day is an integer from 0-6, where 0 represents Sunday, 1
+     * represents Monday, and so on.
+     * @type {?number[]}
+     */
     this._daysOfWeek = options.daysOfWeek || null;
 
     /**
@@ -104,13 +110,13 @@ class RecurringDate {
     this._dayOfMonth = options.dayOfMonth || null;
 
     /**
-    * Specifies what happens when the next recurrence occurs on a weekend. If
-    * set to 'no-change', then the date is unaffected. If set to
-    * 'previous-weekday' or 'next-weekday', then the previous or next weekday
-    * is used instead. If set to 'nearest-weekday', then the closest weekday is
-    * used instead.
-    * @type {string}
-    */
+     * Specifies what happens when the next recurrence occurs on a weekend. If
+     * set to 'no-change', then the date is unaffected. If set to
+     * 'previous-weekday' or 'next-weekday', then the previous or next weekday
+     * is used instead. If set to 'nearest-weekday', then the closest weekday
+     * is used instead.
+     * @type {string}
+     */
     this._onWeekend = options.onWeekend || 'no-change';
 
     /**
@@ -120,10 +126,10 @@ class RecurringDate {
     this._endDate = options.endDate || null;
 
     /**
-    * Indicates the maximum number of repetitions before the recurrence should
-    * stop, if ever.
-    * @type {?number}
-    */
+     * Indicates the maximum number of repetitions before the recurrence should
+     * stop, if ever.
+     * @type {?number}
+     */
     this._maxCount = options.maxCount || null;
   }
 
@@ -164,8 +170,11 @@ class RecurringDate {
 
   /**
    * The number of the week within a month in which the recurring date should
-   * occur, if any. A value of 1 indicates the first week of the month, 2
-   * indicates the second, and so on.
+   * occur. Used in conjunction with daysOfWeek. A value of 1 indicates the
+   * first occurrence of a day within the month, 2 indicates the second
+   * occurrence, and so on. If this is set to 5, then the 4th or 5th occurrence
+   * of the day may be used, depending on how many such days are in a
+   * particular month.
    * @type {?number}
    */
   get weekNumber() {

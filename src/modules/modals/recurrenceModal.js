@@ -627,8 +627,9 @@ class RecurrenceModal {
     optionContainer.appendChild(label);
 
     selectItems = [];
-    for (let week = 1; week <= 5; week++)
+    for (let week = 1; week <= 4; week++)
       selectItems.push({ value: week.toString(), label: ordinal(week) });
+    selectItems.push({ value: '5', label: 'last' });
     optionContainer.appendChild(createFormControl({
       type: 'select',
       id: 'recurring-date-month-week-number',
