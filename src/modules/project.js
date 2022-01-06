@@ -10,8 +10,10 @@ class Project {
   /**
    * Create a project.
    * @param {string} name The name of the project.
+   * @param {Object} [options={}] An object holding additional project options.
+   * @param {string} [description] A description for the project.
    */
-  constructor(name) {
+  constructor(name, options = {}) {
     /**
      * The name of the project.
      * @type {string}
@@ -22,7 +24,7 @@ class Project {
      * A description for the project.
      * @type {?string}
      */
-    this.description = null;
+    this.description = options.description || null;
   }
 }
 
