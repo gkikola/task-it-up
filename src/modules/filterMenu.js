@@ -161,7 +161,7 @@ class FilterMenu {
     });
 
     if (toggle)
-      toggle.addEventListener('click', this.toggleGroup.bind(this, id));
+      toggle.addEventListener('click', () => this.toggleGroup(id));
 
     this._container.appendChild(groupContainer);
   }
