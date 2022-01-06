@@ -185,6 +185,7 @@ class App {
       { groupId: 'default', filterId: 'all', label: 'All Tasks' },
       { groupId: 'dates', filterId: 'today', label: 'Today' },
       { groupId: 'dates', filterId: 'week', label: 'This Week' },
+      { groupId: 'dates', filterId: 'month', label: 'This Month' },
       { groupId: 'dates', filterId: 'past-due', label: 'Past Due' },
       { groupId: 'priorities', filterId: 'very-high', label: 'Very High' },
       { groupId: 'priorities', filterId: 'high', label: 'High' },
@@ -429,7 +430,9 @@ class App {
         if (e.filterId === 'today') {
           subheading = formatDate(today, 'eeee, MMMM d, yyyy');
         } else if (e.filterId === 'week') {
-          endDate = addToDate(today, { days: 6 });
+          endDate = addToDate(today, { weeks: 1, days: -1 });
+        } else if (e.filterId === 'month') {
+          endDate = addToDate(today, { months: 1, days: -1 });
         }
 
         if (endDate) {
