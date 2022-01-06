@@ -3,6 +3,7 @@
  * @module addTaskModal
  */
 
+import AddProjectModal from './addProjectModal';
 import DatePickerModal from './datePickerModal';
 import RecurrenceModal from './recurrenceModal';
 import RecurringDate from '../recurringDate';
@@ -157,17 +158,12 @@ class AddTaskModal {
   }
 
   addContent(parent, modalStack) {
-    let task = null;
-    if (this._taskId)
-      task = this._tasks.getTask(this._taskId);
-
     const containerType = { classList: ['form-input-container'] };
     const labelType = value => ({ value, classList: ['form-input-label'] });
     parent.appendChild(createFormControl({
       type: 'text',
       id: 'task-name',
       name: 'task-name',
-      value: task ? task.name : null,
       classList: ['form-input'],
       required: true,
       label: labelType('Name'),
@@ -228,11 +224,6 @@ class AddTaskModal {
       ],
     }));
 
-    const projectItems = [{ value: 'none', label: 'None', selected: true }];
-    this._projects.forEach(entry => {
-      projectItems.push({ value: entry.id, label: entry.project.name });
-    });
-    projectItems.push({ value: 'new', label: 'New Project...' });
     parent.appendChild(createFormControl({
       type: 'select',
       id: 'task-project',
@@ -240,7 +231,7 @@ class AddTaskModal {
       classList: ['form-select'],
       label: labelType('Project'),
       container: containerType,
-      menuItems: projectItems,
+      menuItems: [{ value: 'none', label: 'None' }],
     }));
 
     parent.appendChild(createFormControl({
@@ -311,7 +302,7 @@ class AddTaskModal {
       dueDate,
       completionDate,
       priority: controls.priority.value,
-      description: controls.description.value,
+      description: controls.description.value || null,
       recurringDate,
       project,
     });
@@ -348,6 +339,8 @@ class AddTaskModal {
    * was passed to the constructor, if any.
    */
   _initFormValues() {
+    this._updateProjects();
+
     const controls = this._controls;
     let task = null;
     if (this._taskId)
@@ -480,6 +473,27 @@ class AddTaskModal {
       }
     });
 
+    // Handle project selection
+    let projectValue = controls.project.value;
+    controls.project.addEventListener('change', e => {
+      if (e.target.value === 'new') {
+        const modal = new AddProjectModal({
+          confirm: project => {
+            const id = this._projects.addProject(project);
+            this._updateProjects();
+            controls.project.value = id;
+            projectValue = id;
+            if (this._callbacks.newProject)
+              this._callbacks.newProject(id);
+          },
+          cancel: () => controls.project.value = projectValue,
+        });
+        modalStack.showModal(modal);
+      } else {
+        projectValue = e.target.value;
+      }
+    });
+
     // Check date validity
     controls.dueDate.addEventListener('change', e => {
       const value = e.target.value;
@@ -513,6 +527,26 @@ class AddTaskModal {
       startDate,
       title: 'Select Due Date',
     }));
+  }
+
+  /**
+   * Update the project select box options.
+   */
+  _updateProjects() {
+    const projectItems = [{ value: 'none', label: 'None' }];
+    this._projects.forEach(entry => {
+      projectItems.push({ value: entry.id, label: entry.project.name });
+    });
+    projectItems.push({ value: 'new', label: 'New Project...' });
+
+    const selectBox = this._controls.project;
+    selectBox.innerHTML = '';
+    projectItems.forEach(entry => {
+      const optElem = document.createElement('option');
+      optElem.value = entry.value;
+      optElem.textContent = entry.label;
+      selectBox.appendChild(optElem);
+    });
   }
 }
 
