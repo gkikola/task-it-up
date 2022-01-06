@@ -1056,12 +1056,23 @@ class RecurrenceModal {
     if (input.value)
       startDate = parseDate(input.value, this._dateFormat.internal);
 
+    let title = null;
+    switch (input.id) {
+      case 'recurring-date-start-date':
+        title = 'Select Start Date';
+        break;
+      case 'recurring-date-end-date':
+        title = 'Select End Date';
+        break;
+    }
+
     modalStack.showModal(new DatePickerModal({
       confirm: date => {
         input.value = formatDate(date, this._dateFormat.internal);
         input.setCustomValidity('');
       },
       startDate,
+      title,
     }));
   }
 }

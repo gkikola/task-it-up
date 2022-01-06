@@ -511,6 +511,7 @@ class AddTaskModal {
         input.setCustomValidity('');
       },
       startDate,
+      title: 'Select Due Date',
     }));
   }
 }

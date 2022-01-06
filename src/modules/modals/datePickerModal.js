@@ -21,6 +21,7 @@ class DatePickerModal {
    *   invoked when the user cancels the modal.
    * @param {Date} [options.startDate] The date that will be initially
    *   selected. If not given, then the present date is used.
+   * @param {string} [options.title=Select Date] The title of the modal.
    */
   constructor(options = {}) {
     /**
@@ -44,6 +45,12 @@ class DatePickerModal {
     this._startDate = options.startDate || null;
 
     /**
+     * The title of the modal.
+     * @type {string}
+     */
+    this._title = options.title || 'Select Date';
+
+    /**
      * The date picker instance.
      * @type {module:datePicker~DatePicker}
      */
@@ -51,7 +58,7 @@ class DatePickerModal {
   }
 
   get title() {
-    return 'Select Date';
+    return this._title;
   }
 
   get confirmLabel() {
