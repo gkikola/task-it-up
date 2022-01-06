@@ -50,7 +50,7 @@ class TaskList {
   /**
    * Get a task in the task list. This method only returns a copy of the task,
    * not an actual reference to the task itself. To modify a task in the list,
-   * use the [updateTask]{module:taskList~TaskList~updateTask} method.
+   * use the [updateTask]{@link module:taskList~TaskList#updateTask} method.
    * @param {string} id The unique identifier of the task to retrieve.
    * @returns {?module:task~Task} The requested task, or undefined if it could
    *   not be found.
