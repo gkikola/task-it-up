@@ -5,13 +5,13 @@
 
 import '../styles/reset.css';
 import '../styles/main.css';
+import AddProjectModal from './modals/addProjectModal';
+import AddTaskModal from './modals/addTaskModal';
 import FilterMenu from './filterMenu';
 import ModalStack from './modalStack';
 import ProjectList from './projectList';
 import Settings from './settings';
 import TaskList from './taskList';
-
-import AddTaskModal from './modals/addTaskModal';
 
 import { createIconButton } from './utility';
 
@@ -358,9 +358,8 @@ class App {
   }
 
   /**
-   * Display the modal dialog for adding a new task. After the user confirms
-   * the dialog, the task is added to the task list. If the user cancels, the
-   * modal is closed and nothing happens.
+   * Display the modal dialog for adding or editing a task. After the user
+   * confirms the dialog, the task is added to the task list.
    * @param {Object} [options={}] An object holding options for creating the
    *   modal.
    * @param {string} [taskId] The identifier for the task to edit, if any.
@@ -373,6 +372,31 @@ class App {
       taskId: options.taskId || null,
       projectId: options.projectId || null,
       dateFormat: this._settings.dateFormat,
+    });
+    this._modalStack.showModal(modal);
+  }
+
+  /**
+   * Display the modal dialog for adding or editing a project. After the user
+   * confirms the dialog, the project is added to the project list.
+   * @param {Object} [options={}] An object holding options for creating the
+   *   modal.
+   * @param {string} [projectId] The identifier for the project to edit, if
+   *   any. If not given, a new project is created.
+   */
+  _showAddProjectModal(options = {}) {
+    let project = null;
+    if (options.projectId)
+      project = this._projects.getProject(options.projectId);
+
+    const modal = new AddProjectModal({
+      confirm: project => {
+        if (options.projectId)
+          this._projects.updateProject(options.projectId, project);
+        else
+          this._projects.addProject(project);
+      },
+      project,
     });
     this._modalStack.showModal(modal);
   }
