@@ -360,20 +360,43 @@ class AddTaskModal {
     const recurringDate = controls.recurringDate;
     let recurrenceValue = recurringDate.value;
     const processRecurrence = recurrence => {
+      this._customRecurrence = recurrence;
+
+      let newValue = 'custom-result';
+      if (recurrence.isDefault()) {
+        switch (recurrence.intervalUnit) {
+          case 'day':
+            newValue = 'daily';
+            break;
+          case 'week':
+            newValue = 'weekly';
+            break;
+          case 'month':
+            newValue = 'monthly';
+            break;
+          case 'year':
+            newValue = 'annually';
+            break;
+        }
+      }
+
       // Update select box options
       const selector = 'option[value="custom-result"]';
       let optElem = recurringDate.querySelector(selector);
-      if (!optElem) {
-        optElem = document.createElement('option');
-        optElem.value = 'custom-result';
-        recurringDate.insertBefore(optElem, recurringDate.lastChild);
+      if (optElem && newValue !== 'custom-result') {
+        recurringDate.removeChild(optElem);
+      } else if (newValue === 'custom-result') {
+        if (!optElem) {
+          optElem = document.createElement('option');
+          optElem.value = 'custom-result';
+          recurringDate.insertBefore(optElem, recurringDate.lastChild);
+        }
+        const dateFormatStr = this._dateFormat.internal;
+        optElem.textContent = recurrence.toStringVerbose(dateFormatStr);
       }
-      const dateFormatStr = this._dateFormat.internal;
-      optElem.textContent = recurrence.toStringVerbose(dateFormatStr);
-      recurringDate.value = 'custom-result';
-      recurrenceValue = recurringDate.value;
 
-      this._customRecurrence = recurrence;
+      recurringDate.value = newValue;
+      recurrenceValue = newValue;
     };
 
     if (this._customRecurrence)
