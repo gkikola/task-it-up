@@ -403,12 +403,22 @@ class AddTaskModal {
       processRecurrence(this._customRecurrence);
 
     const cancelRecurrence = () => recurringDate.value = recurrenceValue;
+
     recurringDate.addEventListener('change', e => {
       if (e.target.value === 'custom') {
+        // Get due date, if any
+        const dateInput = this._controls.dueDate;
+        let baseDate = null;
+        if (dateInput.value) {
+          baseDate = parseDate(dateInput.value, this._dateFormat.internal);
+        }
+
         const modal = new RecurrenceModal({
           confirm: processRecurrence,
           cancel: cancelRecurrence,
           initial: this._customRecurrence,
+          baseDate,
+          dateFormat: this._dateFormat,
         });
         modalStack.showModal(modal);
       } else {
