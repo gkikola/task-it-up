@@ -3,10 +3,11 @@
  * @module addTaskModal
  */
 
-import Task from '../task';
 import DatePickerModal from './datePickerModal';
 import RecurrenceModal from './recurrenceModal';
+import RecurringDate from '../recurringDate';
 import Settings from '../settings';
+import Task from '../task';
 import {
   createDateInputField,
   createFormControl,
@@ -20,33 +21,38 @@ import {
  */
 class AddTaskModal {
   /**
+   * Specifies options for the modal.
+   * @typedef {Object} module:addTaskModal~AddTaskModal~options
+   * @property {Function} [confirm] A callback function that will be invoked
+   *   when the user successfully confirms the modal. The function will be
+   *   passed the unique identifier of the task that was inserted into the task
+   *   list (or the identifier of the existing task that was modified).
+   * @property {Function} [cancel] A callback function that will be invoked
+   *   when the user cancels the modal.
+   * @property {Function} [newProject] A callback function that will be invoked
+   *   when the user adds a new project to the project list. The unique
+   *   identifier for the project will be passed to the function as an
+   *   argument.
+   * @property {string} [taskId] The unique identifier for the task that is
+   *   being edited, if any. If not provided, then a new task will be created.
+   * @property {string} [projectId] The unique identifier for the project to
+   *   use as the default selection in the Project field. If not provided, then
+   *   the task will default to having no project. This property is ignored if
+   *   an existing task is being edited.
+   * @property {module:settings~Settings~dateFormat} [dateFormat] An object
+   *   holding information about the calendar date format to use for date
+   *   fields. If not given, then the browser default is used.
+   */
+
+  /**
    * Initialize the modal.
    * @param {module:taskList~TaskList} taskList The task list in which the new
    *   task should be inserted.
    * @param {module:projectList~ProjectList} projectList The project list that
    *   will be used to populate the Project select box. The user can also
    *   create a new project, which will be added to the list.
-   * @param {Object} [options={}] Holds configuration options for the modal.
-   * @param {Function} [options.confirm] A callback function that will be
-   *   invoked when the user successfully confirms the modal. The function will
-   *   be passed the unique identifier of the task that was inserted into the
-   *   task list (or the identifier of the existing task that was modified).
-   * @param {Function} [options.cancel] A callback function that will be
-   *   invoked when the user cancels the modal.
-   * @param {Function} [options.newProject] A callback function that will be
-   *   invoked when the user adds a new project to the project list. The unique
-   *   identifier for the project will be passed to the function as an
-   *   argument.
-   * @param {string} [options.taskId] The unique identifier for the task that
-   *   is being edited, if any. If not provided, then a new task will be
-   *   created.
-   * @param {string} [options.projectId] The unique identifier for the project
-   *   to use as the default selection in the Project field. If not provided,
-   *   then the task will default to having no project. This property is
-   *   ignored if an existing task is being edited.
-   * @param {module:settings~Settings~dateFormat} [options.dateFormat] An
-   *   object holding information about the calendar date format to use for
-   *   date fields. If not given, then the browser default is used.
+   * @param {module:addTaskModal~AddTaskModal~options} [options={}] Holds
+   *   configuration options for the modal.
    */
   constructor(taskList, projectList, options = {}) {
     /**
@@ -261,9 +267,54 @@ class AddTaskModal {
 
   confirm() {
     const controls = this._controls;
-    const task = new Task(controls.name.value);
-    task.priorityString = controls.priority.value;
-    task.description = controls.description.value || null;
+
+    let dueDate = null;
+    if (controls.dueDate.value)
+      dueDate = parseDate(controls.dueDate.value, this._dateFormat.internal);
+
+    let completionDate = null;
+    if (this._taskId) {
+      const task = this._tasks.getTask(this._taskId);
+      completionDate = task.completionDate;
+    }
+
+    let recurringDate = null;
+    switch (controls.recurringDate.value) {
+      case 'daily':
+        recurringDate = new RecurringDate('day');
+        break;
+      case 'weekly':
+        recurringDate = new RecurringDate('week');
+        break;
+      case 'monthly':
+        recurringDate = new RecurringDate('month');
+        break;
+      case 'annually':
+        recurringDate = new RecurringDate('year');
+        break;
+      case 'custom-result':
+        recurringDate = this._customRecurrence;
+        break;
+    }
+
+    let project = null;
+    switch (controls.project.value) {
+      case 'none':
+      case 'new':
+        break;
+      default:
+        project = controls.project.value;
+        break;
+    }
+
+    const task = new Task(controls.name.value, {
+      dueDate,
+      completionDate,
+      priority: controls.priority.value,
+      description: controls.description.value,
+      recurringDate,
+      project,
+    });
 
     let id;
     if (this._taskId) {
