@@ -361,9 +361,19 @@ class App {
    * Display the modal dialog for adding a new task. After the user confirms
    * the dialog, the task is added to the task list. If the user cancels, the
    * modal is closed and nothing happens.
+   * @param {Object} [options={}] An object holding options for creating the
+   *   modal.
+   * @param {string} [taskId] The identifier for the task to edit, if any.
+   * @param {string} [projectId] The identifier for the default project that
+   *   the task should be assigned to, if any. If a task id was given, then
+   *   this option is ignored.
    */
-  _showAddTaskModal() {
-    const modal = new AddTaskModal(this._tasks, this._projects);
+  _showAddTaskModal(options = {}) {
+    const modal = new AddTaskModal(this._tasks, this._projects, {
+      taskId: options.taskId || null,
+      projectId: options.projectId || null,
+      dateFormat: this._settings.dateFormat,
+    });
     this._modalStack.showModal(modal);
   }
 
