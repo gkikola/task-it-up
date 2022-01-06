@@ -13,7 +13,9 @@ import ProjectList from './projectList';
 import Settings from './settings';
 import TaskList from './taskList';
 
-import { createIconButton } from './utility';
+import { createIconButton, formatDate } from './utility';
+
+import { add as addToDate } from 'date-fns';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -415,18 +417,55 @@ class App {
     if (!e.filterId)
       return;
 
-    const heading = document.getElementById('main-panel-heading');
-    let labelText = e.filterLabel;
-    if (e.groupId === 'priorities')
-      labelText += ' Priority';
-    heading.textContent = labelText;
+    let heading = e.filterLabel;
+    let subheading = null;
+    switch (e.groupId) {
+      default:
+      case 'default':
+        break;
+      case 'dates': {
+        const today = new Date();
+        let endDate = null;
+        if (e.filterId === 'today') {
+          subheading = formatDate(today, 'eeee, MMMM d, yyyy');
+        } else if (e.filterId === 'week') {
+          endDate = addToDate(today, { days: 6 });
+        }
 
-    const subheading = document.getElementById('main-panel-subheading');
-    labelText = '';
-    subheading.textContent = labelText;
-    subheading.style.display = (labelText.length > 0) ? 'block' : 'none';
+        if (endDate) {
+          const dateFormat = this._settings.dateFormat.internal;
+          const startStr = formatDate(today, dateFormat);
+          const endStr = formatDate(endDate, dateFormat);
+          subheading = `${startStr} to ${endStr}`;
+        }
+        break;
+      }
+      case 'projects':
+        break;
+      case 'priorities':
+        heading = `${e.filterLabel} Priority`;
+        break;
+    }
 
-    // TODO: Update main panel
+    this._updateMainHeading(heading, subheading);
+  }
+
+  /**
+   * Update the heading in the main panel.
+   * @param {string} heading The new heading to display.
+   * @param {string} [subheading] The new subheading to display, if any.
+   */
+  _updateMainHeading(heading, subheading) {
+    const headingElem = document.getElementById('main-panel-heading');
+    const subheadingElem = document.getElementById('main-panel-subheading');
+    headingElem.textContent = heading;
+    if (subheading) {
+      subheadingElem.textContent = subheading;
+      subheadingElem.style.display = 'block';
+    } else {
+      subheadingElem.textContent = '';
+      subheadingElem.style.display = 'none';
+    }
   }
 };
 
