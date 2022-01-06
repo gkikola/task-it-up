@@ -742,9 +742,10 @@ class RecurrenceModal {
    * that was passed to the constructor, if any.
    */
   _initFormValues() {
-    const containers = this._containers;
+    const weekOptions = this._containers.weekOptions;
+    const monthOptions = this._containers.monthOptions;
+    const yearOptions = this._containers.yearOptions;
     const initial = this._initialRecurrence;
-
     if (initial) {
       this._getControl('interval-length').value = initial.intervalLength;
       this._getControl('interval-unit').value = initial.intervalUnit;
@@ -752,7 +753,7 @@ class RecurrenceModal {
       let context;
       switch (initial.intervalUnit) {
         case 'week':
-          context = containers.weekOptions;
+          context = weekOptions;
           if (initial.daysOfWeek) {
             this._getControl('week-type-select-days', context).checked = true;
             initial.daysOfWeek.forEach(day => {
@@ -766,7 +767,7 @@ class RecurrenceModal {
           }
           break;
         case 'month':
-          context = containers.monthOptions;
+          context = monthOptions;
           if (initial.dayOfMonth) {
             this._getControl('month-type-day', context).checked = true;
             this._getControl('month-day', context).value = initial.dayOfMonth;
@@ -782,7 +783,7 @@ class RecurrenceModal {
           }
           break;
         case 'year':
-          context = containers.yearOptions;
+          context = yearOptions;
           if (initial.month && initial.dayOfMonth) {
             this._getControl('year-type-day', context).checked = true;
             const monthSelect = this._getControl('year-month', context);
@@ -820,28 +821,34 @@ class RecurrenceModal {
         this._getControl('no-weekend').checked = true;
         this._getControl('weekend-select').value = initial.onWeekend;
       }
-    } else { // No initial recurrence
-      const date = this._baseDate;
-      const dayOfWeek = WEEKDAYS[date.getDay()].toLowerCase();
-      const dayOfMonth = date.getDate();
-      const month = MONTHS[date.getMonth()].name.toLowerCase();
-      const weekNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
+    }
 
-      const weekOptions = containers.weekOptions;
+    const date = this._baseDate;
+    const dayOfWeek = WEEKDAYS[date.getDay()].toLowerCase();
+    const dayOfMonth = date.getDate();
+    const month = MONTHS[date.getMonth()].name.toLowerCase();
+    const weekNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
+
+    if (!initial || initial.intervalUnit !== 'week' || !initial.daysOfWeek) {
       const dayButton = this._getControl(`weekday-${dayOfWeek}`, weekOptions);
       dayButton.classList.add('active');
+    }
 
-      const monthOptions = containers.monthOptions;
+    if (!initial || initial.intervalUnit !== 'month' || !initial.dayOfMonth) {
       const monthDaySelect = this._getControl('month-day', monthOptions);
+      monthDaySelect.value = dayOfMonth.toString();
+    }
+
+    if (!initial || initial.intervalUnit !== 'month' || !initial.weekNumber) {
       const monthWeekNumSelect = this._getControl('month-week-number',
         monthOptions);
       const monthWeekDaySelect = this._getControl('month-week-day',
         monthOptions);
-      monthDaySelect.value = dayOfMonth.toString();
       monthWeekNumSelect.value = weekNumber.toString();
       monthWeekDaySelect.value = dayOfWeek;
+    }
 
-      const yearOptions = containers.yearOptions;
+    if (!initial || initial.intervalUnit !== 'year' || !initial.month) {
       const yearMonthSelect = this._getControl('year-month', yearOptions);
       const yearDaySelect = this._getControl('year-day', yearOptions);
       yearMonthSelect.value = month;
