@@ -25,7 +25,7 @@ const WEEKDAYS = [
   'Wednesday',
   'Thursday',
   'Friday',
-  'Saturday'
+  'Saturday',
 ];
 const MONTHS = [
   { name: 'January', maxDays: 31 },
@@ -785,7 +785,7 @@ class RecurrenceModal {
           break;
         case 'year':
           context = yearOptions;
-          if (initial.month && initial.dayOfMonth) {
+          if (Number.isInteger(initial.month) && initial.dayOfMonth) {
             this._getControl('year-type-day', context).checked = true;
             const monthSelect = this._getControl('year-month', context);
             const daySelect = this._getControl('year-day', context);
@@ -849,7 +849,8 @@ class RecurrenceModal {
       monthWeekDaySelect.value = dayOfWeek;
     }
 
-    if (!initial || initial.intervalUnit !== 'year' || !initial.month) {
+    if (!initial || initial.intervalUnit !== 'year'
+      || !Number.isInteger(initial.month)) {
       const yearMonthSelect = this._getControl('year-month', yearOptions);
       const yearDaySelect = this._getControl('year-day', yearOptions);
       yearMonthSelect.value = month;
