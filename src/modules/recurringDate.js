@@ -4,6 +4,31 @@
  */
 
 import _ from 'lodash';
+import ordinal from 'ordinal';
+
+const WEEKDAYS = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 /**
  * Represents a recurring date.
@@ -289,7 +314,53 @@ class RecurringDate {
    * @returns {string} A string representation of the recurring date.
    */
   toString() {
-    return 'RecurringDate';
+    const length = this.intervalLength;
+
+    let strValue = '';
+    switch (this.intervalUnit) {
+      case 'day':
+        strValue = length === 1 ? 'Daily' : `Every ${length} days`;
+        break;
+      case 'week':
+        strValue = length === 1 ? 'Weekly' : `Every ${length} weeks`;
+
+        if (this.daysOfWeek && this.daysOfWeek.length > 0) {
+          strValue += ' on ';
+          this.daysOfWeek.forEach((day, index, arr) => {
+            if (index > 0)
+              strValue += (index !== arr.length - 1) ? ', ' : ', and ';
+            strValue += WEEKDAYS[day];
+          });
+        }
+        break;
+      case 'month':
+        strValue = length === 1 ? 'Monthly' : `Every ${length} months`;
+
+        if (this.dayOfMonth) {
+          strValue += ` on the ${ordinal(this.dayOfMonth)}`;
+        } else if (this.weekNumber && this.daysOfWeek?.length === 1) {
+          let weekStr;
+          if (this.weekNumber < 5)
+            weekStr = ordinal(this.weekNumber);
+          else
+            weekStr = 'last';
+          const dayStr = WEEKDAYS[this.daysOfWeek[0]];
+          strValue += ` on the ${weekStr} ${dayStr}`;
+        }
+        break;
+      case 'year':
+        strValue = length === 1 ? 'Annually' : `Every ${length} years`;
+
+        console.log(this);
+        if (Number.isInteger(this.month) && this.dayOfMonth) {
+          const monthStr = MONTHS[this.month];
+          const dayStr = ordinal(this.dayOfMonth);
+          strValue += ` on ${monthStr} ${dayStr}`;
+        }
+        break;
+    }
+
+    return strValue;
   }
 };
 
