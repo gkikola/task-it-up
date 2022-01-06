@@ -54,6 +54,65 @@ class ProjectList {
   }
 
   /**
+   * Get a project in the project list. This method only returns a copy of the
+   * project, not an actual reference to the project itself. To modify a
+   * project in the list, use the
+   * [updateProject]{@link module:projectList~ProjectList#updateProject}
+   * method.
+   * @param {string} id The unique identifier of the project to retrieve.
+   * @returns {?module:project~Project} The requested project, or undefined if
+   *   it could not be found.
+   */
+  getProject(id) {
+    const index = this._findIndex(id);
+    if (index < 0)
+      return undefined;
+
+    return _.cloneDeep(this._projects[index].project);
+  }
+
+  /**
+   * Update a project in the project list.
+   * @param {string} id The unique identifier of the project to replace.
+   * @param {module:project~Project} project The new project to associate with
+   *   the given identifier.
+   * @returns {boolean} Returns true if the project was replaced successfully,
+   *   or false if the given identifier is invalid.
+   */
+  updateProject(id, project) {
+    const index = this._findIndex(id);
+    if (index < 0)
+      return false;
+
+    const wrapper = this._projects[index];
+    const needSort = project.name !== wrapper.project.name;
+    wrapper.project = _.cloneDeep(project);
+
+    if (needSort) {
+      this._projects.splice(index, 1);
+      const insertAt = _.sortedIndexBy(this._projects, wrapper,
+        elem => elem.project.name);
+      this._projects.splice(insertAt, 0, wrapper);
+    }
+    return true;
+  }
+
+  /**
+   * Remove a project from the project list.
+   * @param {string} id The identifier of the project to remove.
+   * @returns {boolean} Returns true if the project was successfully removed,
+   *   or false if an invalid identifier was given.
+   */
+  removeProject(id) {
+    const index = this._findIndex(id);
+    if (index < 0)
+      return false;
+
+    this._projects.splice(index, 1);
+    return true;
+  }
+
+  /**
    * Iterate over the project list. Each iteration yields a wrapper containing
    * the identifier of the project along with the project itself.
    * @yields {module:projectList~ProjectList~projectWrapper} The next project
@@ -78,6 +137,15 @@ class ProjectList {
       const copy = _.cloneDeep(this._projects[index]);
       callback(copy, index);
     }
+  }
+
+  /**
+   * Get a project's index in the project list.
+   * @param {string} id The identifier for the project to look up.
+   * @returns {number} The index of the project, or -1 if not found.
+   */
+  _findIndex(id) {
+    return this._projects.findIndex(entry => entry.id === id);
   }
 }
 
