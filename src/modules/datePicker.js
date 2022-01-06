@@ -7,9 +7,7 @@ import { createFormControl, createIconButton } from "./utility";
 
 import {
   add,
-  differenceInWeeks,
   endOfMonth,
-  endOfWeek,
   isBefore,
   isSameDay,
   isSameMonth,
@@ -203,13 +201,23 @@ class DatePicker {
       this._displayedMonth = Number.parseInt(e.target.value);
       this._updateDayGrid();
     });
-    this._yearInput.addEventListener('change', e => {
-      const value = Number.parseInt(e.target.value);
-      if (Number.isInteger(value)) {
-        this._displayedYear = value;
-        this._updateDayGrid();
+
+    const yearListener = e => {
+      if (e.type === 'change' || e.target.value.length === 4) {
+        const value = Number.parseInt(e.target.value);
+        if (Number.isInteger(value)) {
+          if (this._displayedYear !== value) {
+            this._displayedYear = value;
+            this._updateDayGrid();
+          }
+        } else if (e.type === 'change') {
+          e.target.value = this._displayedYear.toString();
+        }
       }
-    });
+    };
+    this._yearInput.addEventListener('input', yearListener);
+    this._yearInput.addEventListener('change', yearListener);
+
     this._dayGrid.addEventListener('click', e => {
       const elem = e.target;
       if (elem.classList.contains('date-picker-day')) {
