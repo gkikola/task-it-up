@@ -3,6 +3,8 @@
  * @module recurringDate
  */
 
+import { formatDate } from './utility';
+
 import _ from 'lodash';
 import ordinal from 'ordinal';
 
@@ -326,11 +328,15 @@ class RecurringDate {
 
         if (this.daysOfWeek && this.daysOfWeek.length > 0) {
           strValue += ' on ';
-          this.daysOfWeek.forEach((day, index, arr) => {
-            if (index > 0)
-              strValue += (index !== arr.length - 1) ? ', ' : ', and ';
-            strValue += WEEKDAYS[day];
-          });
+          if (_.uniq(this.daysOfWeek).length === 7) {
+            strValue += 'all days';
+          } else {
+            this.daysOfWeek.forEach((day, index, arr) => {
+              if (index > 0)
+                strValue += ', ';
+              strValue += WEEKDAYS[day];
+            });
+          }
         }
         break;
       case 'month':
@@ -358,6 +364,52 @@ class RecurringDate {
           strValue += ` on ${monthStr} ${dayStr}`;
         }
         break;
+    }
+
+    return strValue;
+  }
+
+  /**
+   * Like [toString]{@link module:recurringDate~RecurringDate#toString}, but
+   * more verbose, including all details of the recurrence.
+   * @param {string} dateFormatStr The format to use for dates.
+   * @returns {string} A string representation of the recurring date.
+   */
+  toStringVerbose(dateFormatStr) {
+    let strValue = this.toString();
+
+    if (this.startDate) {
+      const dateStr = formatDate(this.startDate, dateFormatStr);
+      strValue += `, from ${dateStr}`;
+    }
+
+    if (this.endDate) {
+      const dateStr = formatDate(this.endDate, dateFormatStr);
+      strValue += `, until ${dateStr}`;
+    } else if (this.maxCount) {
+      if (this.maxCount === 1)
+        strValue += ', 1 time';
+      else
+        strValue += `, ${this.maxCount} times`;
+    }
+
+    if (this.allowPastOccurrence) {
+      strValue += ', past allowed';
+    }
+
+    if (this.onWeekend !== 'no-change') {
+      strValue += ', ';
+      switch (this.onWeekend) {
+        case 'previous-weekday':
+          strValue += 'previous weekday';
+          break;
+        case 'next-weekday':
+          strValue += 'next weekday';
+          break;
+        case 'nearest-weekday':
+          strValue += 'nearest weekday';
+          break;
+      }
     }
 
     return strValue;
