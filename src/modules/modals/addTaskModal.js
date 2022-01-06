@@ -286,6 +286,8 @@ class AddTaskModal {
     const controls = this._controls;
     if (!controls.name.reportValidity())
       return false;
+    if (!controls.dueDate.reportValidity())
+      return false;
 
     return true;
   }
@@ -357,6 +359,7 @@ class AddTaskModal {
   _addListeners(modalStack) {
     const controls = this._controls;
 
+    // Handle recurrence selection
     const recurringDate = controls.recurringDate;
     let recurrenceValue = recurringDate.value;
     const processRecurrence = recurrence => {
@@ -425,6 +428,19 @@ class AddTaskModal {
         recurrenceValue = e.target.value;
       }
     });
+
+    // Check date validity
+    controls.dueDate.addEventListener('change', e => {
+      const value = e.target.value;
+      if (value.length > 0) {
+        let message = '';
+        if (!parseDate(value, this._dateFormat.internal)) {
+          const format = this._dateFormat.visual;
+          message = `Please enter a valid date in ${format} format.`;
+        }
+        e.target.setCustomValidity(message);
+      }
+    });
   }
 
   /**
@@ -433,7 +449,18 @@ class AddTaskModal {
    *   the modal has been inserted.
    */
   _pickDueDate(modalStack) {
-    modalStack.showModal(new DatePickerModal());
+    const input = this._controls.dueDate;
+    let startDate = null;
+    if (input.value)
+      startDate = parseDate(input.value, this._dateFormat.internal);
+
+    modalStack.showModal(new DatePickerModal({
+      confirm: date => {
+        input.value = formatDate(date, this._dateFormat.internal);
+        input.setCustomValidity('');
+      },
+      startDate,
+    }));
   }
 }
 
