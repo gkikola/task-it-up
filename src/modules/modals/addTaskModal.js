@@ -368,7 +368,8 @@ class AddTaskModal {
         optElem.value = 'custom-result';
         recurringDate.insertBefore(optElem, recurringDate.lastChild);
       }
-      optElem.textContent = recurrence.toString();
+      const dateFormatStr = this._dateFormat.internal;
+      optElem.textContent = recurrence.toStringVerbose(dateFormatStr);
       recurringDate.value = 'custom-result';
       recurrenceValue = recurringDate.value;
 
