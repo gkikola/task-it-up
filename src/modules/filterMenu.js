@@ -172,10 +172,15 @@ class FilterMenu {
    *   filter.
    * @param {string} filterId The identifier for the filter.
    * @param {string} label The displayed label for the filter.
-   * @param {number} [count=0] The number of tasks matching the filter.
+   * @param {Object} [options={}] An object holding options controlling the
+   *   filter insertion.
+   * @param {number} [options.count=0] The number of tasks matching the filter.
+   * @param {string} [options.insertBefore] The identifier for the filter
+   *   before which the new filter should be inserted. If not given, then the
+   *   filter will be inserted at the end of the list.
    * @throws {RangeError} If the group identifier is invalid.
    */
-  addFilter(groupId, filterId, label, count = 0) {
+  addFilter(groupId, filterId, label, options = {}) {
     const groupElements = this._getGroupElements(groupId);
 
     const item = document.createElement('li');
@@ -194,10 +199,15 @@ class FilterMenu {
 
     const countElem = document.createElement('span');
     countElem.classList.add('filter-item-count');
-    countElem.textContent = (count > 0) ? count : '';
+    countElem.textContent = options.count || '';
     button.appendChild(countElem);
 
-    groupElements.filterList.appendChild(item);
+    let referenceNode = null;
+    if (options.insertBefore) {
+      referenceNode = this._getFilterItemElement(groupId, options.insertBefore);
+    }
+
+    groupElements.filterList.insertBefore(item, referenceNode);
     groupElements.filterItems.set(filterId, item);
 
     groupElements.collapsible?.update();
