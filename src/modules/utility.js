@@ -6,6 +6,24 @@
 import { format as dfFormat, parse as dfParse } from 'date-fns';
 
 /**
+ * Add a value to an array belonging to a Map having array values. If the given
+ * key does not exist in the map, then a new array will be inserted at that
+ * key.
+ * @param {Map} map The map of arrays.
+ * @param {*} key The key corresponding to the array in which the value is to
+ *   be inserted.
+ * @param {*} value The value to insert into the array.
+ */
+function addToMapArray(map, key, value) {
+  let arr = map.get(key);
+  if (!arr) {
+    arr = [];
+    map.set(key, arr);
+  }
+  arr.push(value);
+}
+
+/**
  * Specifies options for creating a date input field in a form.
  * @typedef {Object} module:utility~dateInputOptions
  * @property {string} [id] The identifier for the text input element.
@@ -371,6 +389,27 @@ function createToggleButton(label, options = {}) {
 }
 
 /**
+ * Find a value in an array belonging to a Map having array values. The first
+ * value in the appropriate array for which the predicate returns true is
+ * returned.
+ * @param {Map} map The map of arrays.
+ * @param {*} key The key corresponding to the array in which the element is to
+ *   be found.
+ * @param {Function} predicate The predicate function that will be used to find
+ *   the array element. The function will be invoked for each element in the
+ *   array associated with the given key. When invoked, the function will be
+ *   passed the array element, the index of the element in the array, and the
+ *   array itself, in that order, as arguments.
+ * @return {*} The matching value, or undefined if not found.
+ */
+function findInMapArray(map, key, predicate) {
+  const arr = map.get(key);
+  if (!arr)
+    return undefined;
+  return arr.find(predicate);
+}
+
+/**
  * Format a date into a string representation according to a given pattern.
  * @param {Date} date The date to be formatted.
  * @param {string} [format] The format string to use as a pattern. If not
@@ -600,12 +639,61 @@ function parseDate(dateString, format) {
   return Number.isFinite(result.getTime()) ? result : null;
 }
 
+/**
+ * Remove a value from an array belonging to a Map having array values.
+ * @param {Map} map The map of arrays.
+ * @param {*} key The key corresponding to the array from which the value is to
+ *   be removed.
+ * @param {*} value The value to remove from the array.
+ * @returns {boolean} Returns true if the value was successfully removed, or
+ *   false if a matching array element could not be found.
+ */
+function removeFromMapArray(map, key, value) {
+  return removeFromMapArrayBy(map, key, elem => elem === value);
+}
+
+/**
+ * Remove a value from an array belonging to a Map having array values. This
+ * function is similar to
+ * [removeFromMapArray]{@link module:utility~removeFromMapArray}, except that
+ * it takes a predicate function instead of a value. The first value in the
+ * array for which the predicate returns true is removed.
+ * @param {Map} map The map of arrays.
+ * @param {*} key The key corresponding to the array from which the value is to
+ *   be removed.
+ * @param {Function} predicate The predicate function that will be used to find
+ *   a matching array element. The function will be invoked for each element in
+ *   the array associated with the given key. When invoked, the function will
+ *   be passed the array element, the index of the element in the array, and
+ *   the array itself, in that order, as arguments.
+ * @returns {boolean} Returns true if a value was successfully removed, or
+ *   false if a matching array element could not be found.
+ */
+function removeFromMapArrayBy(map, key, predicate) {
+  const arr = map.get(key);
+  if (!arr)
+    return false;
+
+  const index = arr.findIndex(predicate);
+  if (index < 0)
+    return false;
+
+  arr.splice(index, 1);
+  if (arr.length === 0)
+    map.delete(key);
+  return true;
+}
+
 export {
+  addToMapArray,
   createDateInputField,
   createFormControl,
   createIconButton,
   createToggleButton,
+  findInMapArray,
   formatDate,
   getDateFormat,
   parseDate,
+  removeFromMapArray,
+  removeFromMapArrayBy,
 };
