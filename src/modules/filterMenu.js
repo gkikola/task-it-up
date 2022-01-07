@@ -4,6 +4,7 @@
  */
 
 import Collapsible from './collapsible';
+import { createIconButton } from './utility';
 
 import _ from 'lodash';
 import EventEmitter from 'events';
@@ -280,6 +281,33 @@ class FilterMenu {
       else
         this.collapseGroup(id);
     }
+  }
+
+  /**
+   * Add an icon button to a group heading.
+   * @param {string} groupId The identifier of the group in which to insert the
+   *   icon button.
+   * @param {string} iconType The type of icon to display.
+   * @param {Object} [options={}] An object holding configuration options for
+   *   the button.
+   * @param {string} [id] The identifier for the button.
+   * @param {string} [title] The title of the button, usually displayed by the
+   *   browser as a tooltip.
+   * @param {Function} [callback] A callback function that will be invoked when
+   *   the button is clicked. The function will receive the standard Event
+   *   object as an argument when invoked.
+   */
+  addGroupIconButton(groupId, iconType, options = {}) {
+    const container = this._getGroupElements(groupId).container;
+    const iconContainer = container.querySelector('.icon-container');
+    const button = createIconButton(iconType, {
+      id: options.id || null,
+      title: options.title || null,
+    });
+    if (options.callback)
+      button.addEventListener('click', options.callback);
+
+    iconContainer.appendChild(button);
   }
 
   /**
