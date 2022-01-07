@@ -205,6 +205,9 @@ class App {
 
     this._filterMenu.addEventListener('select-filter',
       this._handleFilterChange.bind(this));
+    this._filterMenu.addGroupIconButton('projects', 'add', {
+      callback: () => this._showAddProjectModal(),
+    });
   }
 
   /**
