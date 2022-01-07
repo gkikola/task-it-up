@@ -497,6 +497,9 @@ input[type="radio"], input[type="checkbox"] {
 .filter-item-label {
   font-family: var(--label-font);
   font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #main-panel-header {
