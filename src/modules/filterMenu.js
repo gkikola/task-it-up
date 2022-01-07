@@ -256,6 +256,22 @@ class FilterMenu {
   }
 
   /**
+   * Determine whether or not a filter exists in a filter group. This method
+   * will return false if either the group does not exist, or if the filter
+   * does not exist within the group.
+   * @param {string} groupId The identifier of the group containing the filter.
+   * @param {string} filterId The identifier of the filter to test.
+   * @returns {boolean} True if the given group and filter exist in the filter
+   *   menu.
+   */
+  hasFilter(groupId, filterId) {
+    const groupElements = this._groupElements.get(groupId);
+    if (!groupElements)
+      return false;
+    return groupElements.filterItems.has(filterId);
+  }
+
+  /**
    * Expand a filter group, so that its filter items are visible.
    * @param {string} id The identifier for the group to be expanded.
    * @throws {RangeError} If the group identifier is invalid.
