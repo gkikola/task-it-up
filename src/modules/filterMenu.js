@@ -239,6 +239,23 @@ class FilterMenu {
   }
 
   /**
+   * Remove all the filters in a filter group.
+   * @param {string} id The identifier for the group to empty.
+   * @throws {RangeError} If the group identifier is invalid.
+   */
+  removeAllFilters(id) {
+    // If a filter in the group is selected, clear selection
+    if (this._selectedFilter.group === id)
+      this.clearSelection();
+
+    const groupElements = this._getGroupElements(id);
+    const list = groupElements.filterList;
+    groupElements.filterItems.forEach(item => list.removeChild(item));
+    groupElements.filterItems.clear();
+    groupElements.collapsible?.update();
+  }
+
+  /**
    * Expand a filter group, so that its filter items are visible.
    * @param {string} id The identifier for the group to be expanded.
    * @throws {RangeError} If the group identifier is invalid.
@@ -296,6 +313,7 @@ class FilterMenu {
    * @param {Function} [callback] A callback function that will be invoked when
    *   the button is clicked. The function will receive the standard Event
    *   object as an argument when invoked.
+   * @throws {RangeError} If the group identifier is invalid.
    */
   addGroupIconButton(groupId, iconType, options = {}) {
     const container = this._getGroupElements(groupId).container;
