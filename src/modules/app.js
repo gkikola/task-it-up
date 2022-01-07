@@ -192,11 +192,6 @@ class App {
       { groupId: 'priorities', filterId: 'medium', label: 'Medium' },
       { groupId: 'priorities', filterId: 'low', label: 'Low' },
       { groupId: 'priorities', filterId: 'very-low', label: 'Very Low' },
-      {
-        groupId: 'projects',
-        filterId: 'uncategorized',
-        label: 'Uncategorized',
-      },
     ];
 
     filters.forEach(filter => {
@@ -208,6 +203,8 @@ class App {
     this._filterMenu.addGroupIconButton('projects', 'add', {
       callback: () => this._showAddProjectModal(),
     });
+
+    this._updateProjectFilters();
   }
 
   /**
@@ -378,6 +375,7 @@ class App {
       taskId: options.taskId || null,
       projectId: options.projectId || null,
       dateFormat: this._settings.dateFormat,
+      newProject: () => this._updateProjectFilters(),
     });
     this._modalStack.showModal(modal);
   }
@@ -397,10 +395,15 @@ class App {
 
     const modal = new AddProjectModal({
       confirm: project => {
+        let newId = null;
         if (options.projectId)
           this._projects.updateProject(options.projectId, project);
         else
-          this._projects.addProject(project);
+          newId = this._projects.addProject(project);
+
+        this._updateProjectFilters();
+        if (newId)
+          this._filterMenu.selectFilter('projects', newId);
       },
       project,
     });
@@ -475,6 +478,26 @@ class App {
     } else {
       subheadingElem.textContent = '';
       subheadingElem.style.display = 'none';
+    }
+  }
+
+  /**
+   * Refresh the list of projects in the filter menu.
+   */
+  _updateProjectFilters() {
+    const selection = this._filterMenu.getSelection();
+
+    this._filterMenu.removeAllFilters('projects');
+    this._filterMenu.addFilter('projects', 'none', 'Uncategorized');
+    this._projects.forEach(entry => {
+      this._filterMenu.addFilter('projects', entry.id, entry.project.name);
+    });
+
+    // Restore selection
+    if (selection.group === 'projects') {
+      const filter = selection.filter;
+      if (this._filterMenu.hasFilter('projects', filter))
+        this._filterMenu.selectFilter('projects', filter);
     }
   }
 };
