@@ -1,9 +1,12 @@
 {
   "source": {
-    "include": ["src", "package.json"],
+    "include": ["src", "package.json", "README.md"],
     "includePattern": ".+\\.m?js(doc|x)?$"
   },
   "plugins": ["plugins/markdown"],
+  "markdown": {
+    "idInHeadings": true
+  },
   "opts": {
     "destination": "./docs/",
     "encoding": "utf8",
