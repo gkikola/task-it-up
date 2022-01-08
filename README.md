@@ -13,7 +13,7 @@ organize your tasks into projects.
 
 ## Copyright
 
-Task It Up is copyright &copy; 2021 Greg Kikola. License: MIT.
+Task It Up is copyright &copy; 2021-2022 Greg Kikola. License: MIT.
 
 This is free software: you are free to change and redistribute it. There is NO
 WARRANTY, to the extent permitted by law. See the file
