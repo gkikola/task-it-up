@@ -91,7 +91,28 @@ class Task {
    * @type {string}
    */
   get priorityString() {
-    switch (this.priority) {
+    return Task.convertPriorityToString(this.priority);
+  }
+
+  set priorityString(priority) {
+    this.priority = Task.convertStringToPriority(priority);
+  }
+
+  /**
+   * Get a string representation of the task.
+   * @returns {string} A string representation of the task.
+   */
+  toString() {
+    return this.name ? `Task: ${this.name}` : 'Task: (untitled)';
+  }
+
+  /**
+   * Convert a task priority number to a string representation.
+   * @param {number} priority The priority value to convert.
+   * @returns {string} The string representation of the priority value.
+   */
+  static convertPriorityToString(priority) {
+    switch (priority) {
       case -2: return 'very-low';
       case -1: return 'low';
       case 0: return 'medium';
@@ -101,33 +122,22 @@ class Task {
     }
   }
 
-  set priorityString(priority) {
-    switch (priority) {
-      case 'very-low':
-        this.priority = -2;
-        break;
-      case 'low':
-        this.priority = -1;
-        break;
-      default:
-      case 'medium':
-        this.priority = 0;
-        break;
-      case 'high':
-        this.priority = 1;
-        break;
-      case 'very-high':
-        this.priority = 2;
-        break;
-    }
-  }
-
   /**
-   * Get a string representation of the task.
-   * @returns {string} A string representation of the task.
+   * Convert a string representation of a task priority to the standard numeric
+   * equivalent.
+   * @param {string} priorityStr The string representation of the priority to
+   *   convert.
+   * @returns {number} The priority value corresponding to the string.
    */
-  toString() {
-    return this.name ? `Task: ${this.name}` : 'Task: (untitled)';
+  static convertStringToPriority(priorityStr) {
+    switch (priorityStr) {
+      case 'very-low': return -2;
+      case 'low': return -1;
+      default:
+      case 'medium': return 0;
+      case 'high': return 1;
+      case 'very-high': return 2;
+    }
   }
 }
 
