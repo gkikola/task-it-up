@@ -41,6 +41,12 @@ class Task {
     this.dueDate = options.dueDate || null;
 
     /**
+     * The date when the task was created.
+     * @type {Date}
+     */
+    this.createDate = new Date();
+
+    /**
      * The date when the task was completed, or null if it is not completed.
      * @type {?Date}
      */
