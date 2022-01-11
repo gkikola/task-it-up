@@ -12,20 +12,20 @@ class Task {
    * @param {string} name The name of the task.
    * @param {Object} [options={}] An object specifying additional options for
    *   the task.
-   * @param {Date} [dueDate] The date when the task is due, if any.
-   * @param {Date} [completionDate] The date when the task was completed, if
-   *   any.
-   * @param {number|string} [priority=0] The priority of the task. For numeric
-   *   values, a larger value indicates a higher priority, with 0 representing
-   *   medium priority, positive values representing higher-than-medium
-   *   priority, and negative values representing lower-than-medium priority.
-   *   For string values, possible settings are 'very-low', 'low', 'medium',
-   *   'high', and 'very-high'.
-   * @param {string} [description] A description for the task.
-   * @param {module:recurringDate~RecurringDate} [recurringDate] A recurring
-   *   date for the task, if any.
-   * @param {string} [project] The identifier of the project to which the task
-   *   belongs, if any.
+   * @param {Date} [options.dueDate] The date when the task is due, if any.
+   * @param {Date} [options.completionDate] The date when the task was
+   *   completed, if any.
+   * @param {number|string} [options.priority=0] The priority of the task. For
+   *   numeric values, a larger value indicates a higher priority, with 0
+   *   representing medium priority, positive values representing higher-than-
+   *   medium priority, and negative values representing lower-than-medium
+   *   priority. For string values, possible settings are 'very-low', 'low',
+   *   'medium', 'high', and 'very-high'.
+   * @param {string} [options.description] A description for the task.
+   * @param {module:recurringDate~RecurringDate} [options.recurringDate] A
+   *   recurring date for the task, if any.
+   * @param {string} [options.project] The identifier of the project to which
+   *   the task belongs, if any.
    */
   constructor(name, options = {}) {
     /**

@@ -11,7 +11,7 @@ class Project {
    * Create a project.
    * @param {string} name The name of the project.
    * @param {Object} [options={}] An object holding additional project options.
-   * @param {string} [description] A description for the project.
+   * @param {string} [options.description] A description for the project.
    */
   constructor(name, options = {}) {
     /**
