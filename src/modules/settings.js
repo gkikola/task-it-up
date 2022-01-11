@@ -22,6 +22,16 @@ class Settings {
    */
 
   /**
+   * Holds options for displaying a task filter.
+   * @typedef {Object} module:settings~Settings~filterOptions
+   * @property {string} [groupBy=default] The field to group the tasks by:
+   *   'default', 'name', 'due-date', 'create-date', 'priority', or 'project'.
+   *   The default depends on the type of filter.
+   * @property {string} [sortBy=create-date] The primary field to sort the
+   *   tasks by: 'name', 'due-date', 'create-date', 'priority', or 'project'.
+   */
+
+  /**
    * Create an object holding the default settings.
    */
   constructor() {
@@ -31,6 +41,29 @@ class Settings {
      */
     this.dateFormat = null;
     this.setDateFormat('local');
+
+    /**
+     * Holds options for displaying the different types of task filters.
+     * @type {Object}
+     * @property {module:settings~Settings~filterOptions} default Options for
+     *   displaying filters in the 'default' group.
+     * @property {module:settings~Settings~filterOptions} dates Options for
+     *   displaying filters in the 'dates' group.
+     * @property {module:settings~Settings~filterOptions} projects Options for
+     *   displaying filters in the 'projects' group.
+     * @property {module:settings~Settings~filterOptions} priorities Options
+     *   for displaying filters in the 'priorities' group.
+     */
+    this.filters = {
+      default: null,
+      dates: null,
+      projects: null,
+      priorities: null,
+    };
+    for (const property in this.filters) {
+      if (this.filters.hasOwnProperty(property))
+        this.filters[property] = { groupBy: 'default', sortBy: 'create-date' };
+    }
   }
 
   /**
