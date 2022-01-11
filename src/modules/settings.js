@@ -24,11 +24,15 @@ class Settings {
   /**
    * Holds options for displaying a task filter.
    * @typedef {Object} module:settings~Settings~filterOptions
-   * @property {string} [groupBy=default] The field to group the tasks by:
-   *   'default', 'name', 'due-date', 'create-date', 'priority', or 'project'.
-   *   The default depends on the type of filter.
-   * @property {string} [sortBy=create-date] The primary field to sort the
-   *   tasks by: 'name', 'due-date', 'create-date', 'priority', or 'project'.
+   * @property {string} groupBy The field to group the tasks by: 'default',
+   *   'due-date', 'priority', 'project', or 'none'. The default depends on the
+   *   type of filter.
+   * @property {string} sortBy The primary field to sort the tasks by: 'name',
+   *   'due-date', 'create-date', 'priority', or 'project'.
+   * @property {boolean} sortDescending Indicates whether to sort in descending
+   *   order rather than ascending order.
+   * @property {boolean} showCompleted Indicates whether to include completed
+   *   tasks in the results.
    */
 
   /**
@@ -61,8 +65,14 @@ class Settings {
       priorities: null,
     };
     for (const property in this.filters) {
-      if (this.filters.hasOwnProperty(property))
-        this.filters[property] = { groupBy: 'default', sortBy: 'create-date' };
+      if (this.filters.hasOwnProperty(property)) {
+        this.filters[property] = {
+          groupBy: 'default',
+          sortBy: 'create-date',
+          sortDescending: false,
+          showCompleted: false,
+        };
+      }
     }
   }
 
