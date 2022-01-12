@@ -357,7 +357,6 @@ class RecurringDate {
       case 'year':
         strValue = length === 1 ? 'Annually' : `Every ${length} years`;
 
-        console.log(this);
         if (Number.isInteger(this.month) && this.dayOfMonth) {
           const monthStr = MONTHS[this.month];
           const dayStr = ordinal(this.dayOfMonth);
