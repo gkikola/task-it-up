@@ -9,13 +9,18 @@ import AddProjectModal from './modals/addProjectModal';
 import AddTaskModal from './modals/addTaskModal';
 import FilterMenu from './filterMenu';
 import ModalStack from './modalStack';
+import Project from './project';
 import ProjectList from './projectList';
+import RecurringDate from './recurringDate';
 import Settings from './settings';
+import Task from './task';
 import TaskList from './taskList';
 
 import { createIconButton, formatDate } from './utility';
 
-import { add as addToDate } from 'date-fns';
+import {
+  add as addToDate,
+} from 'date-fns';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -150,6 +155,12 @@ class App {
     addTaskIcon.addEventListener('click', () => {
       this._showAddTaskModal();
     });
+
+    /* Add random task and project data for testing */
+    this._addRandomData(50, 10);
+    this._updateProjectFilters();
+    this._settings.filters.default.sortBy = 'project';
+    this._filterMenu.selectFilter('default', 'all');
   }
 
   /**
@@ -500,6 +511,83 @@ class App {
         this._filterMenu.selectFilter('projects', filter);
     }
   }
-};
+
+  _addRandomData(taskCount, projCount) {
+    const getRandom = (min, max) => {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    };
+    const passCheck = probability => Math.random() < probability;
+
+    const sentences = [
+      'Call me Ishmael.',
+      'It was the best of times, it was the worst of times, it was the age of \
+      wisdom, it was the age of foolishness, it was the epoch of belief, it \
+      was the epoch of incredulity, it was the season of Light, it was the \
+      season of Darkness, it was the spring of hope, it was the winter of \
+      despair.',
+      'It is a truth universally acknowledged, that a single man in \
+      possession of a good fortune, must be in want of a wife.',
+      'In my younger and more vulnerable years my father gave me some advice \
+      that I\'ve been turning over in my mind ever since.',
+      'It was a bright cold day in April, and the clocks were striking \
+      thirteen.',
+      'It was a pleasure to burn.',
+      'As Gregor Samsa awoke one morning from uneasy dreams he found himself \
+      transformed in his bed into an enormous insect.',
+      'Far out in the uncharted backwaters of the unfashionable end of the \
+      western spiral arm of the Galaxy lies a small, unregarded yellow sun.',
+      'All happy families are alike; each unhappy family is unhappy in its \
+      own way',
+      'Whether I shall turn out to be the hero of my own life, or whether \
+      that station will be held by anybody else, these pages must show.',
+    ];
+    const randomSentence = () => sentences[getRandom(0, sentences.length - 1)];
+
+    const randomDate = () => {
+      const today = new Date();
+      return addToDate(today, { days: getRandom(0, 40) });
+    };
+
+    const randomRecurrence = () => {
+      const random = Math.random();
+      let unit;
+      if (random < 0.25)
+        unit = 'day';
+      else if (random < 0.5)
+        unit = 'week';
+      else if (random < 0.75)
+        unit = 'month';
+      else
+        unit = 'year';
+
+      return new RecurringDate(unit, {
+        intervalLength: passCheck(0.5) ? 1 : getRandom(2, 10),
+        startDate: passCheck(0.5) ? randomDate() : null,
+        allowPastOccurrence: passCheck(0.25),
+      });
+    };
+
+    const projects = [];
+    for (let i = 0; i < projCount; i++) {
+      const project = new Project(`Project ${i + 1}`, {
+        description: passCheck(0.5) ? randomSentence() : null,
+      });
+      projects.push(this._projects.addProject(project));
+    }
+    const randomProject = () => projects[getRandom(0, projects.length - 1)];
+
+    for (let i = 0; i < taskCount; i++) {
+      const task = new Task(`Task ${i + 1}`, {
+        dueDate: passCheck(0.5) ? randomDate() : null,
+        completionDate: passCheck(0.1) ? new Date() : null,
+        priority: getRandom(-2, 2),
+        description: passCheck(0.5) ? randomSentence() : null,
+        recurringDate: passCheck(0.5) ? randomRecurrence() : null,
+        project: passCheck(0.5) ? randomProject() : null,
+      });
+      this._tasks.addTask(task);
+    }
+  }
+}
 
 export default App;
