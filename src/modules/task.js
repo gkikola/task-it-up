@@ -123,6 +123,24 @@ class Task {
   }
 
   /**
+   * Convert a task priority number to a string representation. Unlike
+   * [convertPriorityToString]{@link module:task~Task#convertPriorityToString},
+   * this method returns a string that is suitable for display to the user.
+   * @param {number} priority The priority value to convert.
+   * @returns {string} The string representation of the priority value.
+   */
+  static convertPriorityToPrettyString(priority) {
+    switch (priority) {
+      case -2: return 'Very Low';
+      case -1: return 'Low';
+      case 0: return 'Medium';
+      case 1: return 'High';
+      case 2: return 'Very High';
+      default: return 'Unknown';
+    }
+  }
+
+  /**
    * Convert a string representation of a task priority to the standard numeric
    * equivalent.
    * @param {string} priorityStr The string representation of the priority to
