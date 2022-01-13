@@ -21,6 +21,8 @@ import { createIconButton, formatDate } from './utility';
 
 import {
   add as addToDate,
+  endOfDay,
+  startOfDay,
 } from 'date-fns';
 
 const APP_NAME = 'Task It Up';
@@ -450,37 +452,70 @@ class App {
 
     let heading = e.filterLabel;
     let subheading = null;
+    const displayOptions = { groupBy: 'none' };
+    let filterOptions;
     switch (e.groupId) {
       default:
       case 'default':
+        filterOptions = this._settings.filters.default;
         break;
       case 'dates': {
-        const today = new Date();
-        let endDate = null;
-        if (e.filterId === 'today') {
-          subheading = formatDate(today, 'eeee, MMMM d, yyyy');
-        } else if (e.filterId === 'week') {
-          endDate = addToDate(today, { weeks: 1, days: -1 });
-        } else if (e.filterId === 'month') {
-          endDate = addToDate(today, { months: 1, days: -1 });
-        }
+        filterOptions = this._settings.filters.dates;
+        const today = startOfDay(new Date());
+        const todayEnd = endOfDay(today);
 
-        if (endDate) {
+        const duration = {};
+        switch (e.filterId) {
+          case 'today':
+            subheading = formatDate(today, 'eeee, MMMM d, yyyy');
+            break;
+          case 'week':
+            displayOptions.groupBy = 'due-date';
+            duration.weeks = 1;
+            duration.days = -1;
+            break;
+          case 'month':
+            displayOptions.groupBy = 'due-date';
+            duration.months = 1;
+            duration.days = -1;
+            break;
+          case 'past-due':
+            duration.days = -1;
+            displayOptions.requireDueDate = true;
+            break;
+        }
+        displayOptions.endDate = addToDate(todayEnd, duration);
+
+        if (e.filterId !== 'today' && e.filterId !== 'past-due') {
           const dateFormat = this._settings.dateFormat.internal;
           const startStr = formatDate(today, dateFormat);
-          const endStr = formatDate(endDate, dateFormat);
+          const endStr = formatDate(displayOptions.endDate, dateFormat);
           subheading = `${startStr} to ${endStr}`;
         }
         break;
       }
       case 'projects':
+        filterOptions = this._settings.filters.projects;
+        displayOptions.project = e.filterId;
         break;
       case 'priorities':
+        filterOptions = this._settings.filters.priorities;
         heading = `${e.filterLabel} Priority`;
+        displayOptions.priority = Task.convertStringToPriority(e.filterId);
         break;
     }
 
+    // Override grouping if needed
+    if (filterOptions.groupBy !== 'default') {
+      displayOptions.groupBy = filterOptions.groupBy;
+    }
+
+    displayOptions.sortBy = filterOptions.sortBy;
+    displayOptions.completed = filterOptions.showCompleted;
+    displayOptions.sortDescending = filterOptions.sortDescending;
+
     this._updateMainHeading(heading, subheading);
+    this._taskDisplay.update(displayOptions);
   }
 
   /**
@@ -554,7 +589,7 @@ class App {
 
     const randomDate = () => {
       const today = new Date();
-      return addToDate(today, { days: getRandom(0, 40) });
+      return addToDate(today, { days: getRandom(-5, 40) });
     };
 
     const randomRecurrence = () => {
