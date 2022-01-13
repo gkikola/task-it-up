@@ -10,9 +10,12 @@ import {
   removeFromMapArrayBy,
 } from './utility';
 
+import {
+  isBefore as isDateBefore,
+  isSameDay,
+} from 'date-fns';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
-import { format } from 'date-fns';
 
 const ISO_FORMAT = 'yyyy-MM-dd';
 
@@ -25,6 +28,21 @@ class TaskList {
    * @typedef {Object} module:taskList~TaskList~taskWrapper
    * @property {string} id The unique identifier for the task.
    * @property {module:task~Task} task The task instance.
+   */
+
+  /**
+   * An object specifying options for sorting tasks.
+   * @typedef {Object} module:taskList~TaskList~sortOptions
+   * @property {string} field The field to sort by. Can be one of 'name',
+   *   'due-date', 'create-date', 'priority', or 'project'.
+   * @property {boolean} [descending=false] If set to true, then the tasks will
+   *   be sorted in descending order, rather than in ascending order.
+   * @property {boolean} [caseSensitive=false] If set to true, then the sorting
+   *   will be case-sensitive (only applies to text-based fields).
+   * @property {boolean} [missingLast=false] If set to true, then tasks that do
+   *   not have the specified field will be sorted at the end (or at the
+   *   beginning if descending is true). Otherwise, tasks that are missing the
+   *   specified field are sorted at the beginning (or end if descending).
    */
 
   /**
@@ -164,6 +182,191 @@ class TaskList {
   *[Symbol.iterator]() {
     for (const entry of this._tasks)
       yield { id: entry[0], task: _.cloneDeep(entry[1]) };
+  }
+
+  /**
+   * Returns a new Iterator object that contains a
+   * [taskWrapper]{@link module:taskList~TaskList~taskWrapper} for each task in
+   * the list matching the given options.
+   * @param {Object} [options={}] An object holding options to control which
+   *   tasks to include in the Iterator.
+   * @param {Date} [options.startDate] If provided, all tasks with due dates
+   *   before the given date will be excluded.
+   * @param {Date} [options.endDate] If provided, all tasks with due dates
+   *   after the given date will be excluded.
+   * @param {boolean} [options.completed=false] If set to true, then tasks that
+   *   have been completed will be included. Otherwise they are excluded.
+   * @param {boolean} [options.requireDueDate=false] If set to true, then tasks
+   *   that do not have a due date will be excluded.
+   * @param {string} [options.project] If provided, only tasks belonging to the
+   *   specified project will be included. If set to 'none', then only tasks
+   *   that do not have a project assigned will be included.
+   * @param {number} [options.priority] If provided, only tasks with the
+   *   specified priority will be included.
+   * @param {module:taskList~TaskList~sortOptions[]} [options.sortBy] An array
+   *   of objects specifying the sort order. The first element in the array
+   *   determines the primary field on which to sort the tasks, the second
+   *   element determines the field used to break ties, the third element
+   *   determines the field used to break further ties, and so on.
+   * @yields {module:taskList~TaskList~taskWrapper} The next task in the list.
+   */
+  *entries(options = {}) {
+    const sortBy = options.sortBy || [];
+
+    // Which index to use: default | due-date | project | priority
+    let lookupType = 'default';
+    if (options.project) {
+      lookupType = 'project';
+    } else if (typeof options.priority === 'number') {
+      lookupType = 'priority';
+    } else if (options.startDate || options.endDate) {
+      lookupType = 'due-date';
+    }
+
+    let output = [];
+    const copyTasks = (map, key) => {
+      const tasks = map.get(key);
+      if (tasks)
+        tasks.forEach(task => output.push(_.cloneDeep(task)));
+    };
+    switch (lookupType) {
+      default:
+      case 'default':
+        output = [...this];
+        break;
+      case 'due-date': {
+        const dates = [...this._tasksByDueDate.keys()];
+        dates.sort();
+
+        let startKey = null, endKey = null;
+        if (options.startDate)
+          startKey = formatDate(options.startDate, ISO_FORMAT);
+        if (options.endDate)
+          endKey = formatDate(options.endDate, ISO_FORMAT);
+
+        let lowIndex = 0, highIndex = dates.length;
+        if (startKey)
+          lowIndex = _.sortedIndex(dates, startKey);
+        if (endKey)
+          highIndex = _.sortedLastIndex(dates, endKey);
+        else if (dates.length > 0 && dates[dates.length - 1] === 'none')
+          highIndex--;
+
+        dates.slice(lowIndex, highIndex).forEach(key => {
+          copyTasks(this._tasksByDueDate, key);
+        });
+        copyTasks(this._tasksByDueDate, 'none');
+        break;
+      }
+      case 'priority': {
+        copyTasks(this._tasksByPriority, options.priority);
+        break;
+      }
+      case 'project':
+        copyTasks(this._tasksByProject, options.project);
+        break;
+    }
+
+    output = output.filter(entry => {
+      const task = entry.task;
+      if (task.dueDate) {
+        if (options.startDate && isDateBefore(task.dueDate, options.startDate))
+          return false;
+        if (options.endDate && isDateBefore(options.endDate, task.dueDate))
+          return false;
+      }
+      if (!options.completed && task.completed)
+        return false;
+      if (options.requireDueDate && !task.dueDate)
+        return false;
+      if (options.project) {
+        if (options.project === 'none' && task.project)
+          return false;
+        if (options.project !== 'none' && task.project !== options.project)
+          return false;
+      }
+      if (typeof options.priority === 'number'
+        && task.priority !== options.priority)
+        return false;
+
+      return true;
+    });
+
+    output = output.sort((a, b) => {
+      const leftTask = a.task;
+      const rightTask = b.task;
+      for (let index = 0; index < sortBy.length; index++) {
+        const caseSensitive = sortBy[index].caseSensitive || false;
+        const descending = sortBy[index].descending || false;
+        const missingLast = sortBy[index].missingLast || false;
+        const LESS = descending ? 1 : -1;
+        const MORE = descending ? -1 : 1;
+        switch (sortBy[index].field) {
+          default:
+            return 0;
+          case 'name': {
+            let leftName = leftTask.name;
+            let rightName = rightTask.name;
+            if (!caseSensitive) {
+              leftName = leftName.toLowerCase();
+              rightName = rightName.toLowerCase();
+            }
+            if (leftName < rightName)
+              return LESS;
+            else if (leftName > rightName)
+              return MORE;
+            break;
+          }
+          case 'due-date': {
+            const leftDate = leftTask.dueDate;
+            const rightDate = rightTask.dueDate;
+            if (!leftDate && rightDate)
+              return missingLast ? MORE : LESS;
+            if (leftDate && !rightDate)
+              return missingLast ? LESS : MORE;
+            if (leftDate && rightDate && !isSameDay(leftDate, rightDate))
+              return isDateBefore(leftDate, rightDate) ? LESS : MORE;
+            break;
+          }
+          case 'create-date':
+            if (isDateBefore(leftTask.createDate, rightTask.createDate))
+              return LESS;
+            if (isDateBefore(rightTask.createDate, leftTask.createDate))
+              return MORE;
+            break;
+          case 'priority':
+            if (leftTask.priority > rightTask.priority)
+              return LESS;
+            if (leftTask.priority < rightTask.priority)
+              return MORE;
+            break;
+          case 'project': {
+            let leftProj = leftTask.project;
+            let rightProj = rightTask.project;
+            if (!leftProj && rightProj)
+              return missingLast ? MORE : LESS;
+            if (leftProj && !rightProj)
+              return missingLast ? LESS : MORE;
+            if (leftProj && rightProj) {
+              if (!caseSensitive) {
+                leftProj = leftProj.toLowerCase();
+                rightProj = rightProj.toLowerCase();
+              }
+              if (leftProj < rightProj)
+                return LESS;
+              else if (leftProj > rightProj)
+                return MORE;
+            }
+            break;
+          }
+        }
+      }
+
+      return 0;
+    });
+
+    for (const entry of output)
+      yield entry;
   }
 }
 
