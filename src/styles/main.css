@@ -502,6 +502,10 @@ input[type="radio"], input[type="checkbox"] {
   white-space: nowrap;
 }
 
+.task-panel {
+  width: 100%;
+}
+
 #main-panel-header {
   display: flex;
   justify-content: space-between;

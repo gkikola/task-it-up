@@ -14,6 +14,7 @@ import ProjectList from './projectList';
 import RecurringDate from './recurringDate';
 import Settings from './settings';
 import Task from './task';
+import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
 
 import { createIconButton, formatDate } from './utility';
@@ -105,6 +106,12 @@ class App {
      * @type {module:filterMenu~FilterMenu}
      */
     this._filterMenu = null;
+
+    /**
+     * Holds the task display panel.
+     * @type {module:taskDisplay~TaskDisplay}
+     */
+    this._taskDisplay = null;
 
     /**
      * Holds user app settings.
@@ -347,6 +354,8 @@ class App {
     header.appendChild(iconContainer);
 
     content.appendChild(header);
+
+    this._taskDisplay = new TaskDisplay(content, this._tasks, this._projects);
 
     this._mainPanel.appendChild(content);
     parent.appendChild(this._mainPanel);
