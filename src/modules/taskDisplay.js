@@ -10,6 +10,8 @@ import {
   formatDate,
 } from './utility';
 
+import { isSameDay } from 'date-fns';
+
 const CHECKED_ICON = 'check_circle_outline';
 const UNCHECKED_ICON = 'radio_button_unchecked';
 
@@ -17,6 +19,43 @@ const UNCHECKED_ICON = 'radio_button_unchecked';
  * A display panel showing a list of tasks.
  */
 class TaskDisplay {
+  /**
+   * An object holding options for creating the task display panel.
+   * @typedef {Object} module:taskDisplay~TaskDisplay~options
+   * @property {module:settings~Settings~dateFormat} [dateFormat] An object
+   *   holding information about the calendar date format to use when
+   *   displaying dates.
+   */
+
+  /**
+   * An object holding options for updating the task display panel.
+   * @typedef {Object} module:taskDisplay~TaskDisplay~updateOptions
+   * @property {Date} [startDate] If provided, tasks with due dates before the
+   *   given date will be excluded.
+   * @property {Date} [endDate] If provided, tasks with due dates after the
+   *   given date will be excluded.
+   * @property {boolean} [completed=false] If set to true, then completed tasks
+   *   will be included.
+   * @property {boolean} [requireDueDate=false] If set to true, then tasks that
+   *   do not have a due date will be excluded.
+   * @property {string} [project] If provided, then only tasks with the
+   *   specified project will be included. This can either be a project
+   *   identifier, or the string 'none'.
+   * @property {number} [priority] If provided, then only tasks with the given
+   *   priority will be included.
+   * @property {string} [groupBy=none] The field to group the tasks by:
+   *   'due-date', 'priority', 'project', or 'none'.
+   * @property {string} [sortBy=create-date] The primary field to sort the
+   *   tasks by: 'name', 'due-date', 'create-date', 'priority', or 'project'.
+   * @property {boolean} [sortDescending=false] If set to true, then results
+   *   will be sorted in descending order.
+   * @property {boolean} [caseSensitive=false] If set to true, then sorting for
+   *   text-based fields will be case-sensitive.
+   * @property {boolean} [missingLast=false] If set to true, then tasks that
+   *   are missing a certain field will be sorted at the end of the list, when
+   *   sorting by that field.
+   */
+
   /**
    * Create a task display.
    * @param {HTMLElement} parent The parent DOM node that will contain the
@@ -26,11 +65,8 @@ class TaskDisplay {
    * @param {module:projectList~ProjectList} projectList The
    *   [ProjectList]{@link module:projectList~ProjectList} holding all of the
    *   projects.
-   * @param {Object} [options={}] An object holding additional options for the
-   *   display panel.
-   * @property {module:settings~Settings~dateFormat} [options.dateFormat] An
-   *   object holding information about the calendar date format to use when
-   *   displaying dates.
+   * @param {module:taskDisplay~TaskDisplay~options} [options={}] An object
+   *   holding additional options for the display panel.
    */
   constructor(parent, taskList, projectList, options = {}) {
     const container = document.createElement('div');
@@ -61,6 +97,67 @@ class TaskDisplay {
      * @type {module:settings~Settings~dateFormat}
      */
     this._dateFormat = options.dateFormat || Settings.lookupDateFormat();
+  }
+
+  /**
+   * Refresh the display panel with a new list of tasks.
+   * @param {module:taskDisplay~TaskDisplay~updateOptions} [options={}] An
+   *   object holding options for updating the panel.
+   */
+  update(options = {}) {
+    this._clear();
+
+    const listOptions = {
+      startDate: options.startDate || null,
+      endDate: options.endDate || null,
+      completed: options.completed || false,
+      requireDueDate: options.requireDueDate || false,
+      project: options.project || null,
+    };
+
+    if (typeof options.priority === 'number')
+      listOptions.priority = options.priority;
+
+    const groupBy = options.groupBy || 'none';
+    const descending = options.sortDescending || false;
+    const caseSensitive = options.caseSensitive || false;
+    const missingLast = options.missingLast || false;
+    const pushSortField = field => {
+      if (!listOptions.sortBy)
+        listOptions.sortBy = [];
+      listOptions.sortBy.push({
+        field,
+        descending,
+        caseSensitive,
+        missingLast,
+      });
+    };
+
+    if (groupBy !== 'none')
+      pushSortField(groupBy);
+    if (options.sortBy)
+      pushSortField(options.sortBy);
+    if (options.sortBy !== 'create-date')
+      pushSortField('create-date');
+
+    let list = null;
+    let prevTask = null;
+    let empty = true;
+    for (const entry of this._tasks.entries(listOptions)) {
+      if (!prevTask || !this._isSameGroup(groupBy, entry.task, prevTask))
+        list = this._createList(this._getGroupHeading(groupBy, entry.task));
+
+      this._addTask(list, entry.id, entry.task);
+      prevTask = entry.task;
+      empty = false;
+    }
+
+    if (empty) {
+      const message = document.createElement('div');
+      message.classList.add('task-list-empty');
+      message.textContent = 'No Tasks Found';
+      this._container.appendChild(message);
+    }
   }
 
   /**
@@ -162,6 +259,71 @@ class TaskDisplay {
     const buttonContainer = document.createElement('div');
     buttonContainer.classList.add('task-list-item-button-container');
     itemElem.appendChild(buttonContainer);
+  }
+
+  /**
+   * Returns true if the two tasks belong to the same task group.
+   * @param {string} groupBy The type of grouping being done: 'due-date',
+   *   'project', 'priority', or 'none'.
+   * @param {module:task~Task} task1 The first task to compare.
+   * @param {module:task~Task} task2 The second task to compare.
+   * @returns {boolean} True if the tasks belong to the same group and false
+   *   otherwise.
+   */
+  _isSameGroup(groupBy, task1, task2) {
+    switch (groupBy) {
+      default:
+      case 'none':
+        return true;
+      case 'due-date':
+        if (!task1.dueDate && !task2.dueDate)
+          return true;
+        if (!task1.dueDate && task2.dueDate)
+          return false;
+        if (task1.dueDate && !task2.dueDate)
+          return false;
+        return isSameDay(task1.dueDate, task2.dueDate);
+      case 'priority':
+        return task1.priority === task2.priority;
+      case 'project':
+        if (!task1.project && !task2.project)
+          return true;
+        if (!task1.project && task2.project)
+          return false;
+        if (task1.project && !task2.project)
+          return false;
+        return task1.project === task2.project;
+    }
+  }
+
+  /**
+   * Get the heading label for a task group.
+   * @param {string} groupBy The type of grouping being done: 'due-date',
+   *   'project', 'priority', or 'none'.
+   * @param {module:task~Task} task A task belonging to the group.
+   * @returns {?string} The label for the heading, or null if no grouping is
+   *   being done.
+   */
+  _getGroupHeading(groupBy, task) {
+    switch (groupBy) {
+      default:
+      case 'none':
+        return null;
+      case 'due-date':
+        if (task.dueDate) {
+          const format = this._dateFormat.internal;
+          return formatDate(task.dueDate, format);
+        } else {
+          return 'No Due Date';
+        }
+      case 'priority':
+        return `${Task.convertPriorityToPrettyString(task.priority)} Priority`;
+      case 'project':
+        if (task.project)
+          return this._projects.getProject(task.project).name;
+        else
+          return 'Uncategorized';
+    }
   }
 }
 
