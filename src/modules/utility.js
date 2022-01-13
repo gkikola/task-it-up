@@ -331,6 +331,8 @@ function createFormControl(options = {}) {
  * @param {string} [options.id] The identifier for the button.
  * @param {string} [options.title] The title of the button, usually displayed
  *   by the browser as a tooltip.
+ * @param {string[]} [options.classList] An array of class names to apply to
+ *   the button.
  * @returns {HTMLElement} The newly-created button element.
  */
 function createIconButton(iconType, options = {}) {
@@ -342,6 +344,8 @@ function createIconButton(iconType, options = {}) {
     button.id = options.id;
   if (options.title)
     button.title = options.title;
+  if (options.classList)
+    button.classList.add(...options.classList);
   return button;
 }
 
