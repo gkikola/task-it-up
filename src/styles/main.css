@@ -504,6 +504,7 @@ input[type="radio"], input[type="checkbox"] {
 
 .task-panel {
   width: 100%;
+  margin-top: 36px;
 }
 
 .task-list-heading {
@@ -541,6 +542,12 @@ input[type="radio"], input[type="checkbox"] {
 
 .task-list-item-details {
   font-size: 14px;
+}
+
+.task-list-empty {
+  font-family: var(--label-font);
+  font-size: 18px;
+  color: #505050;
 }
 
 #main-panel-header {
