@@ -506,6 +506,43 @@ input[type="radio"], input[type="checkbox"] {
   width: 100%;
 }
 
+.task-list-heading {
+  font-family: var(--label-font);
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 36px;
+}
+
+.task-list-item {
+  font-family: var(--label-font);
+  display: flex;
+  align-items: flex-start;
+  margin: 18px 0;
+}
+
+.task-list-item-checkbox {
+  margin: 2px 12px 4px 0;
+}
+
+.task-list-item-info-container {
+  flex: 1;
+}
+
+.task-list-item-name {
+  font-size: 18px;
+  margin: 6px 0;
+}
+
+.task-list-item-description {
+  font-size: 14px;
+  margin: 6px 0;
+  color: #505050;
+}
+
+.task-list-item-details {
+  font-size: 14px;
+}
+
 #main-panel-header {
   display: flex;
   justify-content: space-between;
