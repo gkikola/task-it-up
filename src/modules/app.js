@@ -540,7 +540,7 @@ class App {
         filterOptions = this._settings.filters.priorities;
         const priority = Task.convertStringToPriority(filter);
         displayOptions.priority = priority;
-        heading = `Task.convertPriorityToPrettyString(priority) Priority`;
+        heading = `${Task.convertPriorityToPrettyString(priority)} Priority`;
         break;
       }
     }
