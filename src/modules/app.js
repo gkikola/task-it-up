@@ -404,6 +404,7 @@ class App {
       taskId: options.taskId || null,
       projectId: options.projectId || null,
       dateFormat: this._settings.dateFormat,
+      confirm: () => this._updateMainPanel({ resetScroll: false }),
       newProject: () => this._updateProjectFilters(),
     });
     this._modalStack.showModal(modal);
