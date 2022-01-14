@@ -108,6 +108,7 @@ class TaskDisplay {
     this._clear();
 
     const listOptions = {
+      projectList: this._projects,
       startDate: options.startDate || null,
       endDate: options.endDate || null,
       completed: options.completed || false,

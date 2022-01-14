@@ -190,6 +190,8 @@ class TaskList {
    * the list matching the given options.
    * @param {Object} [options={}] An object holding options to control which
    *   tasks to include in the Iterator.
+   * @param {module:projectList~ProjectList} [options.projectList] The project
+   *   container. If not provided, then sorting by project will be disabled.
    * @param {Date} [options.startDate] If provided, all tasks with due dates
    *   before the given date will be excluded.
    * @param {Date} [options.endDate] If provided, all tasks with due dates
@@ -341,20 +343,25 @@ class TaskList {
               return MORE;
             break;
           case 'project': {
-            let leftProj = leftTask.project;
-            let rightProj = rightTask.project;
+            const leftProj = leftTask.project;
+            const rightProj = rightTask.project;
             if (!leftProj && rightProj)
               return missingLast ? MORE : LESS;
             if (leftProj && !rightProj)
               return missingLast ? LESS : MORE;
             if (leftProj && rightProj) {
+              const projectList = options.projectList;
+              if (!projectList)
+                break;
+              let leftName = projectList.getProject(leftProj).name;
+              let rightName = projectList.getProject(rightProj).name;
               if (!caseSensitive) {
-                leftProj = leftProj.toLowerCase();
-                rightProj = rightProj.toLowerCase();
+                leftName = leftName.toLowerCase();
+                rightName = rightName.toLowerCase();
               }
-              if (leftProj < rightProj)
+              if (leftName < rightName)
                 return LESS;
-              else if (leftProj > rightProj)
+              else if (leftName > rightName)
                 return MORE;
             }
             break;
