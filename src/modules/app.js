@@ -169,7 +169,11 @@ class App {
     const addTaskIcon
       = mainPanelHeader.querySelector('.icon[data-icon-type="add"]');
     addTaskIcon.addEventListener('click', () => {
-      this._showAddTaskModal();
+      const modalOptions = {};
+      const selection = this._currentFilter;
+      if (selection.group === 'projects' && selection.filter !== 'none')
+        modalOptions.projectId = selection.filter;
+      this._showAddTaskModal(modalOptions);
     });
 
     /* Add random task and project data for testing */
@@ -394,10 +398,11 @@ class App {
    * confirms the dialog, the task is added to the task list.
    * @param {Object} [options={}] An object holding options for creating the
    *   modal.
-   * @param {string} [taskId] The identifier for the task to edit, if any.
-   * @param {string} [projectId] The identifier for the default project that
-   *   the task should be assigned to, if any. If a task id was given, then
-   *   this option is ignored.
+   * @param {string} [options.taskId] The identifier for the task to edit, if
+   *   any.
+   * @param {string} [options.projectId] The identifier for the default project
+   *   that the task should be assigned to, if any. If a task id was given,
+   *   then this option is ignored.
    */
   _showAddTaskModal(options = {}) {
     const modal = new AddTaskModal(this._tasks, this._projects, {
@@ -415,8 +420,8 @@ class App {
    * confirms the dialog, the project is added to the project list.
    * @param {Object} [options={}] An object holding options for creating the
    *   modal.
-   * @param {string} [projectId] The identifier for the project to edit, if
-   *   any. If not given, a new project is created.
+   * @param {string} [options.projectId] The identifier for the project to
+   *   edit, if any. If not given, a new project is created.
    */
   _showAddProjectModal(options = {}) {
     let project = null;
