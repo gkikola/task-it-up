@@ -110,6 +110,13 @@ class App {
     this._filterMenu = null;
 
     /**
+     * Holds the task filter that is currently being displayed in the main
+     * panel.
+     * @type {module:filterMenu~FilterMenu~filterInfo}
+     */
+    this._currentFilter = { group: null, filter: null };
+
+    /**
      * Holds the task display panel.
      * @type {module:taskDisplay~TaskDisplay}
      */
@@ -447,17 +454,34 @@ class App {
     if (activeElement)
       activeElement.blur();
 
-    if (!e.filterId)
+    if (!e.groupId || !e.filterId)
       return;
 
-    let heading = e.filterLabel;
+    this._currentFilter.group = e.groupId;
+    this._currentFilter.filter = e.filterId;
+
+    this._updateMainPanel();
+  }
+
+  /**
+   * Refresh the main panel.
+   * @param {Object} [options={}] An object holding options for the main panel.
+   * @param {boolean} [resetScroll=true] If set to true (the default), then the
+   *   panel's scroll position will be reset back to the top. Otherwise the
+   *   scroll position will not be changed.
+   */
+  _updateMainPanel(options = {}) {
+    const { group, filter } = this._currentFilter;
+
+    let heading = null;
     let subheading = null;
     const displayOptions = { groupBy: 'none' };
     let filterOptions;
-    switch (e.groupId) {
+    switch (group) {
       default:
       case 'default':
         filterOptions = this._settings.filters.default;
+        heading = 'All Tasks';
         break;
       case 'dates': {
         filterOptions = this._settings.filters.dates;
@@ -465,28 +489,32 @@ class App {
         const todayEnd = endOfDay(today);
 
         const duration = {};
-        switch (e.filterId) {
+        switch (filter) {
           case 'today':
+            heading = 'Today';
             subheading = formatDate(today, 'eeee, MMMM d, yyyy');
             break;
           case 'week':
+            heading = 'This Week';
             displayOptions.groupBy = 'due-date';
             duration.weeks = 1;
             duration.days = -1;
             break;
           case 'month':
+            heading = 'This Month';
             displayOptions.groupBy = 'due-date';
             duration.months = 1;
             duration.days = -1;
             break;
           case 'past-due':
+            heading = 'Past Due';
             duration.days = -1;
             displayOptions.requireDueDate = true;
             break;
         }
         displayOptions.endDate = addToDate(todayEnd, duration);
 
-        if (e.filterId !== 'today' && e.filterId !== 'past-due') {
+        if (filter !== 'today' && filter !== 'past-due') {
           const dateFormat = this._settings.dateFormat.internal;
           const startStr = formatDate(today, dateFormat);
           const endStr = formatDate(displayOptions.endDate, dateFormat);
@@ -496,19 +524,24 @@ class App {
       }
       case 'projects':
         filterOptions = this._settings.filters.projects;
-        displayOptions.project = e.filterId;
+        displayOptions.project = filter;
+        if (filter === 'none')
+          heading = 'Uncategorized';
+        else
+          heading = this._projects.getProject(filter).name;
         break;
-      case 'priorities':
+      case 'priorities': {
         filterOptions = this._settings.filters.priorities;
-        heading = `${e.filterLabel} Priority`;
-        displayOptions.priority = Task.convertStringToPriority(e.filterId);
+        const priority = Task.convertStringToPriority(filter);
+        displayOptions.priority = priority;
+        heading = `Task.convertPriorityToPrettyString(priority) Priority`;
         break;
+      }
     }
 
     // Override grouping if needed
-    if (filterOptions.groupBy !== 'default') {
+    if (filterOptions.groupBy !== 'default')
       displayOptions.groupBy = filterOptions.groupBy;
-    }
 
     displayOptions.sortBy = filterOptions.sortBy;
     displayOptions.completed = filterOptions.showCompleted;
@@ -516,6 +549,12 @@ class App {
 
     this._updateMainHeading(heading, subheading);
     this._taskDisplay.update(displayOptions);
+
+    // Reset the scroll position
+    if (options.resetScroll !== false) {
+      this._mainPanel.scrollTop = 0;
+      this._mainPanel.scrollLeft = 0;
+    }
   }
 
   /**
