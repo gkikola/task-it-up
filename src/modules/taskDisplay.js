@@ -294,6 +294,13 @@ class TaskDisplay {
     const buttonContainer = document.createElement('div');
     buttonContainer.classList.add('task-list-item-button-container');
     itemElem.appendChild(buttonContainer);
+
+    const editButton = createIconButton('edit');
+    buttonContainer.appendChild(editButton);
+    editButton.addEventListener('click', e => {
+      if (this._taskCallback)
+        this._taskCallback('edit', taskId, task);
+    });
   }
 
   /**

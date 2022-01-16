@@ -470,6 +470,9 @@ class App {
         task.completionDate = null;
         this._tasks.updateTask(id, task);
         break;
+      case 'edit':
+        this._showAddTaskModal({ taskId: id });
+        break;
     }
   }
 
