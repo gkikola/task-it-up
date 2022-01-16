@@ -525,14 +525,24 @@ input[type="radio"], input[type="checkbox"] {
   font-family: var(--label-font);
   font-size: 20px;
   font-weight: bold;
-  margin-top: 36px;
+  margin-top: 28px;
+  padding: 0 8px;
 }
 
 .task-list-item {
   font-family: var(--label-font);
   display: flex;
   align-items: flex-start;
-  margin: 18px 0;
+  padding: 12px 8px;
+  border-radius: 8px;
+}
+
+.task-list-item:hover {
+  background-color: #f0f0f0;
+}
+
+.task-list-item + .task-list-item {
+  border-top: 1px solid #f0f0f0;
 }
 
 .task-list-item-checkbox {
@@ -567,6 +577,7 @@ input[type="radio"], input[type="checkbox"] {
 #main-panel-header {
   display: flex;
   justify-content: space-between;
+  padding: 0 8px;
 }
 
 #main-panel-heading-container {
