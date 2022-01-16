@@ -271,9 +271,11 @@ class AddTaskModal {
     if (controls.dueDate.value)
       dueDate = parseDate(controls.dueDate.value, this._dateFormat.internal);
 
+    let creationDate = null;
     let completionDate = null;
     if (this._taskId) {
       const task = this._tasks.getTask(this._taskId);
+      creationDate = task.createDate;
       completionDate = task.completionDate;
     }
 
@@ -308,6 +310,7 @@ class AddTaskModal {
 
     const task = new Task(controls.name.value, {
       dueDate,
+      createDate: creationDate,
       completionDate,
       priority: controls.priority.value,
       description: controls.description.value || null,

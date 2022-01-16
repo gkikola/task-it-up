@@ -13,6 +13,8 @@ class Task {
    * @param {Object} [options={}] An object specifying additional options for
    *   the task.
    * @param {Date} [options.dueDate] The date when the task is due, if any.
+   * @param {Date} [options.createDate] The date the task was created. If not
+   *   given, then the present date is used.
    * @param {Date} [options.completionDate] The date when the task was
    *   completed, if any.
    * @param {number|string} [options.priority=0] The priority of the task. For
@@ -44,7 +46,7 @@ class Task {
      * The date when the task was created.
      * @type {Date}
      */
-    this.createDate = new Date();
+    this.createDate = options.createDate || new Date();
 
     /**
      * The date when the task was completed, or null if it is not completed.
