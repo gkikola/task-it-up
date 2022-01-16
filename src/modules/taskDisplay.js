@@ -20,8 +20,26 @@ const UNCHECKED_ICON = 'radio_button_unchecked';
  */
 class TaskDisplay {
   /**
+   * Callback function that is invoked when the user chooses to perform an
+   * action on a task.
+   * @callback module:taskDisplay~TaskDisplay~taskCallback
+   * @param {string} type The type of action that is being performed. If the
+   *   user is marking a task as completed or incomplete, this will be set to
+   *   'mark-complete' or 'mark-incomplete', respectively. If the user is
+   *   editing the task, this will be 'edit'. If the user is deleting the task,
+   *   this will be 'delete'.
+   * @param {string} id The identifier for the task on which the action is
+   *   being performed.
+   * @param {module:task~Task} task The task on which the action is being
+   *   performed.
+   */
+
+  /**
    * An object holding options for creating the task display panel.
    * @typedef {Object} module:taskDisplay~TaskDisplay~options
+   * @property {module:taskDisplay~TaskDisplay~taskCallback} [taskCallback] A
+   *   callback function that will be invoked when the user performs an action
+   *   on a task.
    * @property {module:settings~Settings~dateFormat} [dateFormat] An object
    *   holding information about the calendar date format to use when
    *   displaying dates.
@@ -90,6 +108,13 @@ class TaskDisplay {
      * @type {module:projectList~ProjectList}
      */
     this._projects = projectList;
+
+    /**
+     * A callback function that is invoked when the user performs an action on
+     * a task.
+     * @type {?module:taskDisplay~TaskDisplay~taskCallback}
+     */
+    this._taskCallback = options.taskCallback || null;
 
     /**
      * An object holding information about the format to use for calendar
@@ -205,6 +230,16 @@ class TaskDisplay {
       classList: ['task-list-item-checkbox'],
     });
     itemElem.appendChild(checkButton);
+    checkButton.addEventListener('click', e => {
+      e.target.blur();
+      if (this._taskCallback) {
+        const type = task.completionDate ? 'mark-incomplete' : 'mark-complete';
+        const iconType = task.completionDate ? UNCHECKED_ICON : CHECKED_ICON;
+        this._taskCallback(type, taskId, task);
+        e.target.textContent = iconType;
+        e.target.dataset.iconType = iconType;
+      }
+    });
 
     const infoContainer = document.createElement('div');
     infoContainer.classList.add('task-list-item-info-container');

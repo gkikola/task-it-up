@@ -370,7 +370,10 @@ class App {
 
     content.appendChild(header);
 
-    this._taskDisplay = new TaskDisplay(content, this._tasks, this._projects);
+    this._taskDisplay = new TaskDisplay(content, this._tasks, this._projects, {
+      taskCallback: (type, id, task) => this._handleTaskUpdate(type, id, task),
+      dateFormat: this._settings.dateFormat,
+    });
 
     this._mainPanel.appendChild(content);
     parent.appendChild(this._mainPanel);
@@ -448,6 +451,26 @@ class App {
       project,
     });
     this._modalStack.showModal(modal);
+  }
+
+  /**
+   * Respond to an action that the user performed on a task.
+   * @param {string} type The type of action being performed: 'mark-complete',
+   *   'mark-incomplete', 'edit', or 'delete'.
+   * @param {string} id The unique identifier of the task being updated.
+   * @param {module:task~Task} task The task being updated.
+   */
+  _handleTaskUpdate(type, id, task) {
+    switch (type) {
+      case 'mark-complete':
+        task.completionDate = new Date();
+        this._tasks.updateTask(id, task);
+        break;
+      case 'mark-incomplete':
+        task.completionDate = null;
+        this._tasks.updateTask(id, task);
+        break;
+    }
   }
 
   /**
