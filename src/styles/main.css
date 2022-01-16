@@ -36,6 +36,11 @@ input:focus, select:focus, textarea:focus, button:focus {
   outline: 1px solid blue;
 }
 
+/* Use :focus-visible if browser supports it */
+:is(input, select, textarea, button):focus:not(:focus-visible) {
+  outline: none;
+}
+
 input:invalid, select:invalid, textarea:invalid {
   outline: 1px solid red;
 }

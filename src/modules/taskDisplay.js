@@ -231,7 +231,6 @@ class TaskDisplay {
     });
     itemElem.appendChild(checkButton);
     checkButton.addEventListener('click', e => {
-      e.target.blur();
       const iconType = task.completionDate ? UNCHECKED_ICON : CHECKED_ICON;
       e.target.textContent = iconType;
       e.target.dataset.iconType = iconType;

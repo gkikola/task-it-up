@@ -484,10 +484,6 @@ class App {
    *   filter, if any.
    */
   _handleFilterChange(e) {
-    const activeElement = document.activeElement;
-    if (activeElement)
-      activeElement.blur();
-
     if (!e.groupId || !e.filterId)
       return;
 
