@@ -331,9 +331,9 @@ class TaskList {
             break;
           }
           case 'create-date':
-            if (isDateBefore(leftTask.createDate, rightTask.createDate))
+            if (isDateBefore(leftTask.creationDate, rightTask.creationDate))
               return LESS;
-            if (isDateBefore(rightTask.createDate, leftTask.createDate))
+            if (isDateBefore(rightTask.creationDate, leftTask.creationDate))
               return MORE;
             break;
           case 'priority':

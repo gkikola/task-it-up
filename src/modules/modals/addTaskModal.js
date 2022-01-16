@@ -275,7 +275,7 @@ class AddTaskModal {
     let completionDate = null;
     if (this._taskId) {
       const task = this._tasks.getTask(this._taskId);
-      creationDate = task.createDate;
+      creationDate = task.creationDate;
       completionDate = task.completionDate;
     }
 
@@ -310,7 +310,7 @@ class AddTaskModal {
 
     const task = new Task(controls.name.value, {
       dueDate,
-      createDate: creationDate,
+      creationDate,
       completionDate,
       priority: controls.priority.value,
       description: controls.description.value || null,
