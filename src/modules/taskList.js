@@ -277,7 +277,7 @@ class TaskList {
         if (options.endDate && isDateBefore(options.endDate, task.dueDate))
           return false;
       }
-      if (!options.completed && task.completed)
+      if (!options.completed && task.completionDate)
         return false;
       if (options.requireDueDate && !task.dueDate)
         return false;
