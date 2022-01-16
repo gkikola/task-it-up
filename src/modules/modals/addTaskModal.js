@@ -40,6 +40,8 @@ class AddTaskModal {
    *   use as the default selection in the Project field. If not provided, then
    *   the task will default to having no project. This property is ignored if
    *   an existing task is being edited.
+   * @property {number} [priority=0] The default priority to use for the task.
+   *   This is ignored if an existing task is being edited.
    * @property {module:settings~Settings~dateFormat} [dateFormat] An object
    *   holding information about the calendar date format to use for date
    *   fields. If not given, then the browser default is used.
@@ -79,6 +81,12 @@ class AddTaskModal {
      * @type {string}
      */
     this._projectId = options.projectId || null;
+
+    /**
+     * The default priority.
+     * @type {number}
+     */
+    this._priority = options.priority || 0;
 
     /**
      * Indicates the status of the task being entered. If set to 'add', a new
@@ -384,6 +392,8 @@ class AddTaskModal {
 
     if (task?.priorityString && task.priorityString !== 'unknown')
       controls.priority.value = task.priorityString;
+    else
+      controls.priority.value = Task.convertPriorityToString(this._priority);
 
     let projectId = this._projectId;
     if (task?.project)

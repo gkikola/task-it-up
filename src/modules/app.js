@@ -173,6 +173,8 @@ class App {
       const selection = this._currentFilter;
       if (selection.group === 'projects' && selection.filter !== 'none')
         modalOptions.projectId = selection.filter;
+      else if (selection.group === 'priorities')
+        modalOptions.priority = Task.convertStringToPriority(selection.filter);
       this._showAddTaskModal(modalOptions);
     });
 
@@ -403,11 +405,14 @@ class App {
    * @param {string} [options.projectId] The identifier for the default project
    *   that the task should be assigned to, if any. If a task id was given,
    *   then this option is ignored.
+   * @param {number} [options.priority=0] The default priority for the task. If
+   *   a task id was given, then this option is ignored.
    */
   _showAddTaskModal(options = {}) {
     const modal = new AddTaskModal(this._tasks, this._projects, {
       taskId: options.taskId || null,
       projectId: options.projectId || null,
+      priority: options.priority || 0,
       dateFormat: this._settings.dateFormat,
       confirm: () => this._updateMainPanel({ resetScroll: false }),
       newProject: () => this._updateProjectFilters(),
