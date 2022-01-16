@@ -232,12 +232,12 @@ class TaskDisplay {
     itemElem.appendChild(checkButton);
     checkButton.addEventListener('click', e => {
       e.target.blur();
+      const iconType = task.completionDate ? UNCHECKED_ICON : CHECKED_ICON;
+      e.target.textContent = iconType;
+      e.target.dataset.iconType = iconType;
       if (this._taskCallback) {
         const type = task.completionDate ? 'mark-incomplete' : 'mark-complete';
-        const iconType = task.completionDate ? UNCHECKED_ICON : CHECKED_ICON;
         this._taskCallback(type, taskId, task);
-        e.target.textContent = iconType;
-        e.target.dataset.iconType = iconType;
       }
     });
 
