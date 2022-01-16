@@ -292,7 +292,7 @@ class TaskDisplay {
     addDetail(`${priorityStr} Priority`, 'task-list-item-priority');
 
     const buttonContainer = document.createElement('div');
-    buttonContainer.classList.add('task-list-item-button-container');
+    buttonContainer.classList.add('icon-container');
     itemElem.appendChild(buttonContainer);
 
     const editButton = createIconButton('edit');
@@ -301,6 +301,9 @@ class TaskDisplay {
       if (this._taskCallback)
         this._taskCallback('edit', taskId, task);
     });
+
+    const moreButton = createIconButton('more_horiz');
+    buttonContainer.appendChild(moreButton);
   }
 
   /**

@@ -219,13 +219,16 @@ input[type="radio"], input[type="checkbox"] {
 .modal-button-container {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
 
   width: 100%;
   padding: 12px;
 
   border-top: 1px solid black;
   background-color: var(--modal-accent-color);
+}
+
+.modal-button-container > * + * {
+  margin-left: 12px;
 }
 
 .modal-button {
@@ -360,11 +363,14 @@ input[type="radio"], input[type="checkbox"] {
 
 .icon-container {
   display: flex;
-  gap: 4px;
 }
 
 .icon-container .icon {
   font-size: 24px;
+}
+
+.icon-container > * + * {
+  margin-left: 4px;
 }
 
 .collapsible {
@@ -428,7 +434,10 @@ input[type="radio"], input[type="checkbox"] {
 .title-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+}
+
+.title-container > * + * {
+  margin-left: 12px;
 }
 
 .title {
