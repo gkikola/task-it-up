@@ -3,6 +3,7 @@
  * @module taskDisplay
  */
 
+import PopupMenu from './popupMenu';
 import Settings from './settings';
 import Task from './task';
 import {
@@ -122,6 +123,16 @@ class TaskDisplay {
      * @type {module:settings~Settings~dateFormat}
      */
     this._dateFormat = options.dateFormat || Settings.lookupDateFormat();
+
+    /**
+     * The popup menu that is shown when the user clicks the 'more' button next
+     * to a task.
+     * @type {module:popupMenu~PopupMenu}
+     */
+    this._taskMenu = new PopupMenu(null, [
+      { label: 'Edit Task', id: 'edit', icon: 'edit' },
+      { label: 'Delete Task', id: 'delete', icon: 'delete' },
+    ]);
   }
 
   /**
