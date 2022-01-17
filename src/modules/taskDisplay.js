@@ -130,8 +130,8 @@ class TaskDisplay {
      * @type {module:popupMenu~PopupMenu}
      */
     this._taskMenu = new PopupMenu(null, [
-      { label: 'Edit Task', id: 'edit', icon: 'edit' },
-      { label: 'Delete Task', id: 'delete', icon: 'delete' },
+      { label: 'Edit Task', id: 'edit', iconType: 'edit' },
+      { label: 'Delete Task', id: 'delete', iconType: 'delete' },
     ]);
   }
 
@@ -315,6 +315,9 @@ class TaskDisplay {
 
     const moreButton = createIconButton('more_horiz');
     buttonContainer.appendChild(moreButton);
+    moreButton.addEventListener('click', e => {
+      this._taskMenu.open({ referenceElement: e.target });
+    });
   }
 
   /**
