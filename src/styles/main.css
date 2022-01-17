@@ -378,6 +378,41 @@ input[type="radio"], input[type="checkbox"] {
   transition: height 250ms ease-out;
 }
 
+.popup-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid black;
+  background-color: white;
+}
+
+.popup-menu-item {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.popup-menu-item + .popup-menu-item {
+  border-top: 1px solid #f0f0f0;
+}
+
+.popup-menu-item:hover {
+  background-color: #f0f0f0;
+}
+
+.popup-menu-item-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.popup-menu-item-label {
+  font-family: var(--label-font);
+  font-size: 16px;
+  flex: 1;
+  margin-left: 8px;
+}
+
 .date-picker-heading {
   display: flex;
   justify-content: space-between;
