@@ -106,6 +106,8 @@ class PopupMenu {
     this._container = menu;
     this._parent.appendChild(menu);
 
+    this._positionMenu(position);
+
     document.addEventListener('mousedown', this._eventListener);
     document.addEventListener('keydown', this._eventListener);
   }
@@ -138,6 +140,34 @@ class PopupMenu {
           this.close();
         break;
     }
+  }
+
+  /**
+   * Position the popup menu at a particular location.
+   * @param {module:popupMenu~PopupMenu~position} position An object specifying
+   *   the position in the document at which to place the menu.
+   */
+  _positionMenu(position) {
+    let left = '0', top = '0';
+
+    if (position.referenceElement) {
+      const rect = position.referenceElement.getBoundingClientRect();
+      left = `${rect.left}px`;
+      top = `${rect.top + rect.height}px`;
+    } else {
+      if (typeof position.left === 'number')
+        left = `${position.left}px`;
+      else if (typeof position.left === 'string')
+        left = position.left;
+
+      if (typeof position.top === 'number')
+        top = `${position.top}px`;
+      else if (typeof position.top === 'string')
+        top = position.top;
+    }
+
+    this._container.style.left = left;
+    this._container.style.top = top;
   }
 }
 
