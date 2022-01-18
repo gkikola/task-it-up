@@ -71,6 +71,12 @@ class PopupMenu {
     this._menuItems = menuItems;
 
     /**
+     * Holds the index of the active (focused) menu item, if any.
+     * @type {?number}
+     */
+    this._activeItem = null;
+
+    /**
      * The container element holding the menu. Will be null when the menu is
      * hidden.
      * @type {?HTMLElement}
@@ -141,9 +147,12 @@ class PopupMenu {
       listItem.appendChild(label);
 
       listItem.addEventListener('click', () => {
-        this._selectItem(item.id, index)
+        this._selectItem(item.id, index);
       });
+      listItem.addEventListener('mouseenter', () => this._focusItem(index));
     });
+
+    menu.addEventListener('mouseleave', () => this._focusItem(null));
 
     this._container = menu;
     this._parent.appendChild(menu);
@@ -183,6 +192,38 @@ class PopupMenu {
   }
 
   /**
+   * Get the list item HTML element for a menu item.
+   * @param {number} index The index of the menu item to find.
+   * @returns {?HTMLElement} The list item element if it exists, or null if it
+   *   does not.
+   */
+  _getItem(index) {
+    const selector = `.popup-menu-item[data-index="${index}"]`;
+    return this._container.querySelector(selector);
+  }
+
+  /**
+   * Focus an item in the menu.
+   * @param {?number} index The index of the menu item to focus. If set to
+   *   null, then no focus will be set and any existing focus is cleared.
+   */
+  _focusItem(index) {
+    if (this._activeItem !== null) {
+      const item = this._getItem(this._activeItem);
+      if (item)
+        item.classList.remove('active');
+    }
+
+    if (typeof index === 'number') {
+      const item = this._getItem(index);
+      if (item) {
+        this._activeItem = index;
+        item.classList.add('active');
+      }
+    }
+  }
+
+  /**
    * Handle a mouse or keyboard event.
    * @param {Event} e An object describing the event that occurred.
    */
@@ -194,8 +235,14 @@ class PopupMenu {
           this.close();
         break;
       case 'keydown':
-        if (e.key === 'Escape' || e.key === 'Esc' || e.key === 'Tab')
-          this.close();
+        switch (e.key) {
+          case 'Escape':
+          case 'Esc':
+          case 'Tab':
+            this.close();
+            break;
+        }
+        e.preventDefault();
         break;
       case 'scroll': {
         if (this._scrollTimeout)
