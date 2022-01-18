@@ -8,6 +8,13 @@
  */
 class PopupMenu {
   /**
+   * An object holding configuration options for the popup menu.
+   * @typedef {Object} module:popupMenu~PopupMenu~options
+   * @property {HTMLElement} [parent=document.body] The parent element in the
+   *   DOM under which the popup should be inserted.
+   */
+
+  /**
    * A menu item in the popup.
    * @typedef {Object} module:popupMenu~PopupMenu~menuItem
    * @property {string} label The text label that will be displayed in the
@@ -34,18 +41,18 @@ class PopupMenu {
 
   /**
    * Create a popup menu.
-   * @param {HTMLElement} [parent=document.body] The parent element in the DOM
-   *   under which the popup menu should be inserted.
    * @param {module:popupMenu~PopupMenu~menuItem[]} menuItems An array of
    *   objects specifying the items in the menu.
+   * @param {module:popupMenu~PopupMenu~options} [options={}] An object holding
+   *   additional options for the popup menu.
    */
-  constructor(parent = document.body, menuItems) {
+  constructor(menuItems, options = {}) {
     /**
      * The parent element in the DOM under which the popup menu should be
      * inserted.
      * @type {HTMLElement}
      */
-    this._parent = parent || document.body;
+    this._parent = options.parent || document.body;
 
     /**
      * An array of objects specifying the items in the menu.
