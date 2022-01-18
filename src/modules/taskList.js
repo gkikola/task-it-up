@@ -175,6 +175,38 @@ class TaskList {
   }
 
   /**
+   * Remove a task from the task list.
+   * @param {string} id The unique identifier of the task to remove.
+   * @returns {boolean} Returns true if the task was found and removed
+   *   successfully. Otherwise, if the given id was not found, returns false.
+   */
+  deleteTask(id) {
+    const task = this._tasks.get(id);
+
+    if (!task)
+      return false;
+
+    let dateStr = 'none';
+    if (task.dueDate)
+      dateStr = formatDate(task.dueDate, ISO_FORMAT);
+    const projectStr = task.project || 'none';
+    const priority = task.priority;
+
+    this._tasks.delete(id);
+    removeFromMapArrayBy(this._tasksByDueDate, dateStr, elem => {
+      return elem.id === id;
+    });
+    removeFromMapArrayBy(this._tasksByProject, projectStr, elem => {
+      return elem.id === id;
+    });
+    removeFromMapArrayBy(this._tasksByPriority, priority, elem => {
+      return elem.id === id;
+    });
+
+    return true;
+  }
+
+  /**
    * Iterate over the task list. Each iteration yields a wrapper containing the
    * identifier of the task along with the task itself.
    * @yields {module:taskList~TaskList~taskWrapper} The next task in the list.
