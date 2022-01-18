@@ -132,7 +132,7 @@ class TaskDisplay {
     this._taskMenu = new PopupMenu([
       { label: 'Edit Task', id: 'edit', iconType: 'edit' },
       { label: 'Delete Task', id: 'delete', iconType: 'delete' },
-    ]);
+    ], { closeIfScrolled: parent });
   }
 
   /**
