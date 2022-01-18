@@ -608,6 +608,7 @@ input[type="radio"], input[type="checkbox"] {
   font-family: var(--label-font);
   font-size: 18px;
   color: #505050;
+  padding: 0 8px;
 }
 
 #main-panel-header {
