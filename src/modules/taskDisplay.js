@@ -316,7 +316,10 @@ class TaskDisplay {
     const moreButton = createIconButton('more_horiz');
     buttonContainer.appendChild(moreButton);
     moreButton.addEventListener('click', e => {
-      this._taskMenu.open({ referenceElement: e.target });
+      this._taskMenu.open(id => {
+        if (this._taskCallback && (id === 'edit' || id === 'delete'))
+          this._taskCallback(id, taskId, task);
+      }, { referenceElement: e.target });
     });
   }
 

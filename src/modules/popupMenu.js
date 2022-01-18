@@ -42,6 +42,14 @@ class PopupMenu {
    */
 
   /**
+   * A callback function that will be invoked when the user selects a menu
+   * item.
+   * @callback module:popupMenu~PopupMenu~selectionCallback
+   * @param itemId The identifier of the menu item that was selected.
+   * @param index The index of the menu item that was selected.
+   */
+
+  /**
    * Create a popup menu.
    * @param {module:popupMenu~PopupMenu~menuItem[]} menuItems An array of
    *   objects specifying the items in the menu.
@@ -70,6 +78,13 @@ class PopupMenu {
     this._container = null;
 
     /**
+     * Holds the function to be invoked when the user selects a menu item. This
+     * will be null when the menu is closed.
+     * @type {?module:popupMenu~PopupMenu~selectionCallback}
+     */
+    this._callback = null;
+
+    /**
      * An event listener to monitor document-wide mouse and keyboard events.
      * Needs to be stored so that it can be later removed.
      * @type {Function}
@@ -94,10 +109,13 @@ class PopupMenu {
 
   /**
    * Open the popup menu at a particular position.
-   * @param {module:popupMenu~PopupMenu~position} position An object specifying
-   *   the position in the document at which to place the menu.
+   * @param {module:popupMenu~PopupMenu~selectionCallback} callback A callback
+   *   function that will be invoked when the user chooses a menu item.
+   * @param {module:popupMenu~PopupMenu~position} [position] An object
+   *   specifying the position in the document at which to place the menu. If
+   *   not given, the upper-left corner of the document will be used.
    */
-  open(position) {
+  open(callback, position) {
     if (this._container)
       this.close();
 
@@ -121,10 +139,15 @@ class PopupMenu {
       label.classList.add('popup-menu-item-label');
       label.textContent = item.label;
       listItem.appendChild(label);
+
+      listItem.addEventListener('click', () => {
+        this._selectItem(item.id, index)
+      });
     });
 
     this._container = menu;
     this._parent.appendChild(menu);
+    this._callback = callback;
 
     this._positionMenu(position);
 
@@ -141,11 +164,22 @@ class PopupMenu {
     if (this._container) {
       this._parent.removeChild(this._container);
       this._container = null;
+      this._callback = null;
       document.removeEventListener('mousedown', this._eventListener);
       document.removeEventListener('keydown', this._eventListener);
       if (this._scrollTarget)
         document.removeEventListener('scroll', this._eventListener, true);
     }
+  }
+
+  /**
+   * Select an item in the menu.
+   * @param {string} id The identifier of the menu item to select.
+   * @param {number} index The index of the menu item.
+   */
+  _selectItem(id, index) {
+    this._callback(id, index);
+    this.close();
   }
 
   /**
@@ -179,10 +213,10 @@ class PopupMenu {
 
   /**
    * Position the popup menu at a particular location.
-   * @param {module:popupMenu~PopupMenu~position} position An object specifying
-   *   the position in the document at which to place the menu.
+   * @param {module:popupMenu~PopupMenu~position} [position={}] An object
+   *   specifying the position in the document at which to place the menu.
    */
-  _positionMenu(position) {
+  _positionMenu(position = {}) {
     const width = this._container.offsetWidth;
     const height = this._container.offsetHeight;
 
