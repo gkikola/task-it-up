@@ -12,6 +12,8 @@ class PopupMenu {
    * @typedef {Object} module:popupMenu~PopupMenu~options
    * @property {HTMLElement} [parent=document.body] The parent element in the
    *   DOM under which the popup should be inserted.
+   * @property {HTMLElement} [closeIfScrolled] If provided, the popup menu will
+   *   be closed when the given element or one of its ancestors is scrolled.
    */
 
   /**
@@ -74,6 +76,20 @@ class PopupMenu {
      * @param {Event} e An object describing the event that has occurred.
      */
     this._eventListener = e => this._handleEvent(e);
+
+    /**
+     * An identifier for a timeout used to debounce scroll events for better
+     * performance.
+     * @type {?number}
+     */
+    this._scrollTimeout = null;
+
+    /**
+     * An element to monitor for scroll events. If the element is scroll, then
+     * the popup menu will be closed.
+     * @type {?HTMLElement}
+     */
+    this._scrollTarget = options.closeIfScrolled || null;
   }
 
   /**
@@ -114,6 +130,8 @@ class PopupMenu {
 
     document.addEventListener('mousedown', this._eventListener);
     document.addEventListener('keydown', this._eventListener);
+    if (this._scrollTarget)
+      document.addEventListener('scroll', this._eventListener, true);
   }
 
   /**
@@ -123,8 +141,10 @@ class PopupMenu {
     if (this._container) {
       this._parent.removeChild(this._container);
       this._container = null;
-      document.removeEventListener('keydown', this._eventListener);
       document.removeEventListener('mousedown', this._eventListener);
+      document.removeEventListener('keydown', this._eventListener);
+      if (this._scrollTarget)
+        document.removeEventListener('scroll', this._eventListener, true);
     }
   }
 
@@ -143,6 +163,17 @@ class PopupMenu {
         if (e.key === 'Escape' || e.key === 'Esc' || e.key === 'Tab')
           this.close();
         break;
+      case 'scroll': {
+        if (this._scrollTimeout)
+          clearTimeout(this._scrollTimeout);
+
+        this._scrollTimeout = setTimeout(() => {
+          this._scrollTimeout = null;
+          if (e.target.contains(this._scrollTarget))
+            this.close();
+        }, 100);
+        break;
+      }
     }
   }
 
