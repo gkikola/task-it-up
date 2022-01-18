@@ -473,6 +473,10 @@ class App {
       case 'edit':
         this._showAddTaskModal({ taskId: id });
         break;
+      case 'delete':
+        this._tasks.deleteTask(id);
+        this._updateMainPanel({ resetScroll: false });
+        break;
     }
   }
 
