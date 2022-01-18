@@ -21,15 +21,12 @@ class PopupMenu {
   /**
    * An object describing how the popup should be positioned.
    * @typedef {Object} module:popupMenu~PopupMenu~position
-   * @property {number|string} [left=0] The position of the left side of the
-   *   popup, relative to the left edge of the document. This can be a number,
-   *   representing a distance in pixels, or a string holding a CSS length or
-   *   percentage. This property is ignored if the referenceElement property is
-   *   set.
-   * @property {number|string} [top=0] The position of the top of the popup,
-   *   relative to the top of the document. This can be a number, representing
-   *   a distance in pixels, or a string holding a CSS length or percentage.
-   *   This property is ignored if the referenceElement property is set.
+   * @property {number} [left=0] The position of the left side of the popup, in
+   *   pixels, relative to the left edge of the document. This property is
+   *   ignored if the referenceElement property is set.
+   * @property {number} [top=0] The position of the top of the popup, in
+   *   pixels, relative to the top of the document. This property is ignored if
+   *   the referenceElement property is set.
    * @property {HTMLElement} [referenceElement] An element in the DOM whose
    *   position is to be used for determining the position of the popup. If
    *   given, the popup will be positioned just underneath the element.
@@ -148,26 +145,37 @@ class PopupMenu {
    *   the position in the document at which to place the menu.
    */
   _positionMenu(position) {
-    let left = '0', top = '0';
+    const width = this._container.offsetWidth;
+    const height = this._container.offsetHeight;
 
+    let left = 0, top = 0;
     if (position.referenceElement) {
       const rect = position.referenceElement.getBoundingClientRect();
-      left = `${rect.left}px`;
-      top = `${rect.top + rect.height}px`;
+      left = rect.left;
+      top = rect.top + rect.height;
     } else {
       if (typeof position.left === 'number')
-        left = `${position.left}px`;
-      else if (typeof position.left === 'string')
         left = position.left;
-
       if (typeof position.top === 'number')
-        top = `${position.top}px`;
-      else if (typeof position.top === 'string')
         top = position.top;
     }
 
-    this._container.style.left = left;
-    this._container.style.top = top;
+    const MARGIN = 4;
+    const bodyWidth = document.body.offsetWidth;
+    const bodyHeight = document.body.offsetHeight;
+
+    if (left + width + MARGIN > bodyWidth)
+      left = bodyWidth - (width + MARGIN);
+    if (top + height + MARGIN > bodyHeight)
+      top = bodyHeight - (height + MARGIN);
+
+    if (left < 0)
+      left = 0;
+    if (height < 0)
+      height = 0;
+
+    this._container.style.left = `${left}px`;
+    this._container.style.top = `${top}px`;
   }
 }
 
