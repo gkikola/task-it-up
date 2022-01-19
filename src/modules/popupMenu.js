@@ -149,7 +149,7 @@ class PopupMenu {
       listItem.addEventListener('click', () => {
         this._selectItem(item.id, index);
       });
-      listItem.addEventListener('mouseenter', () => this._focusItem(index));
+      listItem.addEventListener('mousemove', () => this._focusItem(index));
     });
 
     menu.addEventListener('mouseleave', () => this._focusItem(null));
@@ -208,10 +208,14 @@ class PopupMenu {
    *   null, then no focus will be set and any existing focus is cleared.
    */
   _focusItem(index) {
+    if (index === this._activeItem)
+      return;
+
     if (this._activeItem !== null) {
       const item = this._getItem(this._activeItem);
       if (item)
         item.classList.remove('active');
+      this._activeItem = null;
     }
 
     if (typeof index === 'number') {
@@ -241,6 +245,30 @@ class PopupMenu {
           case 'Tab':
             this.close();
             break;
+          case 'ArrowUp':
+          case 'Up': {
+            const active = this._activeItem;
+            const itemCount = this._menuItems.length;
+            let index = null;
+            if (active !== null)
+              index = active > 0 ? active - 1 : itemCount - 1;
+            else if (itemCount > 0)
+              index = itemCount - 1;
+            this._focusItem(index);
+            break;
+          }
+          case 'ArrowDown':
+          case 'Down': {
+            const active = this._activeItem;
+            const itemCount = this._menuItems.length;
+            let index = null;
+            if (active !== null)
+              index = active < itemCount - 1 ? active + 1 : 0;
+            else if (itemCount > 0)
+              index = 0;
+            this._focusItem(index);
+            break;
+          }
         }
         e.preventDefault();
         break;
