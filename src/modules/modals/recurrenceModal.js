@@ -132,18 +132,6 @@ class RecurrenceModal {
     return 'Edit Recurring Date';
   }
 
-  get confirmLabel() {
-    return 'Okay';
-  }
-
-  get cancelLabel() {
-    return 'Cancel';
-  }
-
-  get noCancelButton() {
-    return false;
-  }
-
   addContent(parent, modalStack) {
     let container, optionContainer, label;
     container = document.createElement('div');

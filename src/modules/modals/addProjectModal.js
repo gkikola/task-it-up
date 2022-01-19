@@ -79,14 +79,6 @@ class AddProjectModal {
     return (this._mode === 'edit') ? 'Update' : 'Add';
   }
 
-  get cancelLabel() {
-    return 'Cancel';
-  }
-
-  get noCancelButton() {
-    return false;
-  }
-
   addContent(parent) {
     const containerType = { classList: ['form-input-container'] };
     const labelType = value => ({ value, classList: ['form-input-label'] });

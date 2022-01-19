@@ -61,18 +61,6 @@ class DatePickerModal {
     return this._title;
   }
 
-  get confirmLabel() {
-    return 'Okay';
-  }
-
-  get cancelLabel() {
-    return 'Cancel';
-  }
-
-  get noCancelButton() {
-    return false;
-  }
-
   addContent(parent) {
     this._picker = new DatePicker(parent, this._startDate);
   }

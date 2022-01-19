@@ -30,18 +30,21 @@ const Z_INDEX_OVERLAY_STEP = 50;
  * The label that should be used for the confirm button, shown at the bottom of
  * the modal.
  * @member {string} module:modalStack~Modal#confirmLabel
+ * @default Okay
  */
 
 /**
  * The label that should be used for the cancel button, shown at the bottom of
  * the modal.
  * @member {string} module:modalStack~Modal#cancelLabel
+ * @default Cancel
  */
 
 /**
  * Indicates whether to show the cancel button in the modal window. If set to
  * true, then the button should not be displayed.
  * @member {boolean} module:modalStack~Modal#noCancelButton
+ * @default false
  */
 
 /**
@@ -169,17 +172,17 @@ class ModalStack {
     buttonContainer.classList.add('modal-button-container');
     container.appendChild(buttonContainer);
 
-    if (modal.cancelLabel) {
+    if (!modal.noCancelButton) {
       const cancelButton = document.createElement('button');
       cancelButton.classList.add('modal-button');
-      cancelButton.textContent = modal.cancelLabel;
+      cancelButton.textContent = modal.cancelLabel || 'Cancel';
       cancelButton.addEventListener('click', () => this.cancelModal());
       buttonContainer.appendChild(cancelButton);
     }
 
     const okayButton = document.createElement('button');
     okayButton.classList.add('modal-button', 'modal-okay');
-    okayButton.textContent = modal.confirmLabel;
+    okayButton.textContent = modal.confirmLabel || 'Okay';
     okayButton.addEventListener('click', () => this.confirmModal());
     buttonContainer.appendChild(okayButton);
 

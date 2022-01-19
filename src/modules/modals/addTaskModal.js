@@ -157,14 +157,6 @@ class AddTaskModal {
     return (this._mode === 'edit') ? 'Update' : 'Add';
   }
 
-  get cancelLabel() {
-    return 'Cancel';
-  }
-
-  get noCancelButton() {
-    return false;
-  }
-
   addContent(parent, modalStack) {
     const containerType = { classList: ['form-input-container'] };
     const labelType = value => ({ value, classList: ['form-input-label'] });
