@@ -157,6 +157,10 @@ class AddTaskModal {
     return (this._mode === 'edit') ? 'Update' : 'Add';
   }
 
+  get initFocus() {
+    return this._controls.name;
+  }
+
   addContent(parent, modalStack) {
     const containerType = { classList: ['form-input-container'] };
     const labelType = value => ({ value, classList: ['form-input-label'] });

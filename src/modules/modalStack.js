@@ -48,6 +48,15 @@ const Z_INDEX_OVERLAY_STEP = 50;
  */
 
 /**
+ * Indicates which element to focus after the modal has been opened. This
+ * property can either give the element itself, or can be a string with one of
+ * the following options: 'confirm' will focus the Confirm button in the modal,
+ * 'cancel' will focus the Cancel button, and 'none' will focus nothing.
+ * @member {HTMLElement|string} module:modalStack~Modal#initFocus
+ * @default confirm
+ */
+
+/**
  * Create and display the modal's main content.
  * @function module:modalStack~Modal#addContent
  * @param {HTMLElement} parent The parent DOM node under which the modal's main
@@ -179,8 +188,9 @@ class ModalStack {
     buttonContainer.classList.add('modal-button-container');
     container.appendChild(buttonContainer);
 
+    let cancelButton = null;
     if (!modal.noCancelButton) {
-      const cancelButton = document.createElement('button');
+      cancelButton = document.createElement('button');
       cancelButton.classList.add('modal-button');
       cancelButton.textContent = modal.cancelLabel || 'Cancel';
       cancelButton.addEventListener('click', () => this.cancelModal());
@@ -204,6 +214,25 @@ class ModalStack {
     this._modals.push(modalInfo);
     this._parent.appendChild(wrapper);
     this._hideBackground();
+
+    if (typeof modal.initFocus === 'string') {
+      switch (modal.initFocus) {
+        case 'confirm':
+          okayButton.focus();
+          break;
+        case 'cancel':
+          if (cancelButton)
+            cancelButton.focus();
+          break;
+        default:
+        case 'none':
+          break;
+      }
+    } else if (modal.initFocus) {
+      modal.initFocus.focus();
+    } else {
+      okayButton.focus();
+    }
   }
 
   /**
