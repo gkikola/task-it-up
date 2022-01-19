@@ -147,7 +147,7 @@ class PopupMenu {
       listItem.appendChild(label);
 
       listItem.addEventListener('click', () => {
-        this._selectItem(item.id, index);
+        this._selectItem(index);
       });
       listItem.addEventListener('mousemove', () => this._focusItem(index));
     });
@@ -183,11 +183,10 @@ class PopupMenu {
 
   /**
    * Select an item in the menu.
-   * @param {string} id The identifier of the menu item to select.
    * @param {number} index The index of the menu item.
    */
-  _selectItem(id, index) {
-    this._callback(id, index);
+  _selectItem(index) {
+    this._callback(this._menuItems[index].id, index);
     this.close();
   }
 
@@ -238,12 +237,19 @@ class PopupMenu {
         if (!this._container.contains(e.target))
           this.close();
         break;
-      case 'keydown':
+      case 'keydown': {
+        let preventDefault = true;
         switch (e.key) {
           case 'Escape':
           case 'Esc':
           case 'Tab':
             this.close();
+            break;
+          case 'Enter':
+          case ' ':
+          case 'Spacebar':
+            if (this._activeItem !== null)
+              this._selectItem(this._activeItem);
             break;
           case 'ArrowUp':
           case 'Up': {
@@ -269,9 +275,14 @@ class PopupMenu {
             this._focusItem(index);
             break;
           }
+          default:
+            preventDefault = false;
+            break;
         }
-        e.preventDefault();
+        if (preventDefault)
+          e.preventDefault();
         break;
+      }
       case 'scroll': {
         if (this._scrollTimeout)
           clearTimeout(this._scrollTimeout);
