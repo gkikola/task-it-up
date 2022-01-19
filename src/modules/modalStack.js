@@ -132,6 +132,13 @@ class ModalStack {
      * @type {module:modalStack~ModalStack~modalInfo[]}
      */
     this._modals = [];
+
+    document.addEventListener('keydown', e => {
+      if (this._modals.length > 0 && (e.key === 'Escape' || e.key === 'Esc')) {
+        this.cancelModal();
+        e.preventDefault();
+      }
+    });
   }
 
   /**
