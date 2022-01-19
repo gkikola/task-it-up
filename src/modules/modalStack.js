@@ -87,6 +87,8 @@ class ModalStack {
    *   dialog.
    * @property {HTMLElement} content The DOM node holding the main contents of
    *   the modal dialog.
+   * @property {HTMLElement} [oldActive] The element that had keyboard focus
+   *   before the modal was opened, if any.
    */
 
   /**
@@ -134,6 +136,10 @@ class ModalStack {
    * @param {module:modalStack~Modal} modal The modal dialog to show.
    */
   showModal(modal) {
+    const oldActive = document.activeElement;
+    if (oldActive)
+      oldActive.blur();
+
     const wrapper = document.createElement('div');
     wrapper.classList.add('modal-wrapper');
     wrapper.style.zIndex = this._getZIndex(this._modals.length + 1);
@@ -182,6 +188,7 @@ class ModalStack {
       wrapper,
       container,
       content,
+      oldActive,
     };
 
     this._modals.push(modalInfo);
@@ -198,6 +205,8 @@ class ModalStack {
     if (modalInfo) {
       this._parent.removeChild(modalInfo.wrapper);
       this._restoreBackground();
+      if (modalInfo.oldActive)
+        modalInfo.oldActive.focus();
     }
   }
 
