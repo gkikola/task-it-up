@@ -8,6 +8,7 @@
     "watch": "webpack --watch",
     "start": "webpack serve --open",
     "build": "webpack",
+    "lint": "eslint src",
     "docs": "jsdoc -c jsdoc-conf.json",
     "docs-clean": "rm -fr ./docs"
   },
@@ -32,6 +33,9 @@
     "@babel/preset-env": "^7.16.4",
     "babel-loader": "^8.2.3",
     "css-loader": "^6.5.1",
+    "eslint": "^8.7.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4",
     "html-webpack-plugin": "^5.5.0",
     "jsdoc": "^3.6.7",
     "style-loader": "^3.3.1",
