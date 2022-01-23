@@ -28,7 +28,7 @@
  */
 
 /**
- * Holds private date for the [PopupMenu]{@link module:popupMenu~PopupMenu}
+ * Holds private data for the [PopupMenu]{@link module:popupMenu~PopupMenu}
  * class.
  * @type {WeakMap}
  * @see module:popupMenu~PopupMenu~privates

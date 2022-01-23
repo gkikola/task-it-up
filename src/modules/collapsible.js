@@ -15,7 +15,7 @@
  */
 
 /**
- * Holds private date for the
+ * Holds private data for the
  * [Collapsible]{@link module:collapsible~Collapsible} class.
  * @type {WeakMap}
  * @see module:collapsible~Collapsible~privates
