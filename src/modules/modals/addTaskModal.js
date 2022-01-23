@@ -17,6 +17,283 @@ import {
 } from '../utility';
 
 /**
+ * Object holding private members for the
+ * [AddTaskModal]{@link module:addTaskModal~AddTaskModal} class.
+ * @typedef {Object} module:addTaskModal~AddTaskModal~privates
+ * @property {module:taskList~TaskList} tasks The task list to update.
+ * @property {module:projectList~ProjectList} projects The project list to use
+ *   for the Project field.
+ * @property {string} [taskId] The unique identifier for the task being edited,
+ *   if any.
+ * @property {string} [projectId] The unique identifier for the default
+ *   project, if any.
+ * @property {number} priority The default priority.
+ * @property {string} mode Indicates the status of the task being entered. If
+ *   set to 'add', a new task is being created, and if set to 'edit', then an
+ *   existing task is being updated.
+ * @property {module:recurringDate~RecurringDate} [customRecurrence] The custom
+ *   recurrence that the user added, if any.
+ * @property {module:settings~Settings~dateFormat} dateFormat An object holding
+ *   date format information.
+ * @property {Object} callbacks An object holding callback functions.
+ * @property {Function} [callbacks.confirm] A callback function that will be
+ *   invoked when the user successfully confirms the modal.
+ * @property {Function} [callbacks.cancel] A callback function that will be
+ *   invoked when the user cancels the modal.
+ * @property {Function} [callbacks.newProject] A callback function that will be
+ *   invoked when the user adds a new project.
+ * @property {Object} controls An object holding the form input elements for
+ *   the modal.
+ * @property {HTMLElement} controls.name The text input element for the task
+ *   name.
+ * @property {HTMLElement} controls.dueDate The text input element for the task
+ *   due date.
+ * @property {HTMLElement} controls.recurringDate The select element for the
+ *   task recurring date.
+ * @property {HTMLElement} controls.priority The select element for the task
+ *   priority.
+ * @property {HTMLElement} controls.project The select element for the task's
+ *   containing project.
+ * @property {HTMLElement} controls.description The textarea element for the
+ *   task description.
+ */
+
+/**
+ * Holds private data for the
+ * [AddTaskModal]{@link module:addTaskModal~AddTaskModal} class.
+ * @type {WeakMap}
+ * @see module:addTaskModal~AddTaskModal~privates
+ */
+const privateMembers = new WeakMap();
+
+/**
+ * Update the project select box options.
+ * @param {module:addTaskModal~AddTaskModal} instance The class instance on
+ *   which to apply the function.
+ */
+function updateProjects(instance) {
+  const privates = privateMembers.get(instance);
+  const projectItems = [{ value: 'none', label: 'None' }];
+  privates.projects.forEach((entry) => {
+    projectItems.push({ value: entry.id, label: entry.project.name });
+  });
+  projectItems.push({ value: 'new', label: 'New Project...' });
+
+  const selectBox = privates.controls.project;
+  selectBox.innerHTML = '';
+  projectItems.forEach((entry) => {
+    const optElem = document.createElement('option');
+    optElem.value = entry.value;
+    optElem.textContent = entry.label;
+    selectBox.appendChild(optElem);
+  });
+}
+
+/**
+ * Initialize the values of the form elements based on the initial task that
+ * was passed to the constructor, if any.
+ * @param {module:addTaskModal~AddTaskModal} instance The class instance on
+ *   which to apply the function.
+ */
+function initFormValues(instance) {
+  updateProjects(instance);
+
+  const privates = privateMembers.get(instance);
+  const { controls } = privates;
+  let task = null;
+  if (privates.taskId) task = privates.tasks.getTask(privates.taskId);
+
+  if (task?.name) controls.name.value = task.name;
+
+  if (task?.dueDate) {
+    controls.dueDate.value = formatDate(
+      task.dueDate,
+      privates.dateFormat.internal,
+    );
+  }
+
+  if (task?.recurringDate) {
+    let value;
+    if (task.recurringDate.isDefault()) {
+      switch (task.recurringDate.intervalUnit) {
+        case 'day':
+          value = 'daily';
+          break;
+        case 'week':
+          value = 'weekly';
+          break;
+        case 'month':
+          value = 'monthly';
+          break;
+        case 'year':
+          value = 'annually';
+          break;
+        default:
+          value = 'custom';
+          break;
+      }
+    } else {
+      value = 'custom';
+    }
+    controls.recurringDate.value = value;
+    if (value === 'custom') privates.customRecurrence = task.recurringDate;
+  }
+
+  if (task?.priorityString && task.priorityString !== 'unknown') {
+    controls.priority.value = task.priorityString;
+  } else {
+    controls.priority.value = Task.convertPriorityToString(privates.priority);
+  }
+
+  let { projectId } = privates;
+  if (task?.project) projectId = task.project;
+  if (projectId) controls.project.value = projectId;
+
+  if (task?.description) controls.description.value = task.description;
+}
+
+/**
+ * Opens a date picker and updates the due date field.
+ * @param {module:addTaskModal~AddTaskModal} instance The class instance on
+ *   which to apply the function.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal has been inserted.
+ */
+function pickDueDate(instance, modalStack) {
+  const privates = privateMembers.get(instance);
+  const input = privates.controls.dueDate;
+  let startDate = null;
+  if (input.value) {
+    startDate = parseDate(input.value, privates.dateFormat.internal);
+  }
+
+  modalStack.showModal(new DatePickerModal({
+    confirm: (date) => {
+      input.value = formatDate(date, privates.dateFormat.internal);
+      input.setCustomValidity('');
+    },
+    startDate,
+    title: 'Select Due Date',
+  }));
+}
+
+/**
+ * Add the event listeners to the form controls in the modal.
+ * @param {module:addTaskModal~AddTaskModal} instance The class instance on
+ *   which to apply the function.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal is being inserted.
+ */
+function addListeners(instance, modalStack) {
+  const privates = privateMembers.get(instance);
+  const { controls, dateFormat } = privates;
+
+  // Handle recurrence selection
+  const { recurringDate } = controls;
+  let recurrenceValue = recurringDate.value;
+  const processRecurrence = (recurrence) => {
+    privates.customRecurrence = recurrence;
+
+    let newValue = 'custom-result';
+    if (recurrence.isDefault()) {
+      switch (recurrence.intervalUnit) {
+        case 'day':
+          newValue = 'daily';
+          break;
+        case 'week':
+          newValue = 'weekly';
+          break;
+        case 'month':
+          newValue = 'monthly';
+          break;
+        case 'year':
+          newValue = 'annually';
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Update select box options
+    const selector = 'option[value="custom-result"]';
+    let optElem = recurringDate.querySelector(selector);
+    if (optElem && newValue !== 'custom-result') {
+      recurringDate.removeChild(optElem);
+    } else if (newValue === 'custom-result') {
+      if (!optElem) {
+        optElem = document.createElement('option');
+        optElem.value = 'custom-result';
+        recurringDate.insertBefore(optElem, recurringDate.lastChild);
+      }
+      const dateFormatStr = dateFormat.internal;
+      optElem.textContent = recurrence.toStringVerbose(dateFormatStr);
+    }
+
+    recurringDate.value = newValue;
+    recurrenceValue = newValue;
+  };
+
+  if (privates.customRecurrence) processRecurrence(privates.customRecurrence);
+
+  const cancelRecurrence = () => { recurringDate.value = recurrenceValue; };
+
+  recurringDate.addEventListener('change', (e) => {
+    if (e.target.value === 'custom') {
+      // Get due date, if any
+      const dateInput = controls.dueDate;
+      let baseDate = null;
+      if (dateInput.value) {
+        baseDate = parseDate(dateInput.value, dateFormat.internal);
+      }
+
+      const modal = new RecurrenceModal({
+        confirm: processRecurrence,
+        cancel: cancelRecurrence,
+        initial: privates.customRecurrence,
+        baseDate,
+        dateFormat,
+      });
+      modalStack.showModal(modal);
+    } else {
+      recurrenceValue = e.target.value;
+    }
+  });
+
+  // Handle project selection
+  let projectValue = controls.project.value;
+  controls.project.addEventListener('change', (e) => {
+    if (e.target.value === 'new') {
+      const modal = new AddProjectModal({
+        confirm: (project) => {
+          const id = privates.projects.addProject(project);
+          updateProjects(instance);
+          controls.project.value = id;
+          projectValue = id;
+          if (privates.callbacks.newProject) privates.callbacks.newProject(id);
+        },
+        cancel: () => { controls.project.value = projectValue; },
+      });
+      modalStack.showModal(modal);
+    } else {
+      projectValue = e.target.value;
+    }
+  });
+
+  // Check date validity
+  controls.dueDate.addEventListener('change', (e) => {
+    const { value } = e.target;
+    if (value.length > 0) {
+      let message = '';
+      if (!parseDate(value, dateFormat.internal)) {
+        const format = dateFormat.visual;
+        message = `Please enter a valid date in ${format} format.`;
+      }
+      e.target.setCustomValidity(message);
+    }
+  });
+}
+
+/**
  * A modal dialog for adding or editing a task.
  * @implements {module:modalStack~Modal}
  */
@@ -58,112 +335,51 @@ class AddTaskModal {
    *   configuration options for the modal.
    */
   constructor(taskList, projectList, options = {}) {
-    /**
-     * The task list to update.
-     * @type {module:taskList~TaskList}
-     */
-    this._tasks = taskList;
-
-    /**
-     * The project list to use for the Project field.
-     * @type {module:projectList~ProjectList}
-     */
-    this._projects = projectList;
-
-    /**
-     * The unique identifier for the task being edited (if any).
-     * @type {string}
-     */
-    this._taskId = options.taskId || null;
-
-    /**
-     * The unique identifier for the default project (if any).
-     * @type {string}
-     */
-    this._projectId = options.projectId || null;
-
-    /**
-     * The default priority.
-     * @type {number}
-     */
-    this._priority = options.priority || 0;
-
-    /**
-     * Indicates the status of the task being entered. If set to 'add', a new
-     * task is being created, and if set to 'edit', then an existing task is
-     * being updated.
-     * @type {string}
-     */
-    this._mode = options.taskId ? 'edit' : 'add';
-
-    /**
-     * The custom recurrence that the user added, if any.
-     * @type {?module:recurringDate~RecurringDate}
-     */
-    this._customRecurrence = null;
-
-    /**
-     * An object holding date format information.
-     * @type {module:settings~Settings~dateFormat}
-     */
-    this._dateFormat = options.dateFormat || Settings.lookupDateFormat();
-
-    /**
-     * An object holding callback functions.
-     * @type {Object}
-     * @property {Function} [confirm] A callback function that will be invoked
-     *   when the user successfully confirms the modal.
-     * @property {Function} [cancel] A callback function that will be invoked
-     *   when the user cancels the modal.
-     * @property {Function} [newProject] A callback function that will be
-     *   invoked when the user adds a new project.
-     */
-    this._callbacks = {
-      confirm: options.confirm || null,
-      cancel: options.cancel || null,
-      newProject: options.newProject || null,
+    const privates = {
+      tasks: taskList,
+      projects: projectList,
+      taskId: options.taskId || null,
+      projectId: options.projectId || null,
+      priority: options.priority || 0,
+      mode: options.taskId ? 'edit' : 'add',
+      customRecurrence: null,
+      dateFormat: options.dateFormat || Settings.lookupDateFormat(),
+      callbacks: {
+        confirm: options.confirm || null,
+        cancel: options.cancel || null,
+        newProject: options.newProject || null,
+      },
+      controls: {
+        name: null,
+        dueDate: null,
+        recurringDate: null,
+        priority: null,
+        project: null,
+        description: null,
+      },
     };
-
-    /**
-     * An object holding the form input elements for the modal.
-     * @type {Object}
-     * @property {HTMLElement} name The text input element for the task name.
-     * @property {HTMLElement} dueDate The text input element for the task due
-     *   date.
-     * @property {HTMLElement} recurringDate The select element for the task
-     *   recurring date.
-     * @property {HTMLElement} priority The select element for the task
-     *   priority.
-     * @property {HTMLElement} project The select element for the task's
-     *   containing project.
-     * @property {HTMLElement} description The textarea element for the task
-     *   description.
-     */
-    this._controls = {
-      name: null,
-      dueDate: null,
-      recurringDate: null,
-      priority: null,
-      project: null,
-      description: null,
-    };
+    privateMembers.set(this, privates);
   }
 
   get title() {
-    return (this._mode === 'edit') ? 'Edit Task' : 'Add Task';
+    const privates = privateMembers.get(this);
+    return (privates.mode === 'edit') ? 'Edit Task' : 'Add Task';
   }
 
   get confirmLabel() {
-    return (this._mode === 'edit') ? 'Update' : 'Add';
+    const privates = privateMembers.get(this);
+    return (privates.mode === 'edit') ? 'Update' : 'Add';
   }
 
   get initFocus() {
-    return this._controls.name;
+    return privateMembers.get(this).controls.name;
   }
 
   addContent(parent, modalStack) {
+    const privates = privateMembers.get(this);
+
     const containerType = { classList: ['form-input-container'] };
-    const labelType = value => ({ value, classList: ['form-input-label'] });
+    const labelType = (value) => ({ value, classList: ['form-input-label'] });
     parent.appendChild(createFormControl({
       type: 'text',
       id: 'task-name',
@@ -185,12 +401,12 @@ class AddTaskModal {
     dateContainer.appendChild(createDateInputField({
       id: 'task-due-date',
       name: 'task-due-date',
-      placeholder: this._dateFormat.visual,
+      placeholder: privates.dateFormat.visual,
       classList: ['form-input-inline'],
       container: { classList: ['form-input-date-container'] },
       button: {
         classList: ['form-button'],
-        callback: () => this._pickDueDate(modalStack),
+        callback: () => pickDueDate(this, modalStack),
       },
     }));
     parent.appendChild(dateContainer);
@@ -248,7 +464,7 @@ class AddTaskModal {
       size: { rows: 4, cols: 20 },
     }));
 
-    this._controls = {
+    privates.controls = {
       name: parent.querySelector('#task-name'),
       dueDate: parent.querySelector('#task-due-date'),
       recurringDate: parent.querySelector('#task-recurring-date'),
@@ -256,21 +472,23 @@ class AddTaskModal {
       project: parent.querySelector('#task-project'),
       description: parent.querySelector('#task-description'),
     };
-    this._initFormValues();
-    this._addListeners(modalStack);
+    initFormValues(this);
+    addListeners(this, modalStack);
   }
 
   confirm() {
-    const controls = this._controls;
+    const privates = privateMembers.get(this);
+    const { controls, dateFormat } = privates;
 
     let dueDate = null;
-    if (controls.dueDate.value)
-      dueDate = parseDate(controls.dueDate.value, this._dateFormat.internal);
+    if (controls.dueDate.value) {
+      dueDate = parseDate(controls.dueDate.value, dateFormat.internal);
+    }
 
     let creationDate = null;
     let completionDate = null;
-    if (this._taskId) {
-      const task = this._tasks.getTask(this._taskId);
+    if (privates.taskId) {
+      const task = privates.tasks.getTask(privates.taskId);
       creationDate = task.creationDate;
       completionDate = task.completionDate;
     }
@@ -290,7 +508,9 @@ class AddTaskModal {
         recurringDate = new RecurringDate('year');
         break;
       case 'custom-result':
-        recurringDate = this._customRecurrence;
+        recurringDate = privates.customRecurrence;
+        break;
+      default:
         break;
     }
 
@@ -315,247 +535,26 @@ class AddTaskModal {
     });
 
     let id;
-    if (this._taskId) {
-      id = this._taskId;
-      this._tasks.updateTask(id, task);
+    if (privates.taskId) {
+      id = privates.taskId;
+      privates.tasks.updateTask(id, task);
     } else {
-      id = this._tasks.addTask(task);
+      id = privates.tasks.addTask(task);
     }
 
-    if (this._callbacks.confirm)
-      this._callbacks.confirm(id);
+    if (privates.callbacks.confirm) privates.callbacks.confirm(id);
   }
 
   cancel() {
-    if (this._callbacks.cancel)
-      this._callbacks.cancel();
+    const { callbacks } = privateMembers.get(this);
+    if (callbacks.cancel) callbacks.cancel();
   }
 
   validate() {
-    const controls = this._controls;
-    if (!controls.name.reportValidity())
-      return false;
-    if (!controls.dueDate.reportValidity())
-      return false;
-
+    const { controls } = privateMembers.get(this);
+    if (!controls.name.reportValidity()) return false;
+    if (!controls.dueDate.reportValidity()) return false;
     return true;
-  }
-
-  /**
-   * Initialize the values of the form elements based on the initial task that
-   * was passed to the constructor, if any.
-   */
-  _initFormValues() {
-    this._updateProjects();
-
-    const controls = this._controls;
-    let task = null;
-    if (this._taskId)
-      task = this._tasks.getTask(this._taskId);
-
-    if (task?.name)
-      controls.name.value = task.name;
-
-    if (task?.dueDate) {
-      controls.dueDate.value = formatDate(task.dueDate,
-        this._dateFormat.internal);
-    }
-
-    if (task?.recurringDate) {
-      let value;
-      if (task.recurringDate.isDefault()) {
-        switch (task.recurringDate.intervalUnit) {
-          case 'day':
-            value = 'daily';
-            break;
-          case 'week':
-            value = 'weekly';
-            break;
-          case 'month':
-            value = 'monthly';
-            break;
-          case 'year':
-            value = 'annually';
-            break;
-          default:
-            value = 'custom';
-            break;
-        }
-      } else {
-        value = 'custom';
-      }
-      controls.recurringDate.value = value;
-      if (value === 'custom')
-        this._customRecurrence = task.recurringDate;
-    }
-
-    if (task?.priorityString && task.priorityString !== 'unknown')
-      controls.priority.value = task.priorityString;
-    else
-      controls.priority.value = Task.convertPriorityToString(this._priority);
-
-    let projectId = this._projectId;
-    if (task?.project)
-      projectId = task.project;
-    if (projectId)
-      controls.project.value = projectId;
-
-    if (task?.description)
-      controls.description.value = task.description;
-  }
-
-  /**
-   * Add the event listeners to the form controls in the modal.
-   * @param {module:modalStack~ModalStack} modalStack The modal stack in which
-   *   the modal is being inserted.
-   */
-  _addListeners(modalStack) {
-    const controls = this._controls;
-
-    // Handle recurrence selection
-    const recurringDate = controls.recurringDate;
-    let recurrenceValue = recurringDate.value;
-    const processRecurrence = recurrence => {
-      this._customRecurrence = recurrence;
-
-      let newValue = 'custom-result';
-      if (recurrence.isDefault()) {
-        switch (recurrence.intervalUnit) {
-          case 'day':
-            newValue = 'daily';
-            break;
-          case 'week':
-            newValue = 'weekly';
-            break;
-          case 'month':
-            newValue = 'monthly';
-            break;
-          case 'year':
-            newValue = 'annually';
-            break;
-        }
-      }
-
-      // Update select box options
-      const selector = 'option[value="custom-result"]';
-      let optElem = recurringDate.querySelector(selector);
-      if (optElem && newValue !== 'custom-result') {
-        recurringDate.removeChild(optElem);
-      } else if (newValue === 'custom-result') {
-        if (!optElem) {
-          optElem = document.createElement('option');
-          optElem.value = 'custom-result';
-          recurringDate.insertBefore(optElem, recurringDate.lastChild);
-        }
-        const dateFormatStr = this._dateFormat.internal;
-        optElem.textContent = recurrence.toStringVerbose(dateFormatStr);
-      }
-
-      recurringDate.value = newValue;
-      recurrenceValue = newValue;
-    };
-
-    if (this._customRecurrence)
-      processRecurrence(this._customRecurrence);
-
-    const cancelRecurrence = () => recurringDate.value = recurrenceValue;
-
-    recurringDate.addEventListener('change', e => {
-      if (e.target.value === 'custom') {
-        // Get due date, if any
-        const dateInput = this._controls.dueDate;
-        let baseDate = null;
-        if (dateInput.value) {
-          baseDate = parseDate(dateInput.value, this._dateFormat.internal);
-        }
-
-        const modal = new RecurrenceModal({
-          confirm: processRecurrence,
-          cancel: cancelRecurrence,
-          initial: this._customRecurrence,
-          baseDate,
-          dateFormat: this._dateFormat,
-        });
-        modalStack.showModal(modal);
-      } else {
-        recurrenceValue = e.target.value;
-      }
-    });
-
-    // Handle project selection
-    let projectValue = controls.project.value;
-    controls.project.addEventListener('change', e => {
-      if (e.target.value === 'new') {
-        const modal = new AddProjectModal({
-          confirm: project => {
-            const id = this._projects.addProject(project);
-            this._updateProjects();
-            controls.project.value = id;
-            projectValue = id;
-            if (this._callbacks.newProject)
-              this._callbacks.newProject(id);
-          },
-          cancel: () => controls.project.value = projectValue,
-        });
-        modalStack.showModal(modal);
-      } else {
-        projectValue = e.target.value;
-      }
-    });
-
-    // Check date validity
-    controls.dueDate.addEventListener('change', e => {
-      const value = e.target.value;
-      if (value.length > 0) {
-        let message = '';
-        if (!parseDate(value, this._dateFormat.internal)) {
-          const format = this._dateFormat.visual;
-          message = `Please enter a valid date in ${format} format.`;
-        }
-        e.target.setCustomValidity(message);
-      }
-    });
-  }
-
-  /**
-   * Opens a date picker and updates the due date field.
-   * @param {module:modalStack~ModalStack} modalStack The modal stack in which
-   *   the modal has been inserted.
-   */
-  _pickDueDate(modalStack) {
-    const input = this._controls.dueDate;
-    let startDate = null;
-    if (input.value)
-      startDate = parseDate(input.value, this._dateFormat.internal);
-
-    modalStack.showModal(new DatePickerModal({
-      confirm: date => {
-        input.value = formatDate(date, this._dateFormat.internal);
-        input.setCustomValidity('');
-      },
-      startDate,
-      title: 'Select Due Date',
-    }));
-  }
-
-  /**
-   * Update the project select box options.
-   */
-  _updateProjects() {
-    const projectItems = [{ value: 'none', label: 'None' }];
-    this._projects.forEach(entry => {
-      projectItems.push({ value: entry.id, label: entry.project.name });
-    });
-    projectItems.push({ value: 'new', label: 'New Project...' });
-
-    const selectBox = this._controls.project;
-    selectBox.innerHTML = '';
-    projectItems.forEach(entry => {
-      const optElem = document.createElement('option');
-      optElem.value = entry.value;
-      optElem.textContent = entry.label;
-      selectBox.appendChild(optElem);
-    });
   }
 }
 
