@@ -4,6 +4,195 @@
  */
 
 /**
+ * Object holding private members for the
+ * [PopupMenu]{@link module:popupMenu~PopupMenu} class.
+ * @typedef {Object} module:popupMenu~PopupMenu~privates
+ * @property {HTMLElement} parent The parent element in the DOM under which the
+ *   popup menu should be inserted.
+ * @property {module:popupMenu~PopupMenu~menuItem[]} menuItems An array of
+ *   objects specifying the items in the menu.
+ * @property {number} [activeItem] Holds the index of the active (focused) menu
+ *   item, if any.
+ * @property {HTMLElement} [container] The container element holding the menu.
+ *   Will be null when the menu is hidden.
+ * @property {module:popupMenu~PopupMenu~selectionCallback} [callback] Holds
+ *   the function to be invoked when the user selects a menu item. This will be
+ *   null when the menu is closed.
+ * @property {Function} eventListener An event listener to monitor
+ *   document-wide mouse and keyboard events. Needs to be stored so that it can
+ *   be later removed.
+ * @property {number} [scrollTimeout] An identifier for a timeout used to
+ *   debounce scroll events for better performance.
+ * @property {HTMLElement} [scrollTarget] An element to monitor for scroll
+ *   events. If the element is scrolled, then the popup menu will be closed.
+ */
+
+/**
+ * Holds private date for the [PopupMenu]{@link module:popupMenu~PopupMenu}
+ * class.
+ * @type {WeakMap}
+ * @see module:popupMenu~PopupMenu~privates
+ */
+const privateMembers = new WeakMap();
+
+/**
+ * Position the popup menu at a particular location.
+ * @param {module:popupMenu~PopupMenu} instance The class instance on which to
+ *   apply the function.
+ * @param {module:popupMenu~PopupMenu~position} [position={}] An object
+ *   specifying the position in the document at which to place the menu.
+ */
+function positionMenu(instance, position = {}) {
+  const { container } = privateMembers.get(instance);
+  const width = container.offsetWidth;
+  const height = container.offsetHeight;
+
+  let left = 0;
+  let top = 0;
+  if (position.referenceElement) {
+    const rect = position.referenceElement.getBoundingClientRect();
+    left = rect.left;
+    top = rect.top + rect.height;
+  } else {
+    if ('left' in position) left = position.left;
+    if ('top' in position) top = position.top;
+  }
+
+  const MARGIN = 4;
+  const bodyWidth = document.body.offsetWidth;
+  const bodyHeight = document.body.offsetHeight;
+
+  if (left + width + MARGIN > bodyWidth) left = bodyWidth - (width + MARGIN);
+  if (top + height + MARGIN > bodyHeight) top = bodyHeight - (height + MARGIN);
+
+  if (left < 0) left = 0;
+  if (top < 0) top = 0;
+
+  container.style.left = `${left}px`;
+  container.style.top = `${top}px`;
+}
+
+/**
+ * Select an item in the menu.
+ * @param {module:popupMenu~PopupMenu} instance The class instance on which to
+ *   apply the function.
+ * @param {number} index The index of the menu item.
+ */
+function selectItem(instance, index) {
+  const privates = privateMembers.get(instance);
+  privates.callback(privates.menuItems[index].id, index);
+  instance.close();
+}
+
+/**
+ * Get the list item HTML element for a menu item.
+ * @param {module:popupMenu~PopupMenu} instance The class instance on which to
+ *   apply the function.
+ * @param {number} index The index of the menu item to find.
+ * @returns {?HTMLElement} The list item element if it exists, or null if it
+ *   does not.
+ */
+function getItem(instance, index) {
+  const selector = `.popup-menu-item[data-index="${index}"]`;
+  return privateMembers.get(instance).container.querySelector(selector);
+}
+
+/**
+ * Focus an item in the menu.
+ * @param {module:popupMenu~PopupMenu} instance The class instance on which to
+ *   apply the function.
+ * @param {?number} index The index of the menu item to focus. If set to null,
+ *   then no focus will be set and any existing focus is cleared.
+ */
+function focusItem(instance, index) {
+  const privates = privateMembers.get(instance);
+  if (index === privates.activeItem) return;
+
+  if (privates.activeItem !== null) {
+    const item = getItem(instance, privates.activeItem);
+    if (item) item.classList.remove('active');
+    privates.activeItem = null;
+  }
+
+  if (typeof index === 'number') {
+    const item = getItem(instance, index);
+    if (item) {
+      privates.activeItem = index;
+      item.classList.add('active');
+    }
+  }
+}
+
+/**
+ * Handle a mouse or keyboard event.
+ * @param {module:popupMenu~PopupMenu} instance The class instance on which to
+ *   apply the function.
+ * @param {Event} event An object describing the event that occurred.
+ */
+function handleEvent(instance, event) {
+  const privates = privateMembers.get(instance);
+  switch (event.type) {
+    case 'mousedown':
+      // Close popup if mouse was clicked outside
+      if (!privates.container.contains(event.target)) instance.close();
+      break;
+    case 'keydown': {
+      let preventDefault = true;
+      switch (event.key) {
+        case 'Escape':
+        case 'Esc':
+        case 'Tab':
+          instance.close();
+          break;
+        case 'Enter':
+        case ' ':
+        case 'Spacebar':
+          if (privates.activeItem !== null) {
+            selectItem(instance, privates.activeItem);
+          }
+          break;
+        case 'ArrowUp':
+        case 'Up': {
+          const active = privates.activeItem;
+          const itemCount = privates.menuItems.length;
+          let index = null;
+          if (active !== null) index = active > 0 ? active - 1 : itemCount - 1;
+          else if (itemCount > 0) index = itemCount - 1;
+          focusItem(instance, index);
+          break;
+        }
+        case 'ArrowDown':
+        case 'Down': {
+          const active = privates.activeItem;
+          const itemCount = privates.menuItems.length;
+          let index = null;
+          if (active !== null) index = active < itemCount - 1 ? active + 1 : 0;
+          else if (itemCount > 0) index = 0;
+          focusItem(instance, index);
+          break;
+        }
+        default:
+          preventDefault = false;
+          break;
+      }
+      if (preventDefault) event.preventDefault();
+      break;
+    }
+    case 'scroll': {
+      if (privates.scrollTimeout) clearTimeout(privates.scrollTimeout);
+
+      privates.scrollTimeout = setTimeout(() => {
+        privates.scrollTimeout = null;
+        if (event.target.contains(privates.scrollTarget)) instance.close();
+      }, 100);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+/**
  * A popup menu.
  */
 class PopupMenu {
@@ -57,60 +246,17 @@ class PopupMenu {
    *   additional options for the popup menu.
    */
   constructor(menuItems, options = {}) {
-    /**
-     * The parent element in the DOM under which the popup menu should be
-     * inserted.
-     * @type {HTMLElement}
-     */
-    this._parent = options.parent || document.body;
-
-    /**
-     * An array of objects specifying the items in the menu.
-     * @type {module:popupMenu~PopupMenu~menuItem[]}
-     */
-    this._menuItems = menuItems;
-
-    /**
-     * Holds the index of the active (focused) menu item, if any.
-     * @type {?number}
-     */
-    this._activeItem = null;
-
-    /**
-     * The container element holding the menu. Will be null when the menu is
-     * hidden.
-     * @type {?HTMLElement}
-     */
-    this._container = null;
-
-    /**
-     * Holds the function to be invoked when the user selects a menu item. This
-     * will be null when the menu is closed.
-     * @type {?module:popupMenu~PopupMenu~selectionCallback}
-     */
-    this._callback = null;
-
-    /**
-     * An event listener to monitor document-wide mouse and keyboard events.
-     * Needs to be stored so that it can be later removed.
-     * @type {Function}
-     * @param {Event} e An object describing the event that has occurred.
-     */
-    this._eventListener = e => this._handleEvent(e);
-
-    /**
-     * An identifier for a timeout used to debounce scroll events for better
-     * performance.
-     * @type {?number}
-     */
-    this._scrollTimeout = null;
-
-    /**
-     * An element to monitor for scroll events. If the element is scroll, then
-     * the popup menu will be closed.
-     * @type {?HTMLElement}
-     */
-    this._scrollTarget = options.closeIfScrolled || null;
+    const privates = {
+      parent: options.parent || document.body,
+      menuItems,
+      activeItem: null,
+      container: null,
+      callback: null,
+      eventListener: (e) => handleEvent(this, e),
+      scrollTimeout: null,
+      scrollTarget: options.closeIfScrolled || null,
+    };
+    privateMembers.set(this, privates);
   }
 
   /**
@@ -122,15 +268,15 @@ class PopupMenu {
    *   not given, the upper-left corner of the document will be used.
    */
   open(callback, position) {
-    if (this._container)
-      this.close();
+    const privates = privateMembers.get(this);
+    if (privates.container) this.close();
 
     const menu = document.createElement('div');
     menu.classList.add('popup-menu');
 
     const list = document.createElement('ul');
     menu.appendChild(list);
-    this._menuItems.forEach((item, index) => {
+    privates.menuItems.forEach((item, index) => {
       const listItem = document.createElement('li');
       listItem.classList.add('popup-menu-item');
       listItem.dataset.index = index.toString();
@@ -146,194 +292,41 @@ class PopupMenu {
       label.textContent = item.label;
       listItem.appendChild(label);
 
-      listItem.addEventListener('click', () => {
-        this._selectItem(index);
-      });
-      listItem.addEventListener('mousemove', () => this._focusItem(index));
+      listItem.addEventListener('click', () => selectItem(this, index));
+      listItem.addEventListener('mousemove', () => focusItem(this, index));
     });
 
-    menu.addEventListener('mouseleave', () => this._focusItem(null));
+    menu.addEventListener('mouseleave', () => focusItem(this, null));
 
-    this._container = menu;
-    this._parent.appendChild(menu);
-    this._callback = callback;
+    privates.container = menu;
+    privates.parent.appendChild(menu);
+    privates.callback = callback;
 
-    this._positionMenu(position);
+    positionMenu(this, position);
 
-    document.addEventListener('mousedown', this._eventListener);
-    document.addEventListener('keydown', this._eventListener);
-    if (this._scrollTarget)
-      document.addEventListener('scroll', this._eventListener, true);
+    document.addEventListener('mousedown', privates.eventListener);
+    document.addEventListener('keydown', privates.eventListener);
+    if (privates.scrollTarget) {
+      document.addEventListener('scroll', privates.eventListener, true);
+    }
   }
 
   /**
    * Close the popup menu if it is open.
    */
   close() {
-    if (this._container) {
-      this._parent.removeChild(this._container);
-      this._container = null;
-      this._callback = null;
-      document.removeEventListener('mousedown', this._eventListener);
-      document.removeEventListener('keydown', this._eventListener);
-      if (this._scrollTarget)
-        document.removeEventListener('scroll', this._eventListener, true);
-    }
-  }
-
-  /**
-   * Select an item in the menu.
-   * @param {number} index The index of the menu item.
-   */
-  _selectItem(index) {
-    this._callback(this._menuItems[index].id, index);
-    this.close();
-  }
-
-  /**
-   * Get the list item HTML element for a menu item.
-   * @param {number} index The index of the menu item to find.
-   * @returns {?HTMLElement} The list item element if it exists, or null if it
-   *   does not.
-   */
-  _getItem(index) {
-    const selector = `.popup-menu-item[data-index="${index}"]`;
-    return this._container.querySelector(selector);
-  }
-
-  /**
-   * Focus an item in the menu.
-   * @param {?number} index The index of the menu item to focus. If set to
-   *   null, then no focus will be set and any existing focus is cleared.
-   */
-  _focusItem(index) {
-    if (index === this._activeItem)
-      return;
-
-    if (this._activeItem !== null) {
-      const item = this._getItem(this._activeItem);
-      if (item)
-        item.classList.remove('active');
-      this._activeItem = null;
-    }
-
-    if (typeof index === 'number') {
-      const item = this._getItem(index);
-      if (item) {
-        this._activeItem = index;
-        item.classList.add('active');
+    const privates = privateMembers.get(this);
+    if (privates.container) {
+      privates.parent.removeChild(privates.container);
+      privates.activeItem = null;
+      privates.container = null;
+      privates.callback = null;
+      document.removeEventListener('mousedown', privates.eventListener);
+      document.removeEventListener('keydown', privates.eventListener);
+      if (privates.scrollTarget) {
+        document.removeEventListener('scroll', privates.eventListener, true);
       }
     }
-  }
-
-  /**
-   * Handle a mouse or keyboard event.
-   * @param {Event} e An object describing the event that occurred.
-   */
-  _handleEvent(e) {
-    switch (e.type) {
-      case 'mousedown':
-        // Close popup if mouse was clicked outside
-        if (!this._container.contains(e.target))
-          this.close();
-        break;
-      case 'keydown': {
-        let preventDefault = true;
-        switch (e.key) {
-          case 'Escape':
-          case 'Esc':
-          case 'Tab':
-            this.close();
-            break;
-          case 'Enter':
-          case ' ':
-          case 'Spacebar':
-            if (this._activeItem !== null)
-              this._selectItem(this._activeItem);
-            break;
-          case 'ArrowUp':
-          case 'Up': {
-            const active = this._activeItem;
-            const itemCount = this._menuItems.length;
-            let index = null;
-            if (active !== null)
-              index = active > 0 ? active - 1 : itemCount - 1;
-            else if (itemCount > 0)
-              index = itemCount - 1;
-            this._focusItem(index);
-            break;
-          }
-          case 'ArrowDown':
-          case 'Down': {
-            const active = this._activeItem;
-            const itemCount = this._menuItems.length;
-            let index = null;
-            if (active !== null)
-              index = active < itemCount - 1 ? active + 1 : 0;
-            else if (itemCount > 0)
-              index = 0;
-            this._focusItem(index);
-            break;
-          }
-          default:
-            preventDefault = false;
-            break;
-        }
-        if (preventDefault)
-          e.preventDefault();
-        break;
-      }
-      case 'scroll': {
-        if (this._scrollTimeout)
-          clearTimeout(this._scrollTimeout);
-
-        this._scrollTimeout = setTimeout(() => {
-          this._scrollTimeout = null;
-          if (e.target.contains(this._scrollTarget))
-            this.close();
-        }, 100);
-        break;
-      }
-    }
-  }
-
-  /**
-   * Position the popup menu at a particular location.
-   * @param {module:popupMenu~PopupMenu~position} [position={}] An object
-   *   specifying the position in the document at which to place the menu.
-   */
-  _positionMenu(position = {}) {
-    const width = this._container.offsetWidth;
-    const height = this._container.offsetHeight;
-
-    let left = 0, top = 0;
-    if (position.referenceElement) {
-      const rect = position.referenceElement.getBoundingClientRect();
-      left = rect.left;
-      top = rect.top + rect.height;
-    } else {
-      if (typeof position.left === 'number')
-        left = position.left;
-      if (typeof position.top === 'number')
-        top = position.top;
-    }
-
-    const MARGIN = 4;
-    const bodyWidth = document.body.offsetWidth;
-    const bodyHeight = document.body.offsetHeight;
-
-    if (left + width + MARGIN > bodyWidth)
-      left = bodyWidth - (width + MARGIN);
-    if (top + height + MARGIN > bodyHeight)
-      top = bodyHeight - (height + MARGIN);
-
-    if (left < 0)
-      left = 0;
-    if (height < 0)
-      height = 0;
-
-    this._container.style.left = `${left}px`;
-    this._container.style.top = `${top}px`;
   }
 }
 
