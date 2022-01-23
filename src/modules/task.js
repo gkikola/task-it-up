@@ -61,10 +61,11 @@ class Task {
      * @type {number}
      */
     this.priority = 0;
-    if (typeof options.priority === 'number')
+    if (typeof options.priority === 'number') {
       this.priority = options.priority;
-    else if (typeof options.priority === 'string')
+    } else if (typeof options.priority === 'string') {
       this.priorityString = options.priority;
+    }
 
     /**
      * An optional description of the task.
@@ -153,10 +154,10 @@ class Task {
     switch (priorityStr) {
       case 'very-low': return -2;
       case 'low': return -1;
-      default:
       case 'medium': return 0;
       case 'high': return 1;
       case 'very-high': return 2;
+      default: return 0;
     }
   }
 }
