@@ -4,6 +4,25 @@
  */
 
 /**
+ * Object holding private members for the
+ * [Collapsible]{@link module:collapsible~Collapsible} class.
+ * @typedef {Object} module:collapsible~Collapsible~privates
+ * @property {HTMLElement} container The collapsible element.
+ * @property {HTMLElement} content The inner container holding the collapsible
+ *   contents.
+ * @property {boolean} collapsed Indicates whether the container is currently
+ *   collapsed or not.
+ */
+
+/**
+ * Holds private date for the
+ * [Collapsible]{@link module:collapsible~Collapsible} class.
+ * @type {WeakMap}
+ * @see module:collapsible~Collapsible~privates
+ */
+const privateMembers = new WeakMap();
+
+/**
  * A container on the page that can be expanded or collapsed.
  */
 class Collapsible {
@@ -23,39 +42,24 @@ class Collapsible {
    */
   constructor(parent, referenceNode = null, options = {}) {
     const container = document.createElement('div');
-    if (options.id)
-      container.id = options.id;
+    if (options.id) container.id = options.id;
     container.classList.add('collapsible');
-    if (options.classList)
-      container.classList.add(...options.classList);
+    if (options.classList) container.classList.add(...options.classList);
 
     const innerContainer = document.createElement('div');
     innerContainer.classList.add('collapsible-content');
     container.appendChild(innerContainer);
     parent.insertBefore(container, referenceNode);
 
-    /**
-     * The collapsible element.
-     * @type {HTMLElement}
-     */
-    this._container = container;
+    const privates = {
+      container,
+      content: innerContainer,
+      collapsed: false,
+    };
+    privateMembers.set(this, privates);
 
-    /**
-     * The inner container holding the collapsible contents.
-     * @type {HTMLElement}
-     */
-    this._content = innerContainer;
-
-    /**
-     * Indicates whether the container is currently collapsed or not.
-     * @type {boolean}
-     */
-    this._collapsed = false;
-
-    if ('collapsed' in options && options.collapsed)
-      this.collapse();
-    else
-      this.expand();
+    if ('collapsed' in options && options.collapsed) this.collapse();
+    else this.expand();
   }
 
   /**
@@ -63,14 +67,12 @@ class Collapsible {
    * @type {boolean}
    */
   get collapsed() {
-    return this._collapsed;
+    return privateMembers.get(this).collapsed;
   }
 
   set collapsed(collapsed) {
-    if (collapsed)
-      this.collapse();
-    else
-      this.expand();
+    if (collapsed) this.collapse();
+    else this.expand();
   }
 
   /**
@@ -78,16 +80,17 @@ class Collapsible {
    * @type {HTMLElement}
    */
   get content() {
-    return this._content;
+    return privateMembers.get(this).content;
   }
 
   /**
    * Expand the panel, so that its contents are visible.
    */
   expand() {
-    this._collapsed = false;
-    this._container.classList.remove('collapsed');
-    this._container.removeAttribute('aria-hidden');
+    const privates = privateMembers.get(this);
+    privates.collapsed = false;
+    privates.container.classList.remove('collapsed');
+    privates.container.removeAttribute('aria-hidden');
     this.update();
   }
 
@@ -95,9 +98,10 @@ class Collapsible {
    * Collapse the panel, so that its contents are hidden.
    */
   collapse() {
-    this._collapsed = true;
-    this._container.classList.add('collapsed');
-    this._container.setAttribute('aria-hidden', 'true');
+    const privates = privateMembers.get(this);
+    privates.collapsed = true;
+    privates.container.classList.add('collapsed');
+    privates.container.setAttribute('aria-hidden', 'true');
     this.update();
   }
 
@@ -107,11 +111,10 @@ class Collapsible {
    *   toggle, and false otherwise.
    */
   toggle() {
-    if (this._collapsed)
-      this.expand();
-    else
-      this.collapse();
-    return this._collapsed;
+    const privates = privateMembers.get(this);
+    if (privates.collapsed) this.expand();
+    else this.collapse();
+    return privates.collapsed;
   }
 
   /**
@@ -120,8 +123,10 @@ class Collapsible {
    * whenever the panel's content is altered.
    */
   update() {
-    const height = this._collapsed ? '0' : `${this._content.offsetHeight}px`;
-    this._container.style.height = height;
+    const privates = privateMembers.get(this);
+    const height = privates.collapsed
+      ? '0' : `${privates.content.offsetHeight}px`;
+    privates.container.style.height = height;
   }
 }
 
