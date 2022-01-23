@@ -47,7 +47,7 @@ class ProjectList {
 
     // Maintain sort order on insertion
     const index = _.sortedIndexBy(this._projects, value,
-      elem => elem.project.name);
+      elem => elem.project.name.toLowerCase());
 
     this._projects.splice(index, 0, value);
     return id;
@@ -91,7 +91,7 @@ class ProjectList {
     if (needSort) {
       this._projects.splice(index, 1);
       const insertAt = _.sortedIndexBy(this._projects, wrapper,
-        elem => elem.project.name);
+        elem => elem.project.name.toLowerCase());
       this._projects.splice(insertAt, 0, wrapper);
     }
     return true;
