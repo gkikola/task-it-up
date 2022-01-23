@@ -86,6 +86,109 @@ const Z_INDEX_OVERLAY_STEP = 50;
  */
 
 /**
+ * Object holding private members for the
+ * [ModalStack]{@link module:modalStack~ModalStack} class.
+ * @typedef {Object} module:modalStack~ModalStack~privates
+ * @property {HTMLElement} overlay The screen overlay element in the DOM.
+ * @property {HTMLElement} parent The parent element under which modals should
+ *   be inserted.
+ * @property {HTMLElement} [background] Container holding background elements
+ *   that should be hidden when a modal is open.
+ * @property {module:modalStack~ModalStack~modalInfo[]} modals The stack of
+ *   modal dialogs.
+ */
+
+/**
+ * Holds private data for the [ModalStack]{@link module:modalStack~ModalStack}
+ * class.
+ * @type {WeakMap}
+ * @see module:modalStack~ModalStack~privates
+ */
+const privateMembers = new WeakMap();
+
+/**
+ * Calculate the z-index for a modal dialog.
+ * @param {number} index The index of the dialog in the stack.
+ * @returns {number} The z-index that the modal should be set to.
+ */
+function getZIndex(index) {
+  return Z_INDEX_START + (index - 1) * Z_INDEX_STEP;
+}
+
+/**
+ * Update the modal overlay. The overlay will be shown or hidden depending on
+ * whether any modals are open, and its z-index will be adjusted to sit below
+ * the topmost modal.
+ * @param {module:modalStack~ModalStack} instance The class instance on which
+ *   to apply the function.
+ */
+function updateOverlay(instance) {
+  const privates = privateMembers.get(instance);
+  const count = privates.modals.length;
+  if (count > 0) {
+    const zIndex = getZIndex(count) - Z_INDEX_OVERLAY_STEP;
+    privates.overlay.style.zIndex = zIndex.toString();
+    privates.overlay.classList.remove('closed');
+  } else {
+    privates.overlay.classList.add('closed');
+  }
+}
+
+/**
+ * Show the modal overlay and hide any background elements.
+ * @param {module:modalStack~ModalStack} instance The class instance on which
+ *   to apply the function.
+ */
+function hideBackground(instance) {
+  const privates = privateMembers.get(instance);
+  let toHide = null;
+
+  // If this is the first modal, hide page background
+  if (privates.modals.length <= 1) {
+    toHide = privates.background;
+  } else { // Otherwise, hide the modal below the topmost one
+    toHide = privates.modals[privates.modals.length - 2].wrapper;
+  }
+
+  if (toHide) {
+    toHide.setAttribute('aria-hidden', 'true');
+    toHide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
+      elem.setAttribute('tabindex', '-1');
+    });
+  }
+
+  updateOverlay(instance);
+}
+
+/**
+ * Restore background element visibility. If there are still modals open,
+ * only the topmost modal's elements will become visible. If all modals are
+ * closed, then the overlay will be hidden.
+ * @param {module:modalStack~ModalStack} instance The class instance on which
+ *   to apply the function.
+ */
+function restoreBackground(instance) {
+  const privates = privateMembers.get(instance);
+  let toRestore = null;
+
+  // If no modals remain open, restore the page background
+  if (privates.modals.length === 0) {
+    toRestore = privates.background;
+  } else {
+    toRestore = privates.modals[privates.modals.length - 1].wrapper;
+  }
+
+  if (toRestore) {
+    toRestore.removeAttribute('aria-hidden');
+    toRestore.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
+      elem.removeAttribute('tabindex');
+    });
+  }
+
+  updateOverlay(instance);
+}
+
+/**
  * Manages and displays a stack of modal dialog windows.
  */
 class ModalStack {
@@ -112,38 +215,22 @@ class ModalStack {
    *   should be hidden from screen readers and made unfocusable while a modal
    *   is open.
    */
-  constructor(parent = document.body, background) {
+  constructor(parent = document.body, background = null) {
     const overlay = document.createElement('div');
     overlay.classList.add('modal-overlay', 'closed');
     parent.appendChild(overlay);
 
-    /**
-     * The screen overlay element in the DOM.
-     * @type {HTMLElement}
-     */
-    this._overlay = overlay;
+    const privates = {
+      overlay,
+      parent,
+      background: background || null,
+      modals: [],
+    };
+    privateMembers.set(this, privates);
 
-    /**
-     * The parent element under which modals should be inserted.
-     * @type {HTMLElement}
-     */
-    this._parent = parent;
-
-    /**
-     * Container holding background elements that should be hidden when a modal
-     * is open.
-     * @type {HTMLElement}
-     */
-    this._background = background || null;
-
-    /**
-     * The stack of modal dialogs.
-     * @type {module:modalStack~ModalStack~modalInfo[]}
-     */
-    this._modals = [];
-
-    document.addEventListener('keydown', e => {
-      if (this._modals.length > 0 && (e.key === 'Escape' || e.key === 'Esc')) {
+    document.addEventListener('keydown', (e) => {
+      if (privates.modals.length > 0
+        && (e.key === 'Escape' || e.key === 'Esc')) {
         this.cancelModal();
         e.preventDefault();
       }
@@ -155,13 +242,14 @@ class ModalStack {
    * @param {module:modalStack~Modal} modal The modal dialog to show.
    */
   showModal(modal) {
+    const privates = privateMembers.get(this);
+
     const oldActive = document.activeElement;
-    if (oldActive)
-      oldActive.blur();
+    if (oldActive) oldActive.blur();
 
     const wrapper = document.createElement('div');
     wrapper.classList.add('modal-wrapper');
-    wrapper.style.zIndex = this._getZIndex(this._modals.length + 1);
+    wrapper.style.zIndex = getZIndex(privates.modals.length + 1);
 
     const container = document.createElement('div');
     container.classList.add('modal');
@@ -211,9 +299,9 @@ class ModalStack {
       oldActive,
     };
 
-    this._modals.push(modalInfo);
-    this._parent.appendChild(wrapper);
-    this._hideBackground();
+    privates.modals.push(modalInfo);
+    privates.parent.appendChild(wrapper);
+    hideBackground(this);
 
     if (typeof modal.initFocus === 'string') {
       switch (modal.initFocus) {
@@ -221,11 +309,10 @@ class ModalStack {
           okayButton.focus();
           break;
         case 'cancel':
-          if (cancelButton)
-            cancelButton.focus();
+          if (cancelButton) cancelButton.focus();
           break;
-        default:
         case 'none':
+        default:
           break;
       }
     } else if (modal.initFocus) {
@@ -240,12 +327,12 @@ class ModalStack {
    * callback function.
    */
   closeModal() {
-    const modalInfo = this._modals.pop();
+    const privates = privateMembers.get(this);
+    const modalInfo = privates.modals.pop();
     if (modalInfo) {
-      this._parent.removeChild(modalInfo.wrapper);
-      this._restoreBackground();
-      if (modalInfo.oldActive)
-        modalInfo.oldActive.focus();
+      privates.parent.removeChild(modalInfo.wrapper);
+      restoreBackground(this);
+      if (modalInfo.oldActive) modalInfo.oldActive.focus();
     }
   }
 
@@ -259,12 +346,11 @@ class ModalStack {
    *   if the modal failed validation.
    */
   confirmModal() {
-    if (this._modals.length === 0)
-      return false;
+    const privates = privateMembers.get(this);
+    if (privates.modals.length === 0) return false;
 
-    const modal = this._modals[this._modals.length - 1].modal;
-    if (!modal.validate())
-      return false;
+    const { modal } = privates.modals[privates.modals.length - 1];
+    if (!modal.validate()) return false;
 
     modal.confirm();
     this.closeModal();
@@ -279,83 +365,12 @@ class ModalStack {
    *   there are no modals in the stack. Otherwise it returns true.
    */
   cancelModal() {
-    if (this._modals.length === 0)
-      return false;
+    const privates = privateMembers.get(this);
+    if (privates.modals.length === 0) return false;
 
-    this._modals[this._modals.length - 1].modal.cancel();
+    privates.modals[privates.modals.length - 1].modal.cancel();
     this.closeModal();
     return true;
-  }
-
-  /**
-   * Show the modal overlay and hide any background elements.
-   */
-  _hideBackground() {
-    let toHide = null;
-
-    // If this is the first modal, hide page background
-    if (this._modals.length <= 1)
-      toHide = this._background;
-    else // Otherwise, hide the modal below the topmost one
-      toHide = this._modals[this._modals.length - 2].wrapper;
-
-    if (toHide) {
-      toHide.setAttribute('aria-hidden', 'true');
-      toHide.querySelectorAll(FOCUSABLE_SELECTOR).forEach(elem => {
-        elem.setAttribute('tabindex', '-1');
-      });
-    }
-
-    this._updateOverlay();
-  }
-
-  /**
-   * Restore background element visibility. If there are still modals open,
-   * only the topmost modal's elements will become visible. If all modals are
-   * closed, then the overlay will be hidden.
-   */
-  _restoreBackground() {
-    let toRestore = null;
-
-    // If no modals remain open, restore the page background
-    if (this._modals.length === 0)
-      toRestore = this._background;
-    else
-      toRestore = this._modals[this._modals.length - 1].wrapper;
-
-    if (toRestore) {
-      toRestore.removeAttribute('aria-hidden');
-      toRestore.querySelectorAll(FOCUSABLE_SELECTOR).forEach(elem => {
-        elem.removeAttribute('tabindex');
-      });
-    }
-
-    this._updateOverlay();
-  }
-
-  /**
-   * Update the modal overlay. The overlay will be shown or hidden depending on
-   * whether any modals are open, and its z-index will be adjusted to sit below
-   * the topmost modal.
-   */
-  _updateOverlay() {
-    const count = this._modals.length;
-    if (count > 0) {
-      const zIndex = this._getZIndex(count) - Z_INDEX_OVERLAY_STEP;
-      this._overlay.style.zIndex = zIndex.toString();
-      this._overlay.classList.remove('closed');
-    } else {
-      this._overlay.classList.add('closed');
-    }
-  }
-
-  /**
-   * Calculate the z-index for a modal dialog.
-   * @param {number} index The index of the dialog in the stack.
-   * @returns {number} The z-index that the modal should be set to.
-   */
-  _getZIndex(index) {
-    return Z_INDEX_START + (index - 1) * Z_INDEX_STEP;
   }
 }
 
