@@ -64,16 +64,14 @@ class Settings {
       projects: null,
       priorities: null,
     };
-    for (const property in this.filters) {
-      if (this.filters.hasOwnProperty(property)) {
-        this.filters[property] = {
-          groupBy: 'default',
-          sortBy: 'create-date',
-          sortDescending: false,
-          showCompleted: false,
-        };
-      }
-    }
+    Object.keys(this.filters).forEach((property) => {
+      this.filters[property] = {
+        groupBy: 'default',
+        sortBy: 'create-date',
+        sortDescending: false,
+        showCompleted: false,
+      };
+    });
   }
 
   /**
