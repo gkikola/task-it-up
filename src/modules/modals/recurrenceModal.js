@@ -4,6 +4,9 @@
  * @module recurrenceModal
  */
 
+import _ from 'lodash';
+import ordinal from 'ordinal';
+
 import DatePickerModal from './datePickerModal';
 import RecurringDate from '../recurringDate';
 import Settings from '../settings';
@@ -14,9 +17,6 @@ import {
   formatDate,
   parseDate,
 } from '../utility';
-
-import _ from 'lodash';
-import ordinal from 'ordinal';
 
 const WEEKDAYS = [
   'Sunday',
@@ -41,13 +41,680 @@ const MONTHS = [
   { name: 'November', maxDays: 30 },
   { name: 'December', maxDays: 31 },
 ];
-
 const UNITS = [
   { value: 'day', singular: 'Day', plural: 'Days' },
   { value: 'week', singular: 'Week', plural: 'Weeks' },
   { value: 'month', singular: 'Month', plural: 'Months' },
   { value: 'year', singular: 'Year', plural: 'Years' },
 ];
+
+/**
+ * Object holding private members for the
+ * [RecurrenceModal]{@link module:recurrenceModal~RecurrenceModal} class.
+ * @typedef {Object} module:recurrenceModal~RecurrenceModal~privates
+ * @property {module:recurringDate~RecurringDate} [initialRecurrence] The
+ *   recurring date to use as a default when initializing the form controls, if
+ *   any.
+ * @property {Date} baseDate The date to use when initializing certain input
+ *   fields.
+ * @property {module:settings~Settings~dateFormat} dateFormat An object holding
+ *   date format information.
+ * @property {Object} callbacks An object holding callback functions.
+ * @property {Function} [callbacks.confirm] A callback function that will be
+ *   invoked when the user successfully confirms the modal.
+ * @property {Function} [callbacks.cancel] A callback function that will be
+ *   invoked when the user cancels the modal.
+ * @property {Object} containers An object holding the various container
+ *   elements used in the modal's contents.
+ * @property {HTMLElement} containers.parent The parent container element
+ *   holding all the form elements.
+ * @property {HTMLElement} containers.context The container element holding
+ *   context-sensitive options that depend on the selected interval unit.
+ * @property {HTMLElement} containers.weekOptions The container element holding
+ *   the form elements specific to weekly recurrences.
+ * @property {HTMLElement} containers.monthOptions The container element
+ *   holding the form elements specific to monthly recurrences.
+ * @property {HTMLElement} containers.yearOptions The container element holding
+ *   the form elements specific to yearly recurrences.
+ * @property {string} title The title of the modal.
+ */
+
+/**
+ * Holds private data for the
+ * [RecurrenceModal]{@link module:recurrenceModal~RecurrenceModal} class.
+ * @type {WeakMap}
+ * @see module:recurrenceModal~RecurrenceModal~privates
+ */
+const privateMembers = new WeakMap();
+
+/**
+ * Create the form elements for the context options for weekly recurrences.
+ * @returns {HTMLElement} The container element holding the form elements.
+ */
+function createWeekContextForm() {
+  const container = document.createElement('div');
+  container.classList.add('form-input-container');
+
+  let label = document.createElement('div');
+  label.classList.add('form-input-label-inline');
+  label.textContent = 'Repeat on';
+  container.appendChild(label);
+
+  container.appendChild(createFormControl({
+    type: 'radio',
+    id: 'recurring-date-week-type-previous',
+    name: 'recurring-date-week-type',
+    value: 'use-previous',
+    checked: true,
+    label: {
+      value: 'The same day of the week as last occurrence',
+      classList: ['form-input-label-inline'],
+    },
+    container: { classList: ['form-input-item-container'] },
+  }));
+
+  const optionContainer = document.createElement('div');
+  optionContainer.classList.add('form-input-item-container');
+
+  optionContainer.appendChild(createFormControl({
+    type: 'radio',
+    id: 'recurring-date-week-type-select-days',
+    name: 'recurring-date-week-type',
+    value: 'select-days',
+  }));
+
+  label = document.createElement('label');
+  label.classList.add('form-input-label-inline');
+  label.textContent = 'These days: ';
+  label.htmlFor = 'recurring-date-week-type-select-days';
+  optionContainer.appendChild(label);
+
+  const days = WEEKDAYS.map((day) => (
+    { name: day, value: day.toLowerCase(), short: day.slice(0, 1) }
+  ));
+  days.forEach((day) => {
+    optionContainer.appendChild(createToggleButton(day.short, {
+      id: `recurring-date-weekday-${day.value}`,
+      name: 'recurring-date-weekday',
+      value: day.value,
+      classList: ['toggle-button', 'form-weekday-button'],
+    }));
+  });
+  container.appendChild(optionContainer);
+
+  return container;
+}
+
+/**
+ * Create the form elements for the context options for monthly recurrences.
+ * @returns {HTMLElement} The container element holding the form elements.
+ */
+function createMonthContextForm() {
+  const container = document.createElement('div');
+  container.classList.add('form-input-container');
+
+  let label;
+  let optionContainer;
+  let selectItems;
+
+  label = document.createElement('div');
+  label.classList.add('form-input-label-inline');
+  label.textContent = 'Repeat on';
+  container.appendChild(label);
+
+  container.appendChild(createFormControl({
+    type: 'radio',
+    id: 'recurring-date-month-type-previous',
+    name: 'recurring-date-month-type',
+    value: 'use-previous',
+    checked: true,
+    label: {
+      value: 'The same day of the month as last occurrence',
+      classList: ['form-input-label-inline'],
+    },
+    container: { classList: ['form-input-item-container'] },
+  }));
+
+  optionContainer = document.createElement('div');
+  optionContainer.classList.add('form-input-item-container');
+  optionContainer.appendChild(createFormControl({
+    type: 'radio',
+    id: 'recurring-date-month-type-day',
+    name: 'recurring-date-month-type',
+    value: 'day-of-month',
+  }));
+
+  label = document.createElement('label');
+  label.classList.add('form-input-label-inline');
+  label.htmlFor = 'recurring-date-month-type-day';
+  label.textContent = 'The ';
+  optionContainer.appendChild(label);
+
+  selectItems = [];
+  for (let day = 1; day <= 31; day += 1) {
+    selectItems.push({ value: day.toString(), label: ordinal(day) });
+  }
+  optionContainer.appendChild(createFormControl({
+    type: 'select',
+    id: 'recurring-date-month-day',
+    name: 'recurring-date-month-day',
+    classList: ['form-select-inline'],
+    menuItems: selectItems,
+  }));
+
+  label = document.createElement('label');
+  label.classList.add('form-input-label-inline');
+  label.htmlFor = 'recurring-date-month-day';
+  label.textContent = ' day of the month';
+  optionContainer.appendChild(label);
+
+  container.appendChild(optionContainer);
+
+  optionContainer = document.createElement('div');
+  optionContainer.classList.add('form-input-item-container');
+  optionContainer.appendChild(createFormControl({
+    type: 'radio',
+    id: 'recurring-date-month-type-week',
+    name: 'recurring-date-month-type',
+    value: 'week-of-month',
+  }));
+
+  label = document.createElement('label');
+  label.classList.add('form-input-label-inline');
+  label.htmlFor = 'recurring-date-month-type-week';
+  label.textContent = 'The ';
+  optionContainer.appendChild(label);
+
+  selectItems = [];
+  for (let week = 1; week <= 4; week += 1) {
+    selectItems.push({ value: week.toString(), label: ordinal(week) });
+  }
+  selectItems.push({ value: '5', label: 'last' });
+  optionContainer.appendChild(createFormControl({
+    type: 'select',
+    id: 'recurring-date-month-week-number',
+    name: 'recurring-date-month-week-number',
+    classList: ['form-select-inline'],
+    menuItems: selectItems,
+  }));
+
+  label = document.createElement('span');
+  label.classList.add('form-input-label-inline');
+  label.textContent = ' ';
+  optionContainer.appendChild(label);
+
+  selectItems = WEEKDAYS.map((day) => (
+    { value: day.toLowerCase(), label: day }
+  ));
+  optionContainer.appendChild(createFormControl({
+    type: 'select',
+    id: 'recurring-date-month-week-day',
+    name: 'recurring-date-month-week-day',
+    classList: ['form-select-inline'],
+    menuItems: selectItems,
+  }));
+
+  label = document.createElement('label');
+  label.classList.add('form-input-label-inline');
+  label.htmlFor = 'recurring-date-month-week-day';
+  label.textContent = ' of the month';
+  optionContainer.appendChild(label);
+
+  container.appendChild(optionContainer);
+  return container;
+}
+
+/**
+ * Create the form elements for the context options for yearly recurrences.
+ * @returns {HTMLElement} The container element holding the form elements.
+ */
+function createYearContextForm() {
+  const container = document.createElement('div');
+  container.classList.add('form-input-container');
+
+  let label;
+  let selectItems;
+
+  label = document.createElement('div');
+  label.classList.add('form-input-label-inline');
+  label.textContent = 'Repeat on';
+  container.appendChild(label);
+
+  container.appendChild(createFormControl({
+    type: 'radio',
+    id: 'recurring-date-year-type-previous',
+    name: 'recurring-date-year-type',
+    value: 'use-previous',
+    checked: true,
+    label: {
+      value: 'The same month and day as last occurrence',
+      classList: ['form-input-label-inline'],
+    },
+    container: { classList: ['form-input-item-container'] },
+  }));
+
+  const optionContainer = document.createElement('div');
+  optionContainer.classList.add('form-input-item-container');
+  optionContainer.appendChild(createFormControl({
+    type: 'radio',
+    id: 'recurring-date-year-type-day',
+    name: 'recurring-date-year-type',
+    value: 'month-and-day',
+  }));
+
+  label = document.createElement('label');
+  label.classList.add('form-input-label-inline');
+  label.htmlFor = 'recurring-date-year-type-day';
+  label.textContent = 'On ';
+  optionContainer.appendChild(label);
+
+  selectItems = MONTHS.map((month) => (
+    { value: month.name.toLowerCase(), label: month.name }
+  ));
+  optionContainer.appendChild(createFormControl({
+    type: 'select',
+    id: 'recurring-date-year-month',
+    name: 'recurring-date-year-month',
+    classList: ['form-select-inline'],
+    menuItems: selectItems,
+  }));
+
+  label = document.createElement('span');
+  label.classList.add('form-input-label-inline');
+  label.textContent = ' ';
+  optionContainer.appendChild(label);
+
+  selectItems = [];
+  for (let day = 1; day <= 31; day += 1) {
+    selectItems.push({ value: day.toString(), label: ordinal(day) });
+  }
+  optionContainer.appendChild(createFormControl({
+    type: 'select',
+    id: 'recurring-date-year-day',
+    name: 'recurring-date-year-day',
+    classList: ['form-select-inline'],
+    menuItems: selectItems,
+  }));
+  container.appendChild(optionContainer);
+
+  return container;
+}
+
+/**
+ * Select a form control in the modal.
+ * @param {module:recurrenceModal~RecurrenceModal} instance The class instance
+ *   on which to apply the function.
+ * @param {string} idSuffix The identifier of the control to retrieve,
+ *   without the 'recurring-date-' prefix.
+ * @param {string} [container] The container in which to look for the
+ *   control. If not given, then the modal content container is used.
+ * @returns {HTMLElement} The requested element, or undefined if not found.
+ */
+function getControl(instance, idSuffix, container) {
+  const parent = container || privateMembers.get(instance).containers.parent;
+  return parent.querySelector(`#recurring-date-${idSuffix}`);
+}
+
+/**
+ * Initialize the values of the form elements based on the initial recurrence
+ * that was passed to the constructor, if any.
+ * @param {module:recurrenceModal~RecurrenceModal} instance The class instance
+ *   on which to apply the function.
+ */
+function initFormValues(instance) {
+  const privates = privateMembers.get(instance);
+  const { weekOptions, monthOptions, yearOptions } = privates.containers;
+  const initial = privates.initialRecurrence;
+  if (initial) {
+    getControl(instance, 'interval-length').value = initial.intervalLength;
+    getControl(instance, 'interval-unit').value = initial.intervalUnit;
+
+    let context;
+    switch (initial.intervalUnit) {
+      case 'week':
+        context = weekOptions;
+        if (initial.daysOfWeek) {
+          getControl(instance, 'week-type-select-days', context).checked = true;
+          initial.daysOfWeek.forEach((day) => {
+            const id = `weekday-${WEEKDAYS[day].toLowerCase()}`;
+            const button = getControl(instance, id, context);
+            if (button) button.classList.add('active');
+          });
+        } else {
+          getControl(instance, 'week-type-previous', context).checked = true;
+        }
+        break;
+      case 'month':
+        context = monthOptions;
+        if (initial.dayOfMonth) {
+          getControl(instance, 'month-type-day', context).checked = true;
+          getControl(instance, 'month-day', context).value = initial.dayOfMonth;
+        } else if (initial.weekNumber && initial.daysOfWeek
+          && initial.daysOfWeek.length === 1) {
+          getControl(instance, 'month-type-week', context).checked = true;
+          const weekSelect = getControl(instance, 'month-week-number', context);
+          const daySelect = getControl(instance, 'month-week-day', context);
+          weekSelect.value = initial.weekNumber;
+          daySelect.value = WEEKDAYS[initial.daysOfWeek[0]].toLowerCase();
+        } else {
+          getControl(instance, 'month-type-previous', context).checked = true;
+        }
+        break;
+      case 'year':
+        context = yearOptions;
+        if (Number.isInteger(initial.month) && initial.dayOfMonth) {
+          getControl(instance, 'year-type-day', context).checked = true;
+          const monthSelect = getControl(instance, 'year-month', context);
+          const daySelect = getControl(instance, 'year-day', context);
+          monthSelect.value = MONTHS[initial.month].name.toLowerCase();
+          daySelect.value = initial.dayOfMonth;
+        } else {
+          getControl(instance, 'year-type-previous', context).checked = true;
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (initial.endDate) {
+      getControl(instance, 'end-type-date').checked = true;
+      const input = getControl(instance, 'end-date');
+      input.value = formatDate(initial.endDate, privates.dateFormat.internal);
+    } else if (initial.maxCount) {
+      getControl(instance, 'end-type-count').checked = true;
+      getControl(instance, 'end-count').value = initial.maxCount;
+    } else {
+      getControl(instance, 'end-type-never').checked = true;
+    }
+
+    if (initial.startDate) {
+      getControl(instance, 'use-start-date').checked = true;
+      const input = getControl(instance, 'start-date');
+      input.value = formatDate(initial.startDate, privates.dateFormat.internal);
+    }
+
+    if (initial.allowPastOccurrence) {
+      getControl(instance, 'allow-past').checked = true;
+    }
+
+    if (initial.onWeekend !== 'no-change') {
+      getControl(instance, 'no-weekend').checked = true;
+      getControl(instance, 'weekend-select').value = initial.onWeekend;
+    }
+  }
+
+  const date = privates.baseDate;
+  const dayOfWeek = WEEKDAYS[date.getDay()].toLowerCase();
+  const dayOfMonth = date.getDate();
+  const month = MONTHS[date.getMonth()].name.toLowerCase();
+  const weekNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
+
+  if (!initial || initial.intervalUnit !== 'week' || !initial.daysOfWeek) {
+    const dayButton = getControl(instance, `weekday-${dayOfWeek}`, weekOptions);
+    dayButton.classList.add('active');
+  }
+
+  if (!initial || initial.intervalUnit !== 'month' || !initial.dayOfMonth) {
+    const monthDaySelect = getControl(instance, 'month-day', monthOptions);
+    monthDaySelect.value = dayOfMonth.toString();
+  }
+
+  if (!initial || initial.intervalUnit !== 'month' || !initial.weekNumber) {
+    const monthWeekNumSelect = getControl(
+      instance,
+      'month-week-number',
+      monthOptions,
+    );
+    const monthWeekDaySelect = getControl(
+      instance,
+      'month-week-day',
+      monthOptions,
+    );
+    monthWeekNumSelect.value = weekNumber.toString();
+    monthWeekDaySelect.value = dayOfWeek;
+  }
+
+  if (!initial || initial.intervalUnit !== 'year'
+    || !Number.isInteger(initial.month)) {
+    const yearMonthSelect = getControl(instance, 'year-month', yearOptions);
+    const yearDaySelect = getControl(instance, 'year-day', yearOptions);
+    yearMonthSelect.value = month;
+    yearDaySelect.value = dayOfMonth.toString();
+  }
+}
+
+/**
+ * Opens a date picker and updates the given input field with the selected
+ * date.
+ * @param {module:recurrenceModal~RecurrenceModal} instance The class instance
+ *   on which to apply the function.
+ * @param {HTMLElement} input The text input field where the date is being
+ *   entered.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal has been inserted.
+ */
+function pickDate(instance, input, modalStack) {
+  const privates = privateMembers.get(instance);
+
+  let startDate = null;
+  if (input.value) {
+    startDate = parseDate(input.value, privates.dateFormat.internal);
+  }
+
+  let title = null;
+  switch (input.id) {
+    case 'recurring-date-start-date':
+      title = 'Select Start Date';
+      break;
+    case 'recurring-date-end-date':
+      title = 'Select End Date';
+      break;
+    default:
+      break;
+  }
+
+  const field = input;
+  modalStack.showModal(new DatePickerModal({
+    confirm: (date) => {
+      field.value = formatDate(date, privates.dateFormat.internal);
+      field.setCustomValidity('');
+    },
+    startDate,
+    title,
+  }));
+}
+
+/**
+ * Update the contents of the container holding context-sensitive options,
+ * based on the selected interval unit.
+ * @param {module:recurrenceModal~RecurrenceModal} instance The class instance
+ *   on which to apply the function.
+ */
+function updateContextContainer(instance) {
+  const { containers } = privateMembers.get(instance);
+  const contextContainer = containers.context;
+
+  while (contextContainer.firstChild) {
+    contextContainer.removeChild(contextContainer.firstChild);
+  }
+
+  switch (getControl(instance, 'interval-unit').value) {
+    case 'week':
+      contextContainer.appendChild(containers.weekOptions);
+      break;
+    case 'month':
+      contextContainer.appendChild(containers.monthOptions);
+      break;
+    case 'year':
+      contextContainer.appendChild(containers.yearOptions);
+      break;
+    default:
+      break;
+  }
+}
+
+/**
+ * Add the event listeners to the form controls in the modal.
+ * @param {module:recurrenceModal~RecurrenceModal} instance The class instance
+ *   on which to apply the function.
+ */
+function addListeners(instance) {
+  const privates = privateMembers.get(instance);
+  const { parent } = privates.containers;
+  const fireEvent = (input) => input.dispatchEvent(new Event('change'));
+
+  // Make units singular or plural based on length
+  const lengthSelect = getControl(instance, 'interval-length');
+  const unitSelect = getControl(instance, 'interval-unit');
+  lengthSelect.addEventListener('change', (e) => {
+    const length = Number(e.target.value);
+    if (e.target.value.length > 0 && Number.isFinite(length)) {
+      const plural = length !== 1;
+      UNITS.forEach((unit) => {
+        const selector = `option[value="${unit.value}"]`;
+        const option = unitSelect.querySelector(selector);
+        const label = plural ? unit.plural : unit.singular;
+        if (option.textContent !== label) option.textContent = label;
+      });
+    }
+  });
+  fireEvent(lengthSelect);
+
+  unitSelect.addEventListener('change', () => {
+    updateContextContainer(instance);
+  });
+  fireEvent(unitSelect);
+
+  const radioSelector = 'input[type="radio"]';
+  const { weekOptions, monthOptions, yearOptions } = privates.containers;
+
+  // Conditionally enable/disable controls for weekly recurrences
+  const weekTypeListener = (e) => {
+    const buttons = weekOptions.querySelectorAll('.form-weekday-button');
+    const enable = e.target.value === 'select-days';
+    buttons.forEach((button) => {
+      const elem = button;
+      elem.disabled = !enable;
+    });
+  };
+  weekOptions.querySelectorAll(radioSelector).forEach((radio) => {
+    radio.addEventListener('change', weekTypeListener);
+    if (radio.checked) fireEvent(radio);
+  });
+
+  // Conditionally enable/disable controls for monthly recurrences
+  const monthTypeListener = (e) => {
+    const daySelect = getControl(instance, 'month-day', monthOptions);
+    const weekNumberSelect = getControl(
+      instance,
+      'month-week-number',
+      monthOptions,
+    );
+    const weekDaySelect = getControl(instance, 'month-week-day', monthOptions);
+
+    daySelect.disabled = e.target.value !== 'day-of-month';
+    weekNumberSelect.disabled = e.target.value !== 'week-of-month';
+    weekDaySelect.disabled = e.target.value !== 'week-of-month';
+  };
+  monthOptions.querySelectorAll(radioSelector).forEach((radio) => {
+    radio.addEventListener('change', monthTypeListener);
+    if (radio.checked) fireEvent(radio);
+  });
+
+  // Conditionally enable/disable controls for yearly recurrences
+  const yearTypeListener = (e) => {
+    const selectBoxes = yearOptions.querySelectorAll('select');
+    const enable = e.target.value === 'month-and-day';
+    selectBoxes.forEach((select) => {
+      const elem = select;
+      elem.disabled = !enable;
+    });
+  };
+  yearOptions.querySelectorAll(radioSelector).forEach((radio) => {
+    radio.addEventListener('change', yearTypeListener);
+    if (radio.checked) fireEvent(radio);
+  });
+
+  // Update day select box based on the number of days in the selected month
+  const yearMonthSelect = getControl(instance, 'year-month', yearOptions);
+  const yearDaySelect = getControl(instance, 'year-day', yearOptions);
+  const yearMonthListener = (e) => {
+    const month = MONTHS.findIndex((info) => (
+      info.name.toLowerCase() === e.target.value
+    ));
+    const oldValue = Number(yearDaySelect.value);
+    yearDaySelect.innerHTML = '';
+
+    const { maxDays } = MONTHS[month];
+    _.range(1, maxDays + 1).forEach((day) => {
+      const opt = document.createElement('option');
+      opt.value = day.toString();
+      opt.textContent = ordinal(day);
+      yearDaySelect.appendChild(opt);
+    });
+    if (oldValue <= maxDays) yearDaySelect.value = oldValue;
+    else yearDaySelect.value = maxDays;
+  };
+  yearMonthSelect.addEventListener('change', yearMonthListener);
+  fireEvent(yearMonthSelect);
+
+  // Make end count label singular/plural based on value
+  const endCount = getControl(instance, 'end-count');
+  endCount.addEventListener('change', (e) => {
+    const count = Number(e.target.value);
+    if (e.target.value.length > 0 && Number.isFinite(count)) {
+      const label = count === 1 ? ' occurrence' : ' occurrences';
+      getControl(instance, 'end-count-label').textContent = label;
+    }
+  });
+  fireEvent(endCount);
+
+  // Conditionally enable/disable recurrence end controls
+  const endRadioSelector = 'input[name="recurring-date-end-type"]';
+  const endTypeListener = (e) => {
+    const dateInput = getControl(instance, 'end-date');
+    const dateButton = getControl(instance, 'end-date-button');
+    const countInput = getControl(instance, 'end-count');
+
+    dateInput.disabled = e.target.value !== 'date';
+    dateButton.disabled = e.target.value !== 'date';
+    countInput.disabled = e.target.value !== 'count';
+  };
+  parent.querySelectorAll(endRadioSelector).forEach((radio) => {
+    radio.addEventListener('change', endTypeListener);
+    if (radio.checked) fireEvent(radio);
+  });
+
+  // Conditionally enable/disable controls for checkbox options
+  const useDateCheckbox = getControl(instance, 'use-start-date');
+  useDateCheckbox.addEventListener('change', (e) => {
+    const enable = e.target.checked;
+    getControl(instance, 'start-date').disabled = !enable;
+    getControl(instance, 'start-date-button').disabled = !enable;
+  });
+  fireEvent(useDateCheckbox);
+
+  const noWeekendCheckbox = getControl(instance, 'no-weekend');
+  noWeekendCheckbox.addEventListener('change', (e) => {
+    getControl(instance, 'weekend-select').disabled = !e.target.checked;
+  });
+  fireEvent(noWeekendCheckbox);
+
+  // Check date validity
+  const dateListener = (e) => {
+    const { value } = e.target;
+    if (value.length > 0) {
+      let message = '';
+      if (!parseDate(value, privates.dateFormat.internal)) {
+        const format = privates.dateFormat.visual;
+        message = `Please enter a valid date in ${format} format.`;
+      }
+      e.target.setCustomValidity(message);
+    }
+  };
+  getControl(instance, 'end-date').addEventListener('change', dateListener);
+  getControl(instance, 'start-date').addEventListener('change', dateListener);
+}
 
 /**
  * A modal dialog for selecting a recurring date.
@@ -72,69 +739,34 @@ class RecurrenceModal {
    *   date fields. If not given, then the browser default is used.
    */
   constructor(options = {}) {
-    /**
-     * The recurring date to use as a default when initializing the form
-     * controls, if any.
-     * @type {module:recurringDate~RecurringDate}
-     */
-    this._initialRecurrence = options.initial || null;
-
-    /**
-     * The date to use when initializing certain input fields.
-     * @type {Date}
-     */
-    this._baseDate = options.baseDate || new Date();
-
-    /**
-     * An object holding date format information.
-     * @type {module:settings~Settings~dateFormat}
-     */
-    this._dateFormat = options.dateFormat || Settings.lookupDateFormat();
-
-    /**
-     * An object holding callback functions.
-     * @type {Object}
-     * @property {Function} [confirm] A callback function that will be invoked
-     *   when the user successfully confirms the modal.
-     * @property {Function} [cancel] A callback function that will be invoked
-     *   when the user cancels the modal.
-     */
-    this._callbacks = {
-      confirm: options.confirm || null,
-      cancel: options.cancel || null,
+    const privates = {
+      initialRecurrence: options.initial || null,
+      baseDate: options.baseDate || new Date(),
+      dateFormat: options.dateFormat || Settings.lookupDateFormat(),
+      callbacks: {
+        confirm: options.confirm || null,
+        cancel: options.cancel || null,
+      },
+      containers: {
+        parent: null,
+        context: null,
+        weekOptions: null,
+        monthOptions: null,
+        yearOptions: null,
+      },
+      title: 'Edit Recurring Date',
     };
-
-    /**
-     * An object holding the various container elements used in the modal's
-     * contents.
-     * @type {Object}
-     * @property {HTMLElement} parent The parent container element holding all
-     *   the form elements.
-     * @property {HTMLElement} context The container element holding
-     *   context-sensitive options that depend on the selected interval unit.
-     * @property {HTMLElement} weekOptions The container element holding the
-     *   form elements specific to weekly recurrences.
-     * @property {HTMLElement} monthOptions The container element holding the
-     *   form elements specific to monthly recurrences.
-     * @property {HTMLElement} yearOptions The container element holding the
-     *   form elements specific to yearly recurrences.
-     */
-    this._containers = {
-      parent: null,
-      context: null,
-      weekOptions: null,
-      monthOptions: null,
-      yearOptions: null,
-    };
+    privateMembers.set(this, privates);
   }
 
   get title() {
-    return 'Edit Recurring Date';
+    return privateMembers.get(this).title;
   }
 
   addContent(parent, modalStack) {
-    let container, optionContainer, label;
-    container = document.createElement('div');
+    const privates = privateMembers.get(this);
+
+    let container = document.createElement('div');
     container.classList.add('form-input-container');
     container.appendChild(createFormControl({
       type: 'number',
@@ -151,7 +783,7 @@ class RecurrenceModal {
       },
     }));
 
-    label = document.createElement('span');
+    let label = document.createElement('span');
     label.classList.add('form-input-label-inline');
     label.textContent = ' ';
     container.appendChild(label);
@@ -161,7 +793,7 @@ class RecurrenceModal {
       id: 'recurring-date-interval-unit',
       name: 'recurring-date-interval-unit',
       classList: ['form-select-inline'],
-      menuItems: UNITS.map(unit => {
+      menuItems: UNITS.map((unit) => {
         const selected = unit.value === 'week';
         return { value: unit.value, label: unit.singular, selected };
       }),
@@ -189,7 +821,7 @@ class RecurrenceModal {
       container: { classList: ['form-input-item-container'] },
     }));
 
-    optionContainer = document.createElement('div');
+    let optionContainer = document.createElement('div');
     optionContainer.classList.add('form-input-item-container');
     optionContainer.appendChild(createFormControl({
       type: 'radio',
@@ -207,7 +839,7 @@ class RecurrenceModal {
     optionContainer.appendChild(createDateInputField({
       id: 'recurring-date-end-date',
       name: 'recurring-date-end-date',
-      placeholder: this._dateFormat.visual,
+      placeholder: privates.dateFormat.visual,
       classList: ['form-input-inline'],
       required: true,
       container: {
@@ -217,7 +849,7 @@ class RecurrenceModal {
       button: {
         id: 'recurring-date-end-date-button',
         classList: ['form-button'],
-        callback: input => this._pickDate(input, modalStack),
+        callback: (input) => pickDate(this, input, modalStack),
       },
     }));
     container.appendChild(optionContainer);
@@ -284,7 +916,7 @@ class RecurrenceModal {
     optionContainer.appendChild(createDateInputField({
       id: 'recurring-date-start-date',
       name: 'recurring-date-start-date',
-      placeholder: this._dateFormat.visual,
+      placeholder: privates.dateFormat.visual,
       classList: ['form-input-inline'],
       required: true,
       container: {
@@ -294,7 +926,7 @@ class RecurrenceModal {
       button: {
         id: 'recurring-date-start-date-button',
         classList: ['form-button'],
-        callback: input => this._pickDate(input, modalStack),
+        callback: (input) => pickDate(this, input, modalStack),
       },
     }));
     container.appendChild(optionContainer);
@@ -348,11 +980,11 @@ class RecurrenceModal {
 
     parent.appendChild(container);
 
-    const weekOptions = this._createWeekContextForm();
-    const monthOptions = this._createMonthContextForm();
-    const yearOptions = this._createYearContextForm();
+    const weekOptions = createWeekContextForm();
+    const monthOptions = createMonthContextForm();
+    const yearOptions = createYearContextForm();
 
-    this._containers = {
+    privates.containers = {
       parent,
       context: contextContainer,
       weekOptions,
@@ -360,708 +992,112 @@ class RecurrenceModal {
       yearOptions,
     };
 
-    this._initFormValues();
-    this._addListeners();
+    initFormValues(this);
+    addListeners(this);
   }
 
   confirm() {
-    if (this._callbacks.confirm) {
-      const unit = this._getControl('interval-unit').value;
+    const privates = privateMembers.get(this);
+    if (privates.callbacks.confirm) {
+      const unit = getControl(this, 'interval-unit').value;
       const options = {};
 
-      const lengthInput = this._getControl('interval-length');
-      options.intervalLength = Number.parseInt(lengthInput.value);
+      const lengthInput = getControl(this, 'interval-length');
+      options.intervalLength = Number(lengthInput.value);
 
       let context;
-      const getDayIndex = day => WEEKDAYS.findIndex(name => {
-        return day === name.toLowerCase();
-      });
+      const getDayIndex = (day) => WEEKDAYS.findIndex((name) => (
+        day === name.toLowerCase()
+      ));
       switch (unit) {
         case 'week':
-          context = this._containers.weekOptions;
-          if (this._getControl('week-type-select-days', context).checked) {
+          context = privates.containers.weekOptions;
+          if (getControl(this, 'week-type-select-days', context).checked) {
             const daysOfWeek = [];
-            context.querySelectorAll('.form-weekday-button').forEach(button => {
-              if (button.classList.contains('active'))
-                daysOfWeek.push(getDayIndex(button.value));
-            });
-            if (daysOfWeek.length > 0)
-              options.daysOfWeek = daysOfWeek;
+            context.querySelectorAll('.form-weekday-button').forEach(
+              (button) => {
+                if (button.classList.contains('active')) {
+                  daysOfWeek.push(getDayIndex(button.value));
+                }
+              },
+            );
+            if (daysOfWeek.length > 0) options.daysOfWeek = daysOfWeek;
           }
           break;
         case 'month':
-          context = this._containers.monthOptions;
-          if (this._getControl('month-type-day', context).checked) {
-            const daySelect = this._getControl('month-day', context);
-            options.dayOfMonth = Number.parseInt(daySelect.value);
-          } else if (this._getControl('month-type-week', context).checked) {
-            const weekSelect = this._getControl('month-week-number', context);
-            const daySelect = this._getControl('month-week-day', context);
-            options.weekNumber = Number.parseInt(weekSelect.value);
+          context = privates.containers.monthOptions;
+          if (getControl(this, 'month-type-day', context).checked) {
+            const daySelect = getControl(this, 'month-day', context);
+            options.dayOfMonth = Number(daySelect.value);
+          } else if (getControl(this, 'month-type-week', context).checked) {
+            const weekSelect = getControl(this, 'month-week-number', context);
+            const daySelect = getControl(this, 'month-week-day', context);
+            options.weekNumber = Number(weekSelect.value);
             options.daysOfWeek = [getDayIndex(daySelect.value)];
           }
           break;
         case 'year':
-          context = this._containers.yearOptions;
-          if (this._getControl('year-type-day', context).checked) {
-            const monthSelect = this._getControl('year-month', context);
-            const daySelect = this._getControl('year-day', context);
-            options.month = MONTHS.findIndex(info => {
-              return info.name.toLowerCase() === monthSelect.value;
-            });
-            options.dayOfMonth = Number.parseInt(daySelect.value);
+          context = privates.containers.yearOptions;
+          if (getControl(this, 'year-type-day', context).checked) {
+            const monthSelect = getControl(this, 'year-month', context);
+            const daySelect = getControl(this, 'year-day', context);
+            options.month = MONTHS.findIndex((info) => (
+              info.name.toLowerCase() === monthSelect.value
+            ));
+            options.dayOfMonth = Number(daySelect.value);
           }
+          break;
+        default:
           break;
       }
 
-      if (this._getControl('end-type-date').checked) {
-        const input = this._getControl('end-date');
-        options.endDate = parseDate(input.value, this._dateFormat.internal);
-      } else if (this._getControl('end-type-count').checked) {
-        const input = this._getControl('end-count');
-        options.maxCount = Number.parseInt(input.value);
+      if (getControl(this, 'end-type-date').checked) {
+        const input = getControl(this, 'end-date');
+        options.endDate = parseDate(input.value, privates.dateFormat.internal);
+      } else if (getControl(this, 'end-type-count').checked) {
+        const input = getControl(this, 'end-count');
+        options.maxCount = Number(input.value);
       }
 
-      if (this._getControl('use-start-date').checked) {
-        const input = this._getControl('start-date');
-        options.startDate = parseDate(input.value, this._dateFormat.internal);
+      if (getControl(this, 'use-start-date').checked) {
+        const input = getControl(this, 'start-date');
+        options.startDate = parseDate(
+          input.value,
+          privates.dateFormat.internal,
+        );
       }
 
-      options.allowPastOccurrence = this._getControl('allow-past').checked;
+      options.allowPastOccurrence = getControl(this, 'allow-past').checked;
 
-      if (this._getControl('no-weekend').checked) {
-        const value = this._getControl('weekend-select').value;
-        options.onWeekend = value;
+      if (getControl(this, 'no-weekend').checked) {
+        options.onWeekend = getControl(this, 'weekend-select').value;
       }
 
-      this._callbacks.confirm(new RecurringDate(unit, options));
+      privates.callbacks.confirm(new RecurringDate(unit, options));
     }
   }
 
   cancel() {
-    if (this._callbacks.cancel)
-      this._callbacks.cancel();
+    const { callbacks } = privateMembers.get(this);
+    if (callbacks.cancel) callbacks.cancel();
   }
 
   validate() {
-    if (!this._getControl('interval-length').reportValidity())
-      return false;
+    if (!getControl(this, 'interval-length').reportValidity()) return false;
 
-    if (this._getControl('end-type-date').checked) {
-      if (!this._getControl('end-date').reportValidity())
-        return false;
+    if (getControl(this, 'end-type-date').checked) {
+      if (!getControl(this, 'end-date').reportValidity()) return false;
     }
 
-    if (this._getControl('end-type-count').checked) {
-      if (!this._getControl('end-count').reportValidity())
-        return false;
+    if (getControl(this, 'end-type-count').checked) {
+      if (!getControl(this, 'end-count').reportValidity()) return false;
     }
 
-    if (this._getControl('use-start-date').checked) {
-      if (!this._getControl('start-date').reportValidity())
-        return false;
+    if (getControl(this, 'use-start-date').checked) {
+      if (!getControl(this, 'start-date').reportValidity()) return false;
     }
 
     return true;
-  }
-
-  /**
-   * Select a form control in the modal.
-   * @param {string} idSuffix The identifier of the control to retrieve,
-   *   without the 'recurring-date-' prefix.
-   * @param {string} [container] The container in which to look for the
-   *   control. If not given, then the modal content container is used.
-   * @returns {HTMLElement} The requested element, or undefined if not found.
-   */
-  _getControl(idSuffix, container) {
-    if (!container)
-      container = this._containers.parent;
-    return container.querySelector(`#recurring-date-${idSuffix}`);
-  }
-
-  /**
-   * Create the form elements for the context options for weekly recurrences.
-   * @returns {HTMLElement} The container element holding the form elements.
-   */
-  _createWeekContextForm() {
-    const container = document.createElement('div');
-    container.classList.add('form-input-container');
-
-    let label = document.createElement('div');
-    label.classList.add('form-input-label-inline');
-    label.textContent = 'Repeat on';
-    container.appendChild(label);
-
-    container.appendChild(createFormControl({
-      type: 'radio',
-      id: 'recurring-date-week-type-previous',
-      name: 'recurring-date-week-type',
-      value: 'use-previous',
-      checked: true,
-      label: {
-        value: 'The same day of the week as last occurrence',
-        classList: ['form-input-label-inline'],
-      },
-      container: { classList: ['form-input-item-container'] },
-    }));
-
-    const optionContainer = document.createElement('div');
-    optionContainer.classList.add('form-input-item-container');
-
-    optionContainer.appendChild(createFormControl({
-      type: 'radio',
-      id: 'recurring-date-week-type-select-days',
-      name: 'recurring-date-week-type',
-      value: 'select-days',
-    }));
-
-    label = document.createElement('label');
-    label.classList.add('form-input-label-inline');
-    label.textContent = 'These days: ';
-    label.htmlFor = 'recurring-date-week-type-select-days';
-    optionContainer.appendChild(label);
-
-    const days = WEEKDAYS.map(day => {
-      return { name: day, value: day.toLowerCase(), short: day.slice(0, 1) };
-    });
-    days.forEach(day => {
-      optionContainer.appendChild(createToggleButton(day.short, {
-        id: `recurring-date-weekday-${day.value}`,
-        name: 'recurring-date-weekday',
-        value: day.value,
-        classList: ['toggle-button', 'form-weekday-button'],
-      }));
-    });
-    container.appendChild(optionContainer);
-
-    return container;
-  }
-
-  /**
-   * Create the form elements for the context options for monthly recurrences.
-   * @returns {HTMLElement} The container element holding the form elements.
-   */
-  _createMonthContextForm() {
-    const container = document.createElement('div');
-    container.classList.add('form-input-container');
-
-    let label, optionContainer, selectItems;
-
-    label = document.createElement('div');
-    label.classList.add('form-input-label-inline');
-    label.textContent = 'Repeat on';
-    container.appendChild(label);
-
-    container.appendChild(createFormControl({
-      type: 'radio',
-      id: 'recurring-date-month-type-previous',
-      name: 'recurring-date-month-type',
-      value: 'use-previous',
-      checked: true,
-      label: {
-        value: 'The same day of the month as last occurrence',
-        classList: ['form-input-label-inline'],
-      },
-      container: { classList: ['form-input-item-container'] },
-    }));
-
-    optionContainer = document.createElement('div');
-    optionContainer.classList.add('form-input-item-container');
-    optionContainer.appendChild(createFormControl({
-      type: 'radio',
-      id: 'recurring-date-month-type-day',
-      name: 'recurring-date-month-type',
-      value: 'day-of-month',
-    }));
-
-    label = document.createElement('label');
-    label.classList.add('form-input-label-inline');
-    label.htmlFor = 'recurring-date-month-type-day';
-    label.textContent = 'The ';
-    optionContainer.appendChild(label);
-
-    selectItems = [];
-    for (let day = 1; day <= 31; day++)
-      selectItems.push({ value: day.toString(), label: ordinal(day) });
-    optionContainer.appendChild(createFormControl({
-      type: 'select',
-      id: 'recurring-date-month-day',
-      name: 'recurring-date-month-day',
-      classList: ['form-select-inline'],
-      menuItems: selectItems,
-    }));
-
-    label = document.createElement('label');
-    label.classList.add('form-input-label-inline');
-    label.htmlFor = 'recurring-date-month-day';
-    label.textContent = ' day of the month';
-    optionContainer.appendChild(label);
-
-    container.appendChild(optionContainer);
-
-    optionContainer = document.createElement('div');
-    optionContainer.classList.add('form-input-item-container');
-    optionContainer.appendChild(createFormControl({
-      type: 'radio',
-      id: 'recurring-date-month-type-week',
-      name: 'recurring-date-month-type',
-      value: 'week-of-month',
-    }));
-
-    label = document.createElement('label');
-    label.classList.add('form-input-label-inline');
-    label.htmlFor = 'recurring-date-month-type-week';
-    label.textContent = 'The ';
-    optionContainer.appendChild(label);
-
-    selectItems = [];
-    for (let week = 1; week <= 4; week++)
-      selectItems.push({ value: week.toString(), label: ordinal(week) });
-    selectItems.push({ value: '5', label: 'last' });
-    optionContainer.appendChild(createFormControl({
-      type: 'select',
-      id: 'recurring-date-month-week-number',
-      name: 'recurring-date-month-week-number',
-      classList: ['form-select-inline'],
-      menuItems: selectItems,
-    }));
-
-    label = document.createElement('span');
-    label.classList.add('form-input-label-inline');
-    label.textContent = ' ';
-    optionContainer.appendChild(label);
-
-    selectItems = WEEKDAYS.map(day => {
-      return { value: day.toLowerCase(), label: day };
-    });
-    optionContainer.appendChild(createFormControl({
-      type: 'select',
-      id: 'recurring-date-month-week-day',
-      name: 'recurring-date-month-week-day',
-      classList: ['form-select-inline'],
-      menuItems: selectItems,
-    }));
-
-    label = document.createElement('label');
-    label.classList.add('form-input-label-inline');
-    label.htmlFor = 'recurring-date-month-week-day';
-    label.textContent = ' of the month';
-    optionContainer.appendChild(label);
-
-    container.appendChild(optionContainer);
-    return container;
-  }
-
-  /**
-   * Create the form elements for the context options for yearly recurrences.
-   * @returns {HTMLElement} The container element holding the form elements.
-   */
-  _createYearContextForm() {
-    const container = document.createElement('div');
-    container.classList.add('form-input-container');
-
-    let label, optionContainer, selectItems;
-
-    label = document.createElement('div');
-    label.classList.add('form-input-label-inline');
-    label.textContent = 'Repeat on';
-    container.appendChild(label);
-
-    container.appendChild(createFormControl({
-      type: 'radio',
-      id: 'recurring-date-year-type-previous',
-      name: 'recurring-date-year-type',
-      value: 'use-previous',
-      checked: true,
-      label: {
-        value: 'The same month and day as last occurrence',
-        classList: ['form-input-label-inline'],
-      },
-      container: { classList: ['form-input-item-container'] },
-    }));
-
-    optionContainer = document.createElement('div');
-    optionContainer.classList.add('form-input-item-container');
-    optionContainer.appendChild(createFormControl({
-      type: 'radio',
-      id: 'recurring-date-year-type-day',
-      name: 'recurring-date-year-type',
-      value: 'month-and-day',
-    }));
-
-    label = document.createElement('label');
-    label.classList.add('form-input-label-inline');
-    label.htmlFor = 'recurring-date-year-type-day';
-    label.textContent = 'On ';
-    optionContainer.appendChild(label);
-
-    selectItems = MONTHS.map(month => {
-      return { value: month.name.toLowerCase(), label: month.name };
-    });
-    optionContainer.appendChild(createFormControl({
-      type: 'select',
-      id: 'recurring-date-year-month',
-      name: 'recurring-date-year-month',
-      classList: ['form-select-inline'],
-      menuItems: selectItems,
-    }));
-
-    label = document.createElement('span');
-    label.classList.add('form-input-label-inline');
-    label.textContent = ' ';
-    optionContainer.appendChild(label);
-
-    selectItems = [];
-    for (let day = 1; day <= 31; day++)
-      selectItems.push({ value: day.toString(), label: ordinal(day) });
-    optionContainer.appendChild(createFormControl({
-      type: 'select',
-      id: 'recurring-date-year-day',
-      name: 'recurring-date-year-day',
-      classList: ['form-select-inline'],
-      menuItems: selectItems,
-    }));
-    container.appendChild(optionContainer);
-
-    return container;
-  }
-
-  /**
-   * Initialize the values of the form elements based on the initial recurrence
-   * that was passed to the constructor, if any.
-   */
-  _initFormValues() {
-    const weekOptions = this._containers.weekOptions;
-    const monthOptions = this._containers.monthOptions;
-    const yearOptions = this._containers.yearOptions;
-    const initial = this._initialRecurrence;
-    if (initial) {
-      this._getControl('interval-length').value = initial.intervalLength;
-      this._getControl('interval-unit').value = initial.intervalUnit;
-
-      let context;
-      switch (initial.intervalUnit) {
-        case 'week':
-          context = weekOptions;
-          if (initial.daysOfWeek) {
-            this._getControl('week-type-select-days', context).checked = true;
-            initial.daysOfWeek.forEach(day => {
-              const id = `weekday-${WEEKDAYS[day].toLowerCase()}`;
-              const button = this._getControl(id, context);
-              if (button)
-                button.classList.add('active');
-            });
-          } else {
-            this._getControl('week-type-previous', context).checked = true;
-          }
-          break;
-        case 'month':
-          context = monthOptions;
-          if (initial.dayOfMonth) {
-            this._getControl('month-type-day', context).checked = true;
-            this._getControl('month-day', context).value = initial.dayOfMonth;
-          } else if (initial.weekNumber && initial.daysOfWeek
-            && initial.daysOfWeek.length === 1) {
-            this._getControl('month-type-week', context).checked = true;
-            const weekSelect = this._getControl('month-week-number', context);
-            const daySelect = this._getControl('month-week-day', context);
-            weekSelect.value = initial.weekNumber;
-            daySelect.value = WEEKDAYS[initial.daysOfWeek[0]].toLowerCase();
-          } else {
-            this._getControl('month-type-previous', context).checked = true;
-          }
-          break;
-        case 'year':
-          context = yearOptions;
-          if (Number.isInteger(initial.month) && initial.dayOfMonth) {
-            this._getControl('year-type-day', context).checked = true;
-            const monthSelect = this._getControl('year-month', context);
-            const daySelect = this._getControl('year-day', context);
-            monthSelect.value = MONTHS[initial.month].name.toLowerCase();
-            daySelect.value = initial.dayOfMonth;
-          } else {
-            this._getControl('year-type-previous', context).checked = true;
-          }
-          break;
-      }
-
-      if (initial.endDate) {
-        this._getControl('end-type-date').checked = true;
-        const input = this._getControl('end-date');
-        input.value = formatDate(initial.endDate, this._dateFormat.internal);
-      } else if (initial.maxCount) {
-        this._getControl('end-type-count').checked = true;
-        this._getControl('end-count').value = initial.maxCount;
-      } else {
-        this._getControl('end-type-never').checked = true;
-      }
-
-      if (initial.startDate) {
-        this._getControl('use-start-date').checked = true;
-        const input = this._getControl('start-date');
-        input.value = formatDate(initial.startDate, this._dateFormat.internal);
-      }
-
-      if (initial.allowPastOccurrence) {
-        this._getControl('allow-past').checked = true;
-      }
-
-      if (initial.onWeekend !== 'no-change') {
-        this._getControl('no-weekend').checked = true;
-        this._getControl('weekend-select').value = initial.onWeekend;
-      }
-    }
-
-    const date = this._baseDate;
-    const dayOfWeek = WEEKDAYS[date.getDay()].toLowerCase();
-    const dayOfMonth = date.getDate();
-    const month = MONTHS[date.getMonth()].name.toLowerCase();
-    const weekNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
-
-    if (!initial || initial.intervalUnit !== 'week' || !initial.daysOfWeek) {
-      const dayButton = this._getControl(`weekday-${dayOfWeek}`, weekOptions);
-      dayButton.classList.add('active');
-    }
-
-    if (!initial || initial.intervalUnit !== 'month' || !initial.dayOfMonth) {
-      const monthDaySelect = this._getControl('month-day', monthOptions);
-      monthDaySelect.value = dayOfMonth.toString();
-    }
-
-    if (!initial || initial.intervalUnit !== 'month' || !initial.weekNumber) {
-      const monthWeekNumSelect = this._getControl('month-week-number',
-        monthOptions);
-      const monthWeekDaySelect = this._getControl('month-week-day',
-        monthOptions);
-      monthWeekNumSelect.value = weekNumber.toString();
-      monthWeekDaySelect.value = dayOfWeek;
-    }
-
-    if (!initial || initial.intervalUnit !== 'year'
-      || !Number.isInteger(initial.month)) {
-      const yearMonthSelect = this._getControl('year-month', yearOptions);
-      const yearDaySelect = this._getControl('year-day', yearOptions);
-      yearMonthSelect.value = month;
-      yearDaySelect.value = dayOfMonth.toString();
-    }
-  }
-
-  /**
-   * Add the event listeners to the form controls in the modal.
-   */
-  _addListeners() {
-    const parent = this._containers.parent;
-    const fireEvent = input => input.dispatchEvent(new Event('change'));
-
-    // Make units singular or plural based on length
-    const lengthSelect = this._getControl('interval-length');
-    const unitSelect = this._getControl('interval-unit');
-    lengthSelect.addEventListener('change', e => {
-      const length = Number.parseInt(e.target.value);
-
-      if (Number.isFinite(length)) {
-        const plural = length !== 1;
-        UNITS.forEach(unit => {
-          const selector = `option[value="${unit.value}"]`;
-          const option = unitSelect.querySelector(selector);
-          const label = plural ? unit.plural : unit.singular;
-          if (option.textContent !== label)
-            option.textContent = label;
-        });
-      }
-    });
-    fireEvent(lengthSelect);
-
-    unitSelect.addEventListener('change', () => {
-      this._updateContextContainer();
-    });
-    fireEvent(unitSelect);
-
-    const radioSelector = 'input[type="radio"]';
-
-    // Conditionally enable/disable controls for weekly recurrences
-    const weekOptions = this._containers.weekOptions;
-    const weekTypeListener = e => {
-      const buttons = weekOptions.querySelectorAll('.form-weekday-button');
-      const enable = e.target.value === 'select-days';
-      buttons.forEach(button => button.disabled = !enable);
-    };
-    weekOptions.querySelectorAll(radioSelector).forEach(radio => {
-      radio.addEventListener('change', weekTypeListener);
-      if (radio.checked)
-        fireEvent(radio);
-    });
-
-    // Conditionally enable/disable controls for monthly recurrences
-    const monthOptions = this._containers.monthOptions;
-    const monthTypeListener = e => {
-      const daySelect = this._getControl('month-day', monthOptions);
-      const weekNumberSelect = this._getControl('month-week-number',
-        monthOptions);
-      const weekDaySelect = this._getControl('month-week-day', monthOptions);
-
-      daySelect.disabled = e.target.value !== 'day-of-month';
-      weekNumberSelect.disabled = e.target.value !== 'week-of-month';
-      weekDaySelect.disabled = e.target.value !== 'week-of-month';
-    };
-    monthOptions.querySelectorAll(radioSelector).forEach(radio => {
-      radio.addEventListener('change', monthTypeListener);
-      if (radio.checked)
-        fireEvent(radio);
-    });
-
-    // Conditionally enable/disable controls for yearly recurrences
-    const yearOptions = this._containers.yearOptions;
-    const yearTypeListener = e => {
-      const selectBoxes = yearOptions.querySelectorAll('select');
-      const enable = e.target.value === 'month-and-day';
-      selectBoxes.forEach(select => select.disabled = !enable);
-    };
-    yearOptions.querySelectorAll(radioSelector).forEach(radio => {
-      radio.addEventListener('change', yearTypeListener);
-      if (radio.checked)
-        fireEvent(radio);
-    });
-
-    // Update day select box based on the number of days in the selected month
-    const yearMonthSelect = this._getControl('year-month', yearOptions);
-    const yearDaySelect = this._getControl('year-day', yearOptions);
-    const yearMonthListener = e => {
-      const month = MONTHS.findIndex(info => {
-        return info.name.toLowerCase() === e.target.value;
-      });
-      const oldValue = Number.parseInt(yearDaySelect.value);
-      yearDaySelect.innerHTML = '';
-
-      const maxDays = MONTHS[month].maxDays;
-      _.range(1, maxDays + 1).forEach(day => {
-        const opt = document.createElement('option');
-        opt.value = day.toString();
-        opt.textContent = ordinal(day);
-        yearDaySelect.appendChild(opt);
-      });
-      if (oldValue <= maxDays)
-        yearDaySelect.value = oldValue;
-      else
-        yearDaySelect.value = maxDays;
-    }
-    yearMonthSelect.addEventListener('change', yearMonthListener);
-    fireEvent(yearMonthSelect);
-
-    // Make end count label singular/plural based on value
-    const endCount = this._getControl('end-count');
-    endCount.addEventListener('change', e => {
-      const count = Number.parseInt(e.target.value);
-      if (Number.isFinite(count)) {
-        const label = count === 1 ? ' occurrence' : ' occurrences';
-        this._getControl('end-count-label').textContent = label;
-      }
-    });
-    fireEvent(endCount);
-
-    // Conditionally enable/disable recurrence end controls
-    const endRadioSelector = 'input[name="recurring-date-end-type"]';
-    const endTypeListener = e => {
-      const dateInput = this._getControl('end-date');
-      const dateButton = this._getControl('end-date-button');
-      const countInput = this._getControl('end-count');
-
-      dateInput.disabled = e.target.value !== 'date';
-      dateButton.disabled = e.target.value !== 'date';
-      countInput.disabled = e.target.value !== 'count';
-    }
-    parent.querySelectorAll(endRadioSelector).forEach(radio => {
-      radio.addEventListener('change', endTypeListener);
-      if (radio.checked)
-        fireEvent(radio);
-    });
-
-    // Conditionally enable/disable controls for checkbox options
-    const useDateCheckbox = this._getControl('use-start-date');
-    useDateCheckbox.addEventListener('change', e => {
-      const enable = e.target.checked;
-      this._getControl('start-date').disabled = !enable;
-      this._getControl('start-date-button').disabled = !enable;
-    });
-    fireEvent(useDateCheckbox);
-
-    const noWeekendCheckbox = this._getControl('no-weekend');
-    noWeekendCheckbox.addEventListener('change', e => {
-      this._getControl('weekend-select').disabled = !e.target.checked;
-    });
-    fireEvent(noWeekendCheckbox);
-
-    // Check date validity
-    const dateListener = e => {
-      const value = e.target.value;
-      if (value.length > 0) {
-        let message = '';
-        if (!parseDate(value, this._dateFormat.internal)) {
-          const format = this._dateFormat.visual;
-          message = `Please enter a valid date in ${format} format.`;
-        }
-        e.target.setCustomValidity(message);
-      }
-    };
-    this._getControl('end-date').addEventListener('change', dateListener);
-    this._getControl('start-date').addEventListener('change', dateListener);
-  }
-
-  /**
-   * Update the contents of the container holding context-sensitive options,
-   * based on the selected interval unit.
-   */
-  _updateContextContainer() {
-    const containers = this._containers;
-    const contextContainer = containers.context;
-
-    while (contextContainer.firstChild)
-      contextContainer.removeChild(contextContainer.firstChild);
-
-    switch (this._getControl('interval-unit').value) {
-      case 'week':
-        contextContainer.appendChild(containers.weekOptions);
-        break;
-      case 'month':
-        contextContainer.appendChild(containers.monthOptions);
-        break;
-      case 'year':
-        contextContainer.appendChild(containers.yearOptions);
-        break;
-    }
-  }
-
-  /**
-   * Opens a date picker and updates the given input field with the selected
-   * date.
-   * @param {HTMLElement} input The text input field where the date is being
-   *   entered.
-   * @param {module:modalStack~ModalStack} modalStack The modal stack in which
-   *   the modal has been inserted.
-   */
-  _pickDate(input, modalStack) {
-    let startDate = null;
-    if (input.value)
-      startDate = parseDate(input.value, this._dateFormat.internal);
-
-    let title = null;
-    switch (input.id) {
-      case 'recurring-date-start-date':
-        title = 'Select Start Date';
-        break;
-      case 'recurring-date-end-date':
-        title = 'Select End Date';
-        break;
-    }
-
-    modalStack.showModal(new DatePickerModal({
-      confirm: date => {
-        input.value = formatDate(date, this._dateFormat.internal);
-        input.setCustomValidity('');
-      },
-      startDate,
-      title,
-    }));
   }
 }
 
