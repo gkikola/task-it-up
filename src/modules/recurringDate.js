@@ -3,10 +3,10 @@
  * @module recurringDate
  */
 
-import { formatDate } from './utility';
-
 import _ from 'lodash';
 import ordinal from 'ordinal';
+
+import { formatDate } from './utility';
 
 const WEEKDAYS = [
   'Sunday',
@@ -79,27 +79,27 @@ class RecurringDate {
      * The unit of time in which the repetition interval is measured.
      * @type {string}
      */
-    this._intervalUnit = intervalUnit;
+    this.intervalUnit = intervalUnit;
 
     /**
      * The length of the repetition interval.
      * @type {number}
      */
-    this._intervalLength = options.intervalLength || 1;
+    this.intervalLength = options.intervalLength || 1;
 
     /**
      * The initial date from which the next recurrence is calculated. If this
      * is null, then the next date is calculated from the present time.
      * @type {?Date}
      */
-    this._startDate = options.startDate || null;
+    this.startDate = options.startDate || null;
 
     /**
      * If this is true, then the next occurrence is allowed to be in the past
      * (this can happen if the start date is in the past).
      * @type {boolean}
      */
-    this._allowPastOccurrence = options.allowPastOccurrence || false;
+    this.allowPastOccurrence = options.allowPastOccurrence || false;
 
     /**
      * The number of the week within a month in which the recurring date should
@@ -110,7 +110,7 @@ class RecurringDate {
      * in a particular month.
      * @type {?number}
      */
-    this._weekNumber = options.weekNumber || null;
+    this.weekNumber = options.weekNumber || null;
 
     /**
      * An array holding the days of the week on which the recurring date should
@@ -118,23 +118,24 @@ class RecurringDate {
      * represents Monday, and so on.
      * @type {?number[]}
      */
-    this._daysOfWeek = options.daysOfWeek || null;
+    this.daysOfWeek = options.daysOfWeek || null;
 
     /**
      * The month in the year on which the recurring date should occur,
      * represented as a number between 0 and 11.
      * @type {?number}
      */
-    this._month = null;
-    if (options.month !== undefined && options.month !== null)
-      this._month = options.month;
+    this.month = null;
+    if (options.month !== undefined && options.month !== null) {
+      this.month = options.month;
+    }
 
     /**
      * The day of the month on which the recurring date should occur,
      * represented as a number between 1 and 31.
      * @type {?number}
      */
-    this._dayOfMonth = options.dayOfMonth || null;
+    this.dayOfMonth = options.dayOfMonth || null;
 
     /**
      * Specifies what happens when the next recurrence occurs on a weekend. If
@@ -144,125 +145,25 @@ class RecurringDate {
      * is used instead.
      * @type {string}
      */
-    this._onWeekend = options.onWeekend || 'no-change';
+    this.onWeekend = options.onWeekend || 'no-change';
 
     /**
     * Indicates the date after which the repetition should stop, if any.
     * @type {?Date}
     */
-    this._endDate = options.endDate || null;
+    this.endDate = options.endDate || null;
 
     /**
      * Indicates the maximum number of repetitions before the recurrence should
      * stop, if ever.
      * @type {?number}
      */
-    this._maxCount = options.maxCount || null;
+    this.maxCount = options.maxCount || null;
   }
 
-  /**
-   * The unit of time ('day', 'week', 'month', or 'year') in which the
-   * repetition interval is measured.
-   * @type {string}
+  /* eslint-disable class-methods-use-this --
+   * TODO: This linter rule should be reenabled after methods are implemented.
    */
-  get intervalUnit() {
-    return this._intervalUnit;
-  }
-
-  /**
-   * The length of the repetition interval.
-   * @type {number}
-   */
-  get intervalLength() {
-    return this._intervalLength;
-  }
-
-  /**
-   * The initial date from which the recurrence is calculated, or null if the
-   * date is always calculated from the present time.
-   * @type {?Date}
-   */
-  get startDate() {
-    return this._startDate;
-  }
-
-  /**
-   * If this is true, then the next occurrence is allowed to be in the past
-   * (this can happen if the start date is in the past).
-   * @type {boolean}
-   */
-  get allowPastOccurrence() {
-    return this._allowPastOccurrence;
-  }
-
-  /**
-   * The number of the week within a month in which the recurring date should
-   * occur. Used in conjunction with daysOfWeek. A value of 1 indicates the
-   * first occurrence of a day within the month, 2 indicates the second
-   * occurrence, and so on. If this is set to 5, then the 4th or 5th occurrence
-   * of the day may be used, depending on how many such days are in a
-   * particular month.
-   * @type {?number}
-   */
-  get weekNumber() {
-    return this._weekNumber;
-  }
-
-  /**
-   * An array holding the days of the week on which the recurring date should
-   * occur. Each day is an integer from 0-6, where 0 represents Sunday, 1
-   * represents Monday, and so on.
-   * @type {?number[]}
-   */
-  get daysOfWeek() {
-    return this._daysOfWeek;
-  }
-
-  /**
-   * The month in the year on which the recurring date should occur, if any.
-   * The month is represented as a number from 0 to 11.
-   * @type {?number}
-   */
-  get month() {
-    return this._month;
-  }
-
-  /**
-   * The day of the month on which the recurring date should occur, if any. The
-   * day is represented as a number from 1 to 31.
-   * @type {?number}
-   */
-  get dayOfMonth() {
-    return this._dayOfMonth;
-  }
-
-  /**
-   * Specifies what happens when the next recurrence falls on a weekend. If set
-   * to 'no-change', then the date is unaffected. If set to 'previous-weekday'
-   * or 'next-weekday', then the previous or next weekday is used instead. If
-   * set to 'nearest-weekday', then the closest weekday is used instead.
-   * @type {string}
-   */
-  get onWeekend() {
-    return this._onWeekend;
-  }
-
-  /**
-   * Indicates the date after which the repetition should stop, if ever.
-   * @type {?Date}
-   */
-  get endDate() {
-    return this._endDate;
-  }
-
-  /**
-   * Indicates the maximum number of repetitions before the recurrence should
-   * stop, if ever.
-   * @type {?number}
-   */
-  get maxCount() {
-    return this._maxCount;
-  }
 
   /**
    * Get the next occurrence of the recurring date.
@@ -280,6 +181,10 @@ class RecurringDate {
   advance() {
   }
 
+  /* eslint-enable class-methods-use-this --
+   * TODO: Remove after implementing above methods.
+   */
+
   /**
    * Determine whether or not the recurrence was created with the default
    * options.
@@ -288,26 +193,16 @@ class RecurringDate {
    */
   isDefault() {
     const def = new RecurringDate(this.intervalUnit);
-    if (this.intervalLength !== def.intervalLength)
-      return false;
-    if (this.startDate?.getTime() !== def.startDate?.getTime())
-      return false;
-    if (this.allowPastOccurrence !== def.allowPastOccurrence)
-      return false;
-    if (this.weekNumber !== def.weekNumber)
-      return false;
-    if (!_.isEqual(this.daysOfWeek, def.daysOfWeek))
-      return false;
-    if (this.month !== def.month)
-      return false;
-    if (this.dayOfMonth !== def.dayOfMonth)
-      return false;
-    if (this.onWeekend !== def.onWeekend)
-      return false;
-    if (this.endDate?.getTime() !== def.endDate?.getTime())
-      return false;
-    if (this.maxCount !== def.maxCount)
-      return false;
+    if (this.intervalLength !== def.intervalLength) return false;
+    if (this.startDate?.getTime() !== def.startDate?.getTime()) return false;
+    if (this.allowPastOccurrence !== def.allowPastOccurrence) return false;
+    if (this.weekNumber !== def.weekNumber) return false;
+    if (!_.isEqual(this.daysOfWeek, def.daysOfWeek)) return false;
+    if (this.month !== def.month) return false;
+    if (this.dayOfMonth !== def.dayOfMonth) return false;
+    if (this.onWeekend !== def.onWeekend) return false;
+    if (this.endDate?.getTime() !== def.endDate?.getTime()) return false;
+    if (this.maxCount !== def.maxCount) return false;
     return true;
   }
 
@@ -331,9 +226,8 @@ class RecurringDate {
           if (_.uniq(this.daysOfWeek).length === 7) {
             strValue += 'all days';
           } else {
-            this.daysOfWeek.forEach((day, index, arr) => {
-              if (index > 0)
-                strValue += ', ';
+            this.daysOfWeek.forEach((day, index) => {
+              if (index > 0) strValue += ', ';
               strValue += WEEKDAYS[day];
             });
           }
@@ -346,10 +240,8 @@ class RecurringDate {
           strValue += ` on the ${ordinal(this.dayOfMonth)}`;
         } else if (this.weekNumber && this.daysOfWeek?.length === 1) {
           let weekStr;
-          if (this.weekNumber < 5)
-            weekStr = ordinal(this.weekNumber);
-          else
-            weekStr = 'last';
+          if (this.weekNumber < 5) weekStr = ordinal(this.weekNumber);
+          else weekStr = 'last';
           const dayStr = WEEKDAYS[this.daysOfWeek[0]];
           strValue += ` on the ${weekStr} ${dayStr}`;
         }
@@ -362,6 +254,8 @@ class RecurringDate {
           const dayStr = ordinal(this.dayOfMonth);
           strValue += ` on ${monthStr} ${dayStr}`;
         }
+        break;
+      default:
         break;
     }
 
@@ -386,10 +280,8 @@ class RecurringDate {
       const dateStr = formatDate(this.endDate, dateFormatStr);
       strValue += `, until ${dateStr}`;
     } else if (this.maxCount) {
-      if (this.maxCount === 1)
-        strValue += ', 1 time';
-      else
-        strValue += `, ${this.maxCount} times`;
+      if (this.maxCount === 1) strValue += ', 1 time';
+      else strValue += `, ${this.maxCount} times`;
     }
 
     if (this.allowPastOccurrence) {
@@ -408,11 +300,13 @@ class RecurringDate {
         case 'nearest-weekday':
           strValue += 'nearest weekday';
           break;
+        default:
+          break;
       }
     }
 
     return strValue;
   }
-};
+}
 
 export default RecurringDate;
