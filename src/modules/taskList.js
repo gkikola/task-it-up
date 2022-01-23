@@ -217,9 +217,9 @@ class TaskList {
   }
 
   /**
-   * Returns a new Iterator object that contains a
-   * [taskWrapper]{@link module:taskList~TaskList~taskWrapper} for each task in
-   * the list matching the given options.
+   * Returns an array of
+   * [taskWrapper]{@link module:taskList~TaskList~taskWrapper} objects filtered
+   * and sorted according to the given options.
    * @param {Object} [options={}] An object holding options to control which
    *   tasks to include in the Iterator.
    * @param {module:projectList~ProjectList} [options.projectList] The project
@@ -242,9 +242,10 @@ class TaskList {
    *   determines the primary field on which to sort the tasks, the second
    *   element determines the field used to break ties, the third element
    *   determines the field used to break further ties, and so on.
-   * @yields {module:taskList~TaskList~taskWrapper} The next task in the list.
+   * @returns {module:taskList~TaskList~taskWrapper[]} The array of
+   *   [taskWrapper]{@link module:taskList~TaskList~taskWrapper} objects.
    */
-  *entries(options = {}) {
+  entries(options = {}) {
     const sortBy = options.sortBy || [];
 
     // Which index to use: default | due-date | project | priority
@@ -404,8 +405,7 @@ class TaskList {
       return 0;
     });
 
-    for (const entry of output)
-      yield entry;
+    return output;
   }
 }
 
