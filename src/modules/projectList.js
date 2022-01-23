@@ -7,6 +7,36 @@ import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
 /**
+ * Object holding private members for the
+ * [ProjectList]{@link module:projectList~ProjectList} class.
+ * @typedef {Object} module:projectList~ProjectList~privates
+ * @property {module:projectList~ProjectList~projectWrapper[]} projects An
+ *   array of projects. Each element in the array is a wrapper that holds the
+ *   project along with its unique identifier.
+ */
+
+/**
+ * Holds private data for the
+ * [ProjectList]{@link module:projectList~ProjectList} class.
+ * @type {WeakMap}
+ * @see module:projectList~ProjectList~privates
+ */
+const privateMembers = new WeakMap();
+
+/**
+ * Get a project's index in the project list.
+ * @param {module:projectList~ProjectList} instance The class instance on which
+ *   to apply the function.
+ * @param {string} id The identifier for the project to look up.
+ * @returns {number} The index of the project, or -1 if not found.
+ */
+function findIndex(instance, id) {
+  return privateMembers.get(instance).projects.findIndex((entry) => (
+    entry.id === id
+  ));
+}
+
+/**
  * Holds a list of projects.
  */
 class ProjectList {
@@ -21,12 +51,8 @@ class ProjectList {
    * Create a project list.
    */
   constructor() {
-    /**
-     * An array of projects. Each element in the array is a wrapper that holds
-     * the project along with its unique identifier.
-     * @type {module:projectList~ProjectList~projectWrapper[]}
-     */
-    this._projects = [];
+    const privates = { projects: [] };
+    privateMembers.set(this, privates);
   }
 
   /**
@@ -37,19 +63,24 @@ class ProjectList {
    * @returns {string} The identifier of the newly-added project.
    */
   addProject(project) {
+    const privates = privateMembers.get(this);
+
     // Generate UUID (loop in case of collision)
     let id;
     do {
       id = uuid();
-    } while (this._projects.find(proj => proj.id === id));
+    } while (this.hasProject(id));
 
     const value = { id, project: _.cloneDeep(project) };
 
     // Maintain sort order on insertion
-    const index = _.sortedIndexBy(this._projects, value,
-      elem => elem.project.name.toLowerCase());
+    const index = _.sortedIndexBy(
+      privates.projects,
+      value,
+      (elem) => elem.project.name.toLowerCase(),
+    );
 
-    this._projects.splice(index, 0, value);
+    privates.projects.splice(index, 0, value);
     return id;
   }
 
@@ -64,11 +95,10 @@ class ProjectList {
    *   it could not be found.
    */
   getProject(id) {
-    const index = this._findIndex(id);
-    if (index < 0)
-      return undefined;
+    const index = findIndex(this, id);
+    if (index < 0) return undefined;
 
-    return _.cloneDeep(this._projects[index].project);
+    return _.cloneDeep(privateMembers.get(this).projects[index].project);
   }
 
   /**
@@ -80,19 +110,22 @@ class ProjectList {
    *   or false if the given identifier is invalid.
    */
   updateProject(id, project) {
-    const index = this._findIndex(id);
-    if (index < 0)
-      return false;
+    const index = findIndex(this, id);
+    if (index < 0) return false;
 
-    const wrapper = this._projects[index];
+    const privates = privateMembers.get(this);
+    const wrapper = privates.projects[index];
     const needSort = project.name !== wrapper.project.name;
     wrapper.project = _.cloneDeep(project);
 
     if (needSort) {
-      this._projects.splice(index, 1);
-      const insertAt = _.sortedIndexBy(this._projects, wrapper,
-        elem => elem.project.name.toLowerCase());
-      this._projects.splice(insertAt, 0, wrapper);
+      privates.projects.splice(index, 1);
+      const insertAt = _.sortedIndexBy(
+        privates.projects,
+        wrapper,
+        (elem) => elem.project.name.toLowerCase(),
+      );
+      privates.projects.splice(insertAt, 0, wrapper);
     }
     return true;
   }
@@ -104,23 +137,21 @@ class ProjectList {
    *   or false if an invalid identifier was given.
    */
   removeProject(id) {
-    const index = this._findIndex(id);
-    if (index < 0)
-      return false;
+    const index = findIndex(this, id);
+    if (index < 0) return false;
 
-    this._projects.splice(index, 1);
+    privateMembers.get(this).projects.splice(index, 1);
     return true;
   }
 
   /**
-   * Iterate over the project list. Each iteration yields a wrapper containing
-   * the identifier of the project along with the project itself.
-   * @yields {module:projectList~ProjectList~projectWrapper} The next project
-   *   in the list.
+   * Determines whether a project with the given identifier exists within the
+   * project list.
+   * @param {string} id The unique identifier of the project to look for.
+   * @returns {boolean} True if the project exists, and false otherwise.
    */
-  *[Symbol.iterator]() {
-    for (const entry of this._projects)
-      yield _.cloneDeep(entry);
+  hasProject(id) {
+    return findIndex(this, id) >= 0;
   }
 
   /**
@@ -133,19 +164,10 @@ class ProjectList {
    *   argument.
    */
   forEach(callback) {
-    for (let index = 0; index < this._projects.length; index++) {
-      const copy = _.cloneDeep(this._projects[index]);
+    privateMembers.get(this).projects.forEach((project, index) => {
+      const copy = _.cloneDeep(project);
       callback(copy, index);
-    }
-  }
-
-  /**
-   * Get a project's index in the project list.
-   * @param {string} id The identifier for the project to look up.
-   * @returns {number} The index of the project, or -1 if not found.
-   */
-  _findIndex(id) {
-    return this._projects.findIndex(entry => entry.id === id);
+    });
   }
 }
 
