@@ -398,6 +398,9 @@ function handleTaskUpdate(instance, type, id, task) {
       privates.tasks.deleteTask(id);
       updateMainPanel(instance, { resetScroll: false });
       break;
+    case 'go-to-project':
+      privates.filterMenu.selectFilter('projects', task.project || 'none');
+      break;
     default:
       break;
   }

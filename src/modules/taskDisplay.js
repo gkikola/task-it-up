@@ -16,6 +16,15 @@ import {
 const CHECKED_ICON = 'check_circle_outline';
 const UNCHECKED_ICON = 'radio_button_unchecked';
 
+const STANDARD_MENU_ITEMS = [
+  { label: 'Edit Task', id: 'edit', iconType: 'edit' },
+  { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
+  { label: 'Delete Task', id: 'delete', iconType: 'delete' },
+];
+const PROJECT_MENU_ITEMS = [
+  { label: 'Go To Project', id: 'go-to-project', iconType: 'assignment' },
+];
+
 /**
  * Object holding private members for the
  * [TaskDisplay]{@link module:taskDisplay~TaskDisplay} class.
@@ -243,12 +252,9 @@ class TaskDisplay {
    * Callback function that is invoked when the user chooses to perform an
    * action on a task.
    * @callback module:taskDisplay~TaskDisplay~taskCallback
-   * @param {string} type The type of action that is being performed. If the
-   *   user is marking a task as completed or incomplete, this will be set to
-   *   'mark-complete' or 'mark-incomplete', respectively. If the user is
-   *   editing the task, this will be 'edit'. If the user is cloning the task,
-   *   this will be 'clone'. If the user is deleting the task, this will be
-   *   'delete'.
+   * @param {string} type The type of action that is being performed:
+   *   'mark-complete', 'mark-incomplete', 'edit', 'clone', 'delete', or
+   *   'go-to-project'.
    * @param {string} id The identifier for the task on which the action is
    *   being performed.
    * @param {module:task~Task} task The task on which the action is being
@@ -390,6 +396,14 @@ class TaskDisplay {
       message.classList.add('task-list-empty');
       message.textContent = 'No Tasks Found';
       privates.container.appendChild(message);
+    }
+
+    // Set menu items for the 'more' button
+    if (options.project) {
+      privates.taskMenu.setMenuItems(STANDARD_MENU_ITEMS);
+    } else {
+      const menuItems = [...PROJECT_MENU_ITEMS, ...STANDARD_MENU_ITEMS];
+      privates.taskMenu.setMenuItems(menuItems);
     }
   }
 }
