@@ -570,15 +570,15 @@ input[type="radio"], input[type="checkbox"] {
   display: flex;
   align-items: flex-start;
   padding: 12px 8px;
-  border-radius: 8px;
-}
-
-.task-list-item:hover {
-  background-color: #f0f0f0;
 }
 
 .task-list-item + .task-list-item {
   border-top: 1px solid #f0f0f0;
+}
+
+.task-list-item:hover {
+  background-color: #f0f0f0;
+  border-radius: 8px;
 }
 
 .task-list-item-checkbox {
@@ -598,6 +598,7 @@ input[type="radio"], input[type="checkbox"] {
   font-size: 14px;
   margin: 6px 0;
   color: #505050;
+  white-space: pre-wrap;
 }
 
 .task-list-item-details {
