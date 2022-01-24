@@ -390,6 +390,10 @@ function handleTaskUpdate(instance, type, id, task) {
     case 'edit':
       showAddTaskModal(instance, { taskId: id });
       break;
+    case 'clone':
+      privates.tasks.addTask(taskCopy);
+      updateMainPanel(instance, { resetScroll: false });
+      break;
     case 'delete':
       privates.tasks.deleteTask(id);
       updateMainPanel(instance, { resetScroll: false });

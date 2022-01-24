@@ -198,7 +198,7 @@ function addTask(instance, list, taskId, task) {
   buttonContainer.appendChild(moreButton);
   moreButton.addEventListener('click', (e) => {
     privates.taskMenu.open((id) => {
-      if (privates.taskCallback && (id === 'edit' || id === 'delete')) {
+      if (privates.taskCallback) {
         privates.taskCallback(id, taskId, task);
       }
     }, { referenceElement: e.target });
@@ -246,8 +246,9 @@ class TaskDisplay {
    * @param {string} type The type of action that is being performed. If the
    *   user is marking a task as completed or incomplete, this will be set to
    *   'mark-complete' or 'mark-incomplete', respectively. If the user is
-   *   editing the task, this will be 'edit'. If the user is deleting the task,
-   *   this will be 'delete'.
+   *   editing the task, this will be 'edit'. If the user is cloning the task,
+   *   this will be 'clone'. If the user is deleting the task, this will be
+   *   'delete'.
    * @param {string} id The identifier for the task on which the action is
    *   being performed.
    * @param {module:task~Task} task The task on which the action is being
@@ -323,6 +324,7 @@ class TaskDisplay {
 
     privates.taskMenu = new PopupMenu([
       { label: 'Edit Task', id: 'edit', iconType: 'edit' },
+      { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
       { label: 'Delete Task', id: 'delete', iconType: 'delete' },
     ], { closeIfScrolled: parent });
   }
