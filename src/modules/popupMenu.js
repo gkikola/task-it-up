@@ -329,6 +329,17 @@ class PopupMenu {
       }
     }
   }
+
+  /**
+   * Set the menu items that will be shown the next time the popup menu is
+   * opened. If the popup menu is currently open, the displayed items will not
+   * be altered until the menu is reopened.
+   * @param {module:popupMenu~PopupMenu~menuItem[]} menuItems The array of menu
+   *   items.
+   */
+  setMenuItems(menuItems) {
+    privateMembers.get(this).menuItems = menuItems;
+  }
 }
 
 export default PopupMenu;
