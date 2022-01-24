@@ -152,7 +152,11 @@ function hideBackground(instance) {
 
   if (toHide) {
     toHide.setAttribute('aria-hidden', 'true');
+
+    const { oldTabIndex } = privates.modals[privates.modals.length - 1];
     toHide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
+      const tabIndex = elem.hasAttribute('tabindex') ? elem.tabIndex : null;
+      oldTabIndex.push({ element: elem, tabIndex });
       elem.setAttribute('tabindex', '-1');
     });
   }
@@ -166,8 +170,10 @@ function hideBackground(instance) {
  * closed, then the overlay will be hidden.
  * @param {module:modalStack~ModalStack} instance The class instance on which
  *   to apply the function.
+ * @param {module:modalStack~ModalStack~elemTabIndex[]} oldTabIndex An array of
+ *   objects specifying elements whose tabindex attributes need to be restored.
  */
-function restoreBackground(instance) {
+function restoreBackground(instance, oldTabIndex) {
   const privates = privateMembers.get(instance);
   let toRestore = null;
 
@@ -180,8 +186,10 @@ function restoreBackground(instance) {
 
   if (toRestore) {
     toRestore.removeAttribute('aria-hidden');
-    toRestore.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
-      elem.removeAttribute('tabindex');
+    oldTabIndex.forEach((entry) => {
+      const { element, tabIndex } = entry;
+      if (tabIndex !== null) element.tabIndex = tabIndex;
+      else element.removeAttribute('tabindex');
     });
   }
 
@@ -192,6 +200,15 @@ function restoreBackground(instance) {
  * Manages and displays a stack of modal dialog windows.
  */
 class ModalStack {
+  /**
+   * Holds information about an element's tab index, used for changing and
+   * restoring tab order when modals are opened or closed.
+   * @typedef {Object} module:modalStack~ModalStack~elemTabIndex
+   * @property {HTMLElement} element An element in the DOM.
+   * @property {number} [tabIndex] The tab index of the element, or null if it
+   *   is not set.
+   */
+
   /**
    * Holds information about a modal dialog in the stack.
    * @typedef {Object} module:modalStack~ModalStack~modalInfo
@@ -204,6 +221,9 @@ class ModalStack {
    *   the modal dialog.
    * @property {HTMLElement} [oldActive] The element that had keyboard focus
    *   before the modal was opened, if any.
+   * @property {module:modalStack~ModalStack~elemTabIndex[]} oldTabIndex An
+   *   array of objects specifying elements whose tabindex attributes need to
+   *   be restored after the modal is closed.
    */
 
   /**
@@ -297,6 +317,7 @@ class ModalStack {
       container,
       content,
       oldActive,
+      oldTabIndex: [],
     };
 
     privates.modals.push(modalInfo);
@@ -331,7 +352,7 @@ class ModalStack {
     const modalInfo = privates.modals.pop();
     if (modalInfo) {
       privates.parent.removeChild(modalInfo.wrapper);
-      restoreBackground(this);
+      restoreBackground(this, modalInfo.oldTabIndex);
       if (modalInfo.oldActive) modalInfo.oldActive.focus();
     }
   }
