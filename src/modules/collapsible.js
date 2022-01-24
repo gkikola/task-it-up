@@ -3,6 +3,14 @@
  * @module collapsible
  */
 
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'input',
+  'select',
+  'textarea',
+  'button',
+].join(', ');
+
 /**
  * Object holding private members for the
  * [Collapsible]{@link module:collapsible~Collapsible} class.
@@ -91,6 +99,9 @@ class Collapsible {
     privates.collapsed = false;
     privates.container.classList.remove('collapsed');
     privates.container.removeAttribute('aria-hidden');
+    privates.container.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
+      elem.removeAttribute('tabindex');
+    });
     this.update();
   }
 
@@ -102,6 +113,9 @@ class Collapsible {
     privates.collapsed = true;
     privates.container.classList.add('collapsed');
     privates.container.setAttribute('aria-hidden', 'true');
+    privates.container.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
+      elem.setAttribute('tabindex', '-1');
+    });
     this.update();
   }
 
