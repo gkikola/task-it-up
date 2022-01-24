@@ -322,11 +322,14 @@ class TaskDisplay {
     };
     privateMembers.set(this, privates);
 
-    privates.taskMenu = new PopupMenu([
-      { label: 'Edit Task', id: 'edit', iconType: 'edit' },
-      { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
-      { label: 'Delete Task', id: 'delete', iconType: 'delete' },
-    ], { closeIfScrolled: parent });
+    privates.taskMenu = new PopupMenu({
+      menuItems: [
+        { label: 'Edit Task', id: 'edit', iconType: 'edit' },
+        { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
+        { label: 'Delete Task', id: 'delete', iconType: 'delete' },
+      ],
+      closeIfScrolled: parent,
+    });
   }
 
   /**

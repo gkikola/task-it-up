@@ -201,6 +201,8 @@ class PopupMenu {
    * @typedef {Object} module:popupMenu~PopupMenu~options
    * @property {HTMLElement} [parent=document.body] The parent element in the
    *   DOM under which the popup should be inserted.
+   * @property {module:popupMenu~PopupMenu~menuItem[]} [menuItems] An array of
+   *   objects specifying the items in the menu.
    * @property {HTMLElement} [closeIfScrolled] If provided, the popup menu will
    *   be closed when the given element or one of its ancestors is scrolled.
    */
@@ -240,15 +242,13 @@ class PopupMenu {
 
   /**
    * Create a popup menu.
-   * @param {module:popupMenu~PopupMenu~menuItem[]} menuItems An array of
-   *   objects specifying the items in the menu.
    * @param {module:popupMenu~PopupMenu~options} [options={}] An object holding
    *   additional options for the popup menu.
    */
-  constructor(menuItems, options = {}) {
+  constructor(options = {}) {
     const privates = {
       parent: options.parent || document.body,
-      menuItems,
+      menuItems: options.menuItems || [],
       activeItem: null,
       container: null,
       callback: null,
@@ -270,6 +270,7 @@ class PopupMenu {
   open(callback, position) {
     const privates = privateMembers.get(this);
     if (privates.container) this.close();
+    if (privates.menuItems.length === 0) return;
 
     const menu = document.createElement('div');
     menu.classList.add('popup-menu');
