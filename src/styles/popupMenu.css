@@ -18,11 +18,11 @@
 }
 
 .popup-menu-item + .popup-menu-item {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--item-separator-color);
 }
 
 .popup-menu-item.active {
-  background-color: #f0f0f0;
+  background-color: var(--item-selection-color);
 }
 
 .popup-menu-item-icon {

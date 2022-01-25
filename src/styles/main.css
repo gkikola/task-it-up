@@ -71,14 +71,21 @@ a:hover {
 #main-panel {
   flex: 1 1 auto;
   height: 100%;
-  padding: 24px;
   overflow: auto;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 #main-panel-header {
+  width: 100%;
+  max-width: var(--main-content-width);
+  margin: auto;
   display: flex;
   justify-content: space-between;
-  padding: 0 8px;
+  padding: 24px 12px;
 }
 
 #main-panel-heading-container {
@@ -97,11 +104,6 @@ a:hover {
 #main-panel-subheading {
   margin-top: 8px;
   font-size: 16px;
-}
-
-#main-panel-content {
-  max-width: 800px;
-  margin: auto;
 }
 
 #footer {

@@ -7,4 +7,7 @@
   --modal-accent-color: #d4d4d4;
   --input-disabled-color: #707070;
   --input-disabled-bg-color: #e2e2e2;
+  --item-separator-color: #f0f0f0;
+  --item-selection-color: #f0f0f0;
+  --main-content-width: 800px;
 }

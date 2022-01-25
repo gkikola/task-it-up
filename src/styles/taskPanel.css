@@ -1,6 +1,15 @@
 .task-panel {
   width: 100%;
-  margin-top: 36px;
+  border-top: 1px solid var(--item-separator-color);
+  flex: 1;
+  overflow: auto;
+}
+
+.task-panel-content {
+  width: 100%;
+  max-width: var(--main-content-width);
+  padding: 12px;
+  margin: auto;
 }
 
 .task-list-heading {
@@ -19,11 +28,11 @@
 }
 
 .task-list-item + .task-list-item {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--item-separator-color);
 }
 
 .task-list-item:hover {
-  background-color: #f0f0f0;
+  background-color: var(--item-selection-color);
   border-radius: 8px;
 }
 

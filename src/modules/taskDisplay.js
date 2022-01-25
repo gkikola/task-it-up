@@ -314,9 +314,13 @@ class TaskDisplay {
    *   holding additional options for the display panel.
    */
   constructor(parent, taskList, projectList, options = {}) {
+    const panel = document.createElement('div');
+    panel.classList.add('task-panel');
+    parent.appendChild(panel);
+
     const container = document.createElement('div');
-    container.classList.add('task-panel');
-    parent.appendChild(container);
+    container.classList.add('task-panel-content');
+    panel.appendChild(container);
 
     const privates = {
       container,
@@ -334,7 +338,7 @@ class TaskDisplay {
         { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
         { label: 'Delete Task', id: 'delete', iconType: 'delete' },
       ],
-      closeIfScrolled: parent,
+      closeIfScrolled: panel,
     });
   }
 

@@ -749,9 +749,6 @@ function createMainPanel(instance, parent) {
   privates.mainPanel = document.createElement('div');
   privates.mainPanel.id = 'main-panel';
 
-  const content = document.createElement('main');
-  content.id = 'main-panel-content';
-
   const header = document.createElement('div');
   header.id = 'main-panel-header';
   const headingContainer = document.createElement('div');
@@ -773,7 +770,7 @@ function createMainPanel(instance, parent) {
   iconContainer.appendChild(createIconButton('more_horiz'));
   header.appendChild(iconContainer);
 
-  content.appendChild(header);
+  privates.mainPanel.appendChild(header);
 
   const taskDisplayOptions = {
     taskCallback: (type, id, task) => {
@@ -782,13 +779,12 @@ function createMainPanel(instance, parent) {
     dateFormat: privates.settings.dateFormat,
   };
   privates.taskDisplay = new TaskDisplay(
-    content,
+    privates.mainPanel,
     privates.tasks,
     privates.projects,
     taskDisplayOptions,
   );
 
-  privates.mainPanel.appendChild(content);
   parent.appendChild(privates.mainPanel);
 }
 
