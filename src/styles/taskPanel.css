@@ -1,0 +1,59 @@
+.task-panel {
+  width: 100%;
+  margin-top: 36px;
+}
+
+.task-list-heading {
+  font-family: var(--label-font);
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 28px;
+  padding: 0 8px;
+}
+
+.task-list-item {
+  font-family: var(--label-font);
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 8px;
+}
+
+.task-list-item + .task-list-item {
+  border-top: 1px solid #f0f0f0;
+}
+
+.task-list-item:hover {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+.task-list-item-checkbox {
+  margin: 2px 12px 4px 0;
+}
+
+.task-list-item-info-container {
+  flex: 1;
+}
+
+.task-list-item-name {
+  font-size: 18px;
+  margin: 6px 0;
+}
+
+.task-list-item-description {
+  font-size: 14px;
+  margin: 6px 0;
+  color: #505050;
+  white-space: pre-wrap;
+}
+
+.task-list-item-details {
+  font-size: 14px;
+}
+
+.task-list-empty {
+  font-family: var(--label-font);
+  font-size: 18px;
+  color: #505050;
+  padding: 0 8px;
+}

@@ -1,0 +1,66 @@
+.filter-menu {
+  margin: 24px;
+}
+
+.filter-group {
+  margin-bottom: 12px;
+}
+
+.filter-group-heading {
+  display: flex;
+  justify-content: space-between;
+  margin-right: 2px;
+}
+
+.filter-group-heading > .icon-container > .icon {
+  margin-left: 4px;
+}
+
+.filter-group-toggle {
+  flex: 1;
+  text-align: left;
+  padding: 8px;
+}
+
+.filter-group-expand-icon {
+  font-size: 24px;
+  vertical-align: middle;
+}
+
+.filter-group-label {
+  font-family: var(--label-font);
+  font-size: 16px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.filter-list {
+  padding: 2px;
+}
+
+.filter-item {
+  margin: 4px 0 6px 32px;
+}
+
+.filter-item-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  padding: 8px;
+  border-radius: 4px;
+  outline-offset: 0;
+}
+
+.filter-item-selector:hover, .filter-item.selected .filter-item-selector {
+  background-color: #dadada;
+}
+
+.filter-item-label {
+  font-family: var(--label-font);
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,140 @@
+input:focus, select:focus, textarea:focus, button:focus {
+  outline: 1px solid blue;
+}
+
+/* Use :focus-visible if browser supports it */
+:is(input, select, textarea, button):focus:not(:focus-visible) {
+  outline: none;
+}
+
+input:invalid, select:invalid, textarea:invalid {
+  outline: 1px solid red;
+}
+
+button {
+  background-color: transparent;
+  border-style: none;
+  cursor: pointer;
+}
+
+input[type="radio"], input[type="checkbox"] {
+  margin: 0 6px;
+}
+
+.toggle-button {
+  padding: 6px;
+
+  font-family: var(--label-font);
+  font-size: 14px;
+
+  color: black;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 6px;
+
+  transition: color 100ms, background-color 100ms;
+}
+
+.toggle-button.active {
+  color: white;
+  background-color: #2323d3;
+}
+
+.toggle-button.active:disabled {
+  color: var(--input-disabled-color);
+  background-color: #c8c8f4;
+}
+
+.form-input-container {
+  margin: 12px 0 24px;
+}
+
+.form-input-date-container {
+  display: flex;
+  width: 100%;
+}
+
+.form-input-date-container input {
+  flex: auto;
+  margin-right: 6px;
+}
+
+.form-input-date-container-inline input {
+  width: 150px;
+  margin-right: 6px;
+}
+
+.form-input-label {
+  display: block;
+  font-family: var(--label-font);
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.form-input-label-inline {
+  font-family: var(--label-font);
+  font-size: 14px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+}
+
+.form-input,
+.form-input-inline,
+.form-select,
+.form-select-inline,
+.form-textarea,
+.form-button {
+  padding: 8px;
+  border: 1px solid black;
+  border-radius: 8px;
+
+  font-family: var(--label-font);
+  font-size: 14px;
+}
+
+.form-select {
+  text-overflow: ellipsis;
+}
+
+.form-textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.form-button {
+  background-color: white;
+}
+
+.form-input-item-container {
+  padding: 8px 0;
+}
+
+.form-input-item-label {
+  padding-left: 8px;
+  font-family: var(--label-font);
+  font-size: 14px;
+}
+
+.form-input-inline.form-input-count {
+  width: 90px;
+}
+
+.form-weekday-button {
+  margin: 8px 6px 8px 0;
+  border-radius: 10px;
+}
+
+.form-input:disabled,
+.form-input-inline:disabled,
+.form-select:disabled,
+.form-select-inline:disabled,
+.form-textarea:disabled,
+.form-button:disabled,
+.toggle-button:disabled {
+  color: var(--input-disabled-color);
+  background-color: var(--input-disabled-bg-color);
+  border-color: var(--input-disabled-bg-color);
+}

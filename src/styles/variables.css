@@ -1,0 +1,10 @@
+:root {
+  --label-font: Verdana, Geneva, Tahoma, sans-serif;
+  --content-font: 'Times New Roman', Times, serif;
+  --header-height: 56px;
+  --footer-height: 44px;
+  --side-panel-bg-color: #f4f4f4;
+  --modal-accent-color: #d4d4d4;
+  --input-disabled-color: #707070;
+  --input-disabled-bg-color: #e2e2e2;
+}

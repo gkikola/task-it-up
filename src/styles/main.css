@@ -1,23 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Carter+One&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Icons');
 
+@import './variables.css';
+@import './datePicker.css';
+@import './filterMenu.css';
+@import './form.css';
+@import './modal.css';
+@import './popupMenu.css';
+@import './taskPanel.css';
+
 /* Use alternative box model */
 html {
   box-sizing: border-box;
 }
 *, *::before, *::after {
   box-sizing: inherit;
-}
-
-:root {
-  --label-font: Verdana, Geneva, Tahoma, sans-serif;
-  --content-font: 'Times New Roman', Times, serif;
-  --header-height: 56px;
-  --footer-height: 44px;
-  --side-panel-bg-color: #f4f4f4;
-  --modal-accent-color: #d4d4d4;
-  --input-disabled-color: #707070;
-  --input-disabled-bg-color: #e2e2e2;
 }
 
 body {
@@ -30,29 +27,6 @@ a, a:visited {
 
 a:hover {
   text-decoration: underline;
-}
-
-input:focus, select:focus, textarea:focus, button:focus {
-  outline: 1px solid blue;
-}
-
-/* Use :focus-visible if browser supports it */
-:is(input, select, textarea, button):focus:not(:focus-visible) {
-  outline: none;
-}
-
-input:invalid, select:invalid, textarea:invalid {
-  outline: 1px solid red;
-}
-
-button {
-  background-color: transparent;
-  border-style: none;
-  cursor: pointer;
-}
-
-input[type="radio"], input[type="checkbox"] {
-  margin: 0 6px;
 }
 
 #app {
@@ -75,6 +49,10 @@ input[type="radio"], input[type="checkbox"] {
   padding: 12px;
 }
 
+#header .icon {
+  font-size: 24px;
+}
+
 #middle-container {
   flex: 1 1 auto;
   display: flex;
@@ -95,6 +73,30 @@ input[type="radio"], input[type="checkbox"] {
   height: 100%;
   padding: 24px;
   overflow: auto;
+}
+
+#main-panel-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+
+#main-panel-heading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: var(--label-font);
+}
+
+#main-panel-heading {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#main-panel-subheading {
+  margin-top: 8px;
+  font-size: 16px;
 }
 
 #main-panel-content {
@@ -124,226 +126,6 @@ input[type="radio"], input[type="checkbox"] {
 
 .closed {
   display: none;
-}
-
-.toggle-button {
-  padding: 6px;
-
-  font-family: var(--label-font);
-  font-size: 14px;
-
-  color: black;
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 6px;
-
-  transition: color 100ms, background-color 100ms;
-}
-
-.toggle-button.active {
-  color: white;
-  background-color: #2323d3;
-}
-
-.toggle-button.active:disabled {
-  color: var(--input-disabled-color);
-  background-color: #c8c8f4;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 100;
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-.modal-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 200;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal {
-  width: 400px;
-  max-width: 100vw;
-  max-height: min(600px, 100vh);
-  overflow: auto;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 8px;
-}
-
-.modal-title-bar {
-  background-color: var(--modal-accent-color);
-  width: 100%;
-  padding: 12px;
-  border-bottom: 1px solid black;
-  flex: none;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-title-bar .icon {
-  font-size: 24px;
-}
-
-.modal-title {
-  font-family: var(--label-font);
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.modal-content {
-  width: 100%;
-  overflow: auto;
-  padding: 12px;
-}
-
-.modal-button-container {
-  display: flex;
-  justify-content: flex-end;
-
-  width: 100%;
-  padding: 12px;
-
-  border-top: 1px solid black;
-  background-color: var(--modal-accent-color);
-}
-
-.modal-button-container > * + * {
-  margin-left: 12px;
-}
-
-.modal-button {
-  width: 100px;
-  padding: 6px;
-
-  font-family: var(--label-font);
-  font-size: 16px;
-
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 6px;
-}
-
-.modal-button:focus {
-  font-weight: bold;
-}
-
-.modal-button.modal-okay {
-  color: white;
-  background-color: #2323d3;
-}
-
-.form-input-container {
-  margin: 12px 0 24px;
-}
-
-.form-input-date-container {
-  display: flex;
-  width: 100%;
-}
-
-.form-input-date-container input {
-  flex: auto;
-  margin-right: 6px;
-}
-
-.form-input-date-container-inline input {
-  width: 150px;
-  margin-right: 6px;
-}
-
-.form-input-label {
-  display: block;
-  font-family: var(--label-font);
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.form-input-label-inline {
-  font-family: var(--label-font);
-  font-size: 14px;
-}
-
-.form-input, .form-select, .form-textarea {
-  width: 100%;
-}
-
-.form-input,
-.form-input-inline,
-.form-select,
-.form-select-inline,
-.form-textarea,
-.form-button {
-  padding: 8px;
-  border: 1px solid black;
-  border-radius: 8px;
-
-  font-family: var(--label-font);
-  font-size: 14px;
-}
-
-.form-select {
-  text-overflow: ellipsis;
-}
-
-.form-textarea {
-  width: 100%;
-  resize: vertical;
-}
-
-.form-button {
-  background-color: white;
-}
-
-.form-input-item-container {
-  padding: 8px 0;
-}
-
-.form-input-item-label {
-  padding-left: 8px;
-  font-family: var(--label-font);
-  font-size: 14px;
-}
-
-.form-input-inline.form-input-count {
-  width: 90px;
-}
-
-.form-weekday-button {
-  margin: 8px 6px 8px 0;
-  border-radius: 10px;
-}
-
-.form-input:disabled,
-.form-input-inline:disabled,
-.form-select:disabled,
-.form-select-inline:disabled,
-.form-textarea:disabled,
-.form-button:disabled,
-.toggle-button:disabled {
-  color: var(--input-disabled-color);
-  background-color: var(--input-disabled-bg-color);
-  border-color: var(--input-disabled-bg-color);
 }
 
 .resizer {
@@ -378,98 +160,6 @@ input[type="radio"], input[type="checkbox"] {
   transition: height 250ms ease-out;
 }
 
-.popup-menu {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border: 1px solid black;
-  background-color: white;
-  z-index: 1000;
-  max-width: 100vw;
-  max-height: 100vh;
-  overflow: auto;
-}
-
-.popup-menu-item {
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.popup-menu-item + .popup-menu-item {
-  border-top: 1px solid #f0f0f0;
-}
-
-.popup-menu-item.active {
-  background-color: #f0f0f0;
-}
-
-.popup-menu-item-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.popup-menu-item-label {
-  font-family: var(--label-font);
-  font-size: 16px;
-  flex: 1;
-  margin-left: 8px;
-}
-
-.date-picker-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.date-picker-heading select, .date-picker-heading input {
-  font-size: 16px;
-}
-
-.date-picker-grid {
-  margin: 12px 0;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-
-.date-picker-day-header, .date-picker-day {
-  width: 40px;
-  height: 40px;
-  line-height: 32px;
-  padding: 4px;
-  font-family: var(--label-font);
-  font-size: 16px;
-  text-align: center;
-
-  border-radius: 20px;
-}
-
-.date-picker-day-header {
-  font-weight: bold;
-}
-
-.date-picker-day.selected {
-  color: white;
-  background-color: rgb(35, 35, 211);
-  font-weight: bold;
-}
-
-.date-picker-day.today {
-  font-weight: bold;
-  border: 1px solid black;
-}
-
-.date-picker-day.different-month {
-  color: #707070;
-}
-
-.date-picker-day.selected.different-month {
-  color: white;
-  background-color: rgba(35, 35, 211, 0.5);
-}
-
 .title-container {
   display: flex;
   align-items: center;
@@ -482,161 +172,6 @@ input[type="radio"], input[type="checkbox"] {
 .title {
   font-family: 'Carter One', sans-serif;
   font-size: 24px;
-}
-
-#header .icon {
-  font-size: 24px;
-}
-
-.filter-menu {
-  margin: 24px;
-}
-
-.filter-group {
-  margin-bottom: 12px;
-}
-
-.filter-group-heading {
-  display: flex;
-  justify-content: space-between;
-  margin-right: 2px;
-}
-
-.filter-group-heading > .icon-container > .icon {
-  margin-left: 4px;
-}
-
-.filter-group-toggle {
-  flex: 1;
-  text-align: left;
-  padding: 8px;
-}
-
-.filter-group-expand-icon {
-  font-size: 24px;
-  vertical-align: middle;
-}
-
-.filter-group-label {
-  font-family: var(--label-font);
-  font-size: 16px;
-  font-weight: bold;
-  vertical-align: middle;
-}
-
-.filter-list {
-  padding: 2px;
-}
-
-.filter-item {
-  margin: 4px 0 6px 32px;
-}
-
-.filter-item-selector {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-
-  padding: 8px;
-  border-radius: 4px;
-  outline-offset: 0;
-}
-
-.filter-item-selector:hover, .filter-item.selected .filter-item-selector {
-  background-color: #dadada;
-}
-
-.filter-item-label {
-  font-family: var(--label-font);
-  font-size: 16px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.task-panel {
-  width: 100%;
-  margin-top: 36px;
-}
-
-.task-list-heading {
-  font-family: var(--label-font);
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: 28px;
-  padding: 0 8px;
-}
-
-.task-list-item {
-  font-family: var(--label-font);
-  display: flex;
-  align-items: flex-start;
-  padding: 12px 8px;
-}
-
-.task-list-item + .task-list-item {
-  border-top: 1px solid #f0f0f0;
-}
-
-.task-list-item:hover {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-}
-
-.task-list-item-checkbox {
-  margin: 2px 12px 4px 0;
-}
-
-.task-list-item-info-container {
-  flex: 1;
-}
-
-.task-list-item-name {
-  font-size: 18px;
-  margin: 6px 0;
-}
-
-.task-list-item-description {
-  font-size: 14px;
-  margin: 6px 0;
-  color: #505050;
-  white-space: pre-wrap;
-}
-
-.task-list-item-details {
-  font-size: 14px;
-}
-
-.task-list-empty {
-  font-family: var(--label-font);
-  font-size: 18px;
-  color: #505050;
-  padding: 0 8px;
-}
-
-#main-panel-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 8px;
-}
-
-#main-panel-heading-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  font-family: var(--label-font);
-}
-
-#main-panel-heading {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-#main-panel-subheading {
-  margin-top: 8px;
-  font-size: 16px;
 }
 
 @media (max-width: 400px) {
