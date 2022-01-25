@@ -180,13 +180,18 @@ function updateMainPanelMenu(instance) {
   const GROUP_ICON = 'category';
   const SORT_ICON = 'sort';
 
-  const { groupBy, sortBy, showCompleted } = filterOptions;
+  const { groupBy, sortBy, sortDescending, showCompleted } = filterOptions;
   const optionItems = [
     { label: 'Add Project', id: 'add-project', iconType: 'add' },
     {
       label: showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks',
       id: showCompleted ? 'hide-completed' : 'show-completed',
       iconType: 'done',
+    },
+    {
+      label: sortDescending ? 'Sort Ascending' : 'Sort Descending',
+      id: sortDescending ? 'sort-ascending' : 'sort-descending',
+      iconType: 'swap_vert',
     },
   ];
   const groupByItems = [];
@@ -499,6 +504,12 @@ function handleMainPanelMenuSelection(instance, itemId) {
       break;
     case 'hide-completed':
       filterOptions.showCompleted = false;
+      break;
+    case 'sort-ascending':
+      filterOptions.sortDescending = false;
+      break;
+    case 'sort-descending':
+      filterOptions.sortDescending = true;
       break;
     case 'group-by-default':
       filterOptions.groupBy = 'default';
