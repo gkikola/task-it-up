@@ -1,8 +1,12 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 module.exports = (env, argv) => {
   const mode = (argv.mode === 'development') ? 'development' : 'production';
+  const styleLoader = mode === 'development'
+    ? 'style-loader' : MiniCssExtractPlugin.loader;
 
   // Base configuration
   const config = {
@@ -13,6 +17,7 @@ module.exports = (env, argv) => {
         template: './src/template.ejs',
         title: 'Task It Up',
       }),
+      new MiniCssExtractPlugin(),
     ],
     output: {
       filename: 'main.js',
@@ -42,13 +47,29 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.css$/i,
-          use: ['style-loader', 'css-loader'],
+          use: [
+            styleLoader,
+            'css-loader',
+            {
+              loader: 'postcss-loader',
+              options: {
+                postcssOptions: {
+                  plugins: [
+                    ['postcss-preset-env'],
+                  ],
+                },
+              },
+            },
+          ],
         },
         {
           test: /\.(png|svg|jpg|jpeg|gif)$/i,
           type: 'asset/resource',
         },
       ],
+    },
+    optimization: {
+      minimizer: ['...', new CssMinimizerPlugin()],
     },
   };
 
