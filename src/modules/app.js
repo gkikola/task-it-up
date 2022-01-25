@@ -180,7 +180,7 @@ function updateMainPanelMenu(instance) {
   const GROUP_ICON = 'category';
   const SORT_ICON = 'sort';
 
-  const { showCompleted } = filterOptions;
+  const { groupBy, sortBy, showCompleted } = filterOptions;
   const optionItems = [
     { label: 'Add Project', id: 'add-project', iconType: 'add' },
     {
@@ -189,63 +189,76 @@ function updateMainPanelMenu(instance) {
       iconType: 'done',
     },
   ];
-  const groupByItems = [
-    {
+  const groupByItems = [];
+  const sortByItems = [];
+
+  if (groupBy !== 'default') {
+    groupByItems.push({
       label: 'Use Default Grouping',
       id: 'group-by-default',
       iconType: GROUP_ICON,
-    },
-    {
+    });
+  }
+
+  if (groupBy !== 'none') {
+    groupByItems.push({
       label: 'Do Not Group Tasks',
       id: 'group-by-none',
       iconType: GROUP_ICON,
-    },
-  ];
-  const sortByItems = [
-    {
+    });
+  }
+
+  if (sortBy !== 'create-date') {
+    sortByItems.push({
       label: 'Sort by Date Added',
       id: 'sort-by-create-date',
       iconType: SORT_ICON,
-    },
-  ];
+    });
+  }
 
-  if (group !== 'dates' || filter !== 'past-due') {
+  if ((group !== 'dates' || filter !== 'past-due') && groupBy !== 'due-date') {
     groupByItems.push({
       label: 'Group by Due Date',
       id: 'group-by-due-date',
       iconType: GROUP_ICON,
     });
-    sortByItems.push({
-      label: 'Sort by Due Date',
-      id: 'sort-by-due-date',
-      iconType: SORT_ICON,
-    });
+    if (sortBy !== 'due-date') {
+      sortByItems.push({
+        label: 'Sort by Due Date',
+        id: 'sort-by-due-date',
+        iconType: SORT_ICON,
+      });
+    }
   }
 
-  if (group !== 'projects') {
+  if (group !== 'projects' && groupBy !== 'project') {
     groupByItems.push({
       label: 'Group by Project',
       id: 'group-by-project',
       iconType: GROUP_ICON,
     });
-    sortByItems.push({
-      label: 'Sort by Project',
-      id: 'sort-by-project',
-      iconType: SORT_ICON,
-    });
+    if (sortBy !== 'project') {
+      sortByItems.push({
+        label: 'Sort by Project',
+        id: 'sort-by-project',
+        iconType: SORT_ICON,
+      });
+    }
   }
 
-  if (group !== 'priorities') {
+  if (group !== 'priorities' && groupBy !== 'priority') {
     groupByItems.push({
       label: 'Group by Priority',
       id: 'group-by-priority',
       iconType: GROUP_ICON,
     });
-    sortByItems.push({
-      label: 'Sort by Priority',
-      id: 'sort-by-priority',
-      iconType: SORT_ICON,
-    });
+    if (sortBy !== 'priority') {
+      sortByItems.push({
+        label: 'Sort by Priority',
+        id: 'sort-by-priority',
+        iconType: SORT_ICON,
+      });
+    }
   }
 
   const menuItems = [...optionItems, ...groupByItems, ...sortByItems];
