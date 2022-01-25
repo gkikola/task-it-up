@@ -15,6 +15,7 @@ import AddProjectModal from './modals/addProjectModal';
 import AddTaskModal from './modals/addTaskModal';
 import FilterMenu from './filterMenu';
 import ModalStack from './modalStack';
+import PopupMenu from './popupMenu';
 import Project from './project';
 import ProjectList from './projectList';
 import RecurringDate from './recurringDate';
@@ -54,6 +55,8 @@ const NARROW_LAYOUT_CUTOFF = 700;
  *   element for the side panel.
  * @property {HTMLElement} mainPanel Holds a reference to the main panel
  *   element in the DOM.
+ * @property {module:popupMenu~PopupMenu} mainPanelMenu The popup menu that is
+ *   shown when the user clicks the 'more' button in the main panel.
  * @property {boolean} narrowScreen Indicates whether the screen size is
  *   narrow. This should be true when the viewport width is less than or equal
  *   to NARROW_LAYOUT_CUTOFF.
@@ -164,6 +167,92 @@ function toggleSidePanel(instance) {
 }
 
 /**
+ * Update the menu items in the popup menu for the main panel based on the
+ * selected filter.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function updateMainPanelMenu(instance) {
+  const privates = privateMembers.get(instance);
+  const { group, filter } = privates.currentFilter;
+  const filterOptions = privates.settings.filters[group];
+
+  const GROUP_ICON = 'category';
+  const SORT_ICON = 'sort';
+
+  const { showCompleted } = filterOptions;
+  const optionItems = [
+    { label: 'Add Project', id: 'add-project', iconType: 'add' },
+    {
+      label: showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks',
+      id: showCompleted ? 'hide-completed' : 'show-completed',
+      iconType: 'done',
+    },
+  ];
+  const groupByItems = [
+    {
+      label: 'Use Default Grouping',
+      id: 'group-by-default',
+      iconType: GROUP_ICON,
+    },
+    {
+      label: 'Do Not Group Tasks',
+      id: 'group-by-none',
+      iconType: GROUP_ICON,
+    },
+  ];
+  const sortByItems = [
+    {
+      label: 'Sort by Date Added',
+      id: 'sort-by-create-date',
+      iconType: SORT_ICON,
+    },
+  ];
+
+  if (group !== 'dates' || filter !== 'past-due') {
+    groupByItems.push({
+      label: 'Group by Due Date',
+      id: 'group-by-due-date',
+      iconType: GROUP_ICON,
+    });
+    sortByItems.push({
+      label: 'Sort by Due Date',
+      id: 'sort-by-due-date',
+      iconType: SORT_ICON,
+    });
+  }
+
+  if (group !== 'projects') {
+    groupByItems.push({
+      label: 'Group by Project',
+      id: 'group-by-project',
+      iconType: GROUP_ICON,
+    });
+    sortByItems.push({
+      label: 'Sort by Project',
+      id: 'sort-by-project',
+      iconType: SORT_ICON,
+    });
+  }
+
+  if (group !== 'priorities') {
+    groupByItems.push({
+      label: 'Group by Priority',
+      id: 'group-by-priority',
+      iconType: GROUP_ICON,
+    });
+    sortByItems.push({
+      label: 'Sort by Priority',
+      id: 'sort-by-priority',
+      iconType: SORT_ICON,
+    });
+  }
+
+  const menuItems = [...optionItems, ...groupByItems, ...sortByItems];
+  privates.mainPanelMenu.setMenuItems(menuItems);
+}
+
+/**
  * Update the heading in the main panel.
  * @param {string} heading The new heading to display.
  * @param {string} [subheading] The new subheading to display, if any.
@@ -186,9 +275,9 @@ function updateMainHeading(heading, subheading) {
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
  * @param {Object} [options={}] An object holding options for the main panel.
- * @param {boolean} [resetScroll=true] If set to true (the default), then the
- *   panel's scroll position will be reset back to the top. Otherwise the
- *   scroll position will not be changed.
+ * @param {boolean} [options.resetScroll=true] If set to true (the default),
+ *   then the panel's scroll position will be reset back to the top. Otherwise
+ *   the scroll position will not be changed.
  */
 function updateMainPanel(instance, options = {}) {
   const privates = privateMembers.get(instance);
@@ -271,6 +360,8 @@ function updateMainPanel(instance, options = {}) {
 
   updateMainHeading(heading, subheading);
   privates.taskDisplay.update(displayOptions);
+
+  updateMainPanelMenu(instance);
 
   // Reset the scroll position
   if (options.resetScroll !== false) {
@@ -364,6 +455,70 @@ function showAddProjectModal(instance, options = {}) {
     project: projectToUpdate,
   });
   privates.modalStack.showModal(modal);
+}
+
+/**
+ * Respond to a selection in the main panel menu.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ * @param {string} itemId The identifier for the menu item that was selected.
+ */
+function handleMainPanelMenuSelection(instance, itemId) {
+  const privates = privateMembers.get(instance);
+  const { group, filter } = privates.currentFilter;
+  const filterOptions = privates.settings.filters[group];
+
+  let needUpdate = true;
+  switch (itemId) {
+    case 'add-project': {
+      const modalOptions = {};
+      if (group === 'projects' && filter !== 'none') {
+        modalOptions.projectId = filter;
+      } else if (group === 'priorities') {
+        modalOptions.priority = Task.convertStringToPriority(filter);
+      }
+      showAddTaskModal(instance, modalOptions);
+      needUpdate = false;
+      break;
+    }
+    case 'show-completed':
+      filterOptions.showCompleted = true;
+      break;
+    case 'hide-completed':
+      filterOptions.showCompleted = false;
+      break;
+    case 'group-by-default':
+      filterOptions.groupBy = 'default';
+      break;
+    case 'group-by-none':
+      filterOptions.groupBy = 'none';
+      break;
+    case 'group-by-due-date':
+      filterOptions.groupBy = 'due-date';
+      break;
+    case 'group-by-project':
+      filterOptions.groupBy = 'project';
+      break;
+    case 'group-by-priority':
+      filterOptions.groupBy = 'priority';
+      break;
+    case 'sort-by-create-date':
+      filterOptions.sortBy = 'create-date';
+      break;
+    case 'sort-by-due-date':
+      filterOptions.sortBy = 'due-date';
+      break;
+    case 'sort-by-project':
+      filterOptions.sortBy = 'project';
+      break;
+    case 'sort-by-priority':
+      filterOptions.sortBy = 'priority';
+      break;
+    default:
+      break;
+  }
+
+  if (needUpdate) updateMainPanel(instance, { resetScroll: false });
 }
 
 /**
@@ -585,6 +740,9 @@ function createMainPanel(instance, parent) {
   subheading.id = 'main-panel-subheading';
   headingContainer.appendChild(subheading);
 
+  const menu = new PopupMenu({ closeIfScrolled: privates.mainPanel });
+  privates.mainPanelMenu = menu;
+
   const iconContainer = document.createElement('div');
   iconContainer.classList.add('icon-container');
   iconContainer.appendChild(createIconButton('add'));
@@ -682,6 +840,7 @@ class App {
       sidePanel: null,
       resizer: null,
       mainPanel: null,
+      mainPanelMenu: null,
       narrowScreen: false,
     };
     privateMembers.set(this, privates);
@@ -724,20 +883,22 @@ class App {
       '.icon[data-icon-type="add"]',
     );
     addTaskIcon.addEventListener('click', () => {
-      const modalOptions = {};
-      const selection = privates.currentFilter;
-      if (selection.group === 'projects' && selection.filter !== 'none') {
-        modalOptions.projectId = selection.filter;
-      } else if (selection.group === 'priorities') {
-        modalOptions.priority = Task.convertStringToPriority(selection.filter);
-      }
-      showAddTaskModal(this, modalOptions);
+      handleMainPanelMenuSelection(this, 'add-project');
+    });
+
+    const moreIcon = mainPanelHeader.querySelector(
+      '.icon[data-icon-type="more_horiz"]',
+    );
+    moreIcon.addEventListener('click', () => {
+      privates.mainPanelMenu.open(
+        (item) => handleMainPanelMenuSelection(this, item),
+        { referenceElement: moreIcon },
+      );
     });
 
     /* Add random task and project data for testing */
     addRandomData(this, 50, 10);
     updateProjectFilters(this);
-    privates.settings.filters.default.sortBy = 'project';
     privates.filterMenu.selectFilter('default', 'all');
   }
 }
