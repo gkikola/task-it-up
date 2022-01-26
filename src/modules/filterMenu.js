@@ -419,6 +419,9 @@ class FilterMenu {
     const privates = privateMembers.get(this);
     silentClearSelection(this);
 
+    // Expand the containing group if it is not already
+    this.expandGroup(groupId);
+
     const listItem = getFilterItemElement(this, groupId, filterId);
     listItem.classList.add('selected');
     privates.selectedFilter.group = groupId;
