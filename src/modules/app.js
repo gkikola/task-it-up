@@ -183,6 +183,20 @@ function updateMainPanelMenu(instance) {
   const { groupBy, sortBy, sortDescending, showCompleted } = filterOptions;
   const optionItems = [
     { label: 'Add Task', id: 'add-task', iconType: 'add' },
+    { label: 'Add Project', id: 'add-project', iconType: 'add' },
+  ];
+  const groupByItems = [];
+  const sortByItems = [];
+
+  if (group === 'projects' && filter !== 'none') {
+    optionItems.push({
+      label: 'Edit Project',
+      id: 'edit-project',
+      iconType: 'edit',
+    });
+  }
+
+  optionItems.push(
     {
       label: showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks',
       id: showCompleted ? 'hide-completed' : 'show-completed',
@@ -193,9 +207,7 @@ function updateMainPanelMenu(instance) {
       id: sortDescending ? 'sort-ascending' : 'sort-descending',
       iconType: 'swap_vert',
     },
-  ];
-  const groupByItems = [];
-  const sortByItems = [];
+  );
 
   if (groupBy !== 'default') {
     groupByItems.push({
@@ -499,6 +511,13 @@ function handleMainPanelMenuSelection(instance, itemId) {
       needUpdate = false;
       break;
     }
+    case 'add-project':
+      showAddProjectModal(instance);
+      needUpdate = false;
+      break;
+    case 'edit-project':
+      showAddProjectModal(instance, { projectId: filter });
+      break;
     case 'show-completed':
       filterOptions.showCompleted = true;
       break;
