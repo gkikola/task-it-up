@@ -182,7 +182,7 @@ function updateMainPanelMenu(instance) {
 
   const { groupBy, sortBy, sortDescending, showCompleted } = filterOptions;
   const optionItems = [
-    { label: 'Add Project', id: 'add-project', iconType: 'add' },
+    { label: 'Add Task', id: 'add-task', iconType: 'add' },
     {
       label: showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks',
       id: showCompleted ? 'hide-completed' : 'show-completed',
@@ -488,7 +488,7 @@ function handleMainPanelMenuSelection(instance, itemId) {
 
   let needUpdate = true;
   switch (itemId) {
-    case 'add-project': {
+    case 'add-task': {
       const modalOptions = {};
       if (group === 'projects' && filter !== 'none') {
         modalOptions.projectId = filter;
