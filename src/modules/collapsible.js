@@ -96,13 +96,15 @@ class Collapsible {
    */
   expand() {
     const privates = privateMembers.get(this);
-    privates.collapsed = false;
-    privates.container.classList.remove('collapsed');
-    privates.container.removeAttribute('aria-hidden');
-    privates.container.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
-      elem.removeAttribute('tabindex');
-    });
-    this.update();
+    if (privates.collapsed) {
+      privates.collapsed = false;
+      privates.container.classList.remove('collapsed');
+      privates.container.removeAttribute('aria-hidden');
+      privates.container.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
+        elem.removeAttribute('tabindex');
+      });
+      this.update();
+    }
   }
 
   /**
@@ -110,13 +112,15 @@ class Collapsible {
    */
   collapse() {
     const privates = privateMembers.get(this);
-    privates.collapsed = true;
-    privates.container.classList.add('collapsed');
-    privates.container.setAttribute('aria-hidden', 'true');
-    privates.container.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
-      elem.setAttribute('tabindex', '-1');
-    });
-    this.update();
+    if (!privates.collapsed) {
+      privates.collapsed = true;
+      privates.container.classList.add('collapsed');
+      privates.container.setAttribute('aria-hidden', 'true');
+      privates.container.querySelectorAll(FOCUSABLE_SELECTOR).forEach((elem) => {
+        elem.setAttribute('tabindex', '-1');
+      });
+      this.update();
+    }
   }
 
   /**
