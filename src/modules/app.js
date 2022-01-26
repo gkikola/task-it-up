@@ -924,7 +924,7 @@ class App {
       '.icon[data-icon-type="add"]',
     );
     addTaskIcon.addEventListener('click', () => {
-      handleMainPanelMenuSelection(this, 'add-project');
+      handleMainPanelMenuSelection(this, 'add-task');
     });
 
     const moreIcon = mainPanelHeader.querySelector(
