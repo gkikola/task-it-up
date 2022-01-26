@@ -60,6 +60,10 @@
   font-size: 14px;
 }
 
+.task-list-item .icon-container {
+  margin-left: 12px;
+}
+
 .task-list-empty {
   font-family: var(--label-font);
   font-size: 18px;
