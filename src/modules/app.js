@@ -20,6 +20,7 @@ import Project from './project';
 import ProjectList from './projectList';
 import RecurringDate from './recurringDate';
 import Settings from './settings';
+import SettingsModal from './modals/settingsModal';
 import Task from './task';
 import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
@@ -495,6 +496,17 @@ function showAddProjectModal(instance, options = {}) {
 }
 
 /**
+ * Display the modal dialog for modifying user settings.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function showSettingsModal(instance) {
+  const privates = privateMembers.get(instance);
+  const modal = new SettingsModal(privates.settings);
+  privates.modalStack.showModal(modal);
+}
+
+/**
  * Respond to a selection in the main panel menu.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -923,6 +935,10 @@ class App {
     const menuSelector = '.title-container .icon[data-icon-type="menu"]';
     const menuIcon = document.querySelector(menuSelector);
     menuIcon.addEventListener('click', () => toggleSidePanel(this));
+
+    const settingsSelector = '#header .icon[data-icon-type="settings"]';
+    const settingsIcon = document.querySelector(settingsSelector);
+    settingsIcon.addEventListener('click', () => showSettingsModal(this));
 
     const mainPanelHeader = document.getElementById('main-panel-header');
     const addTaskIcon = mainPanelHeader.querySelector(
