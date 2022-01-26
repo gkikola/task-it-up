@@ -364,8 +364,13 @@ function updateMainPanel(instance, options = {}) {
     case 'projects':
       filterOptions = privates.settings.filters.projects;
       displayOptions.project = filter;
-      if (filter === 'none') heading = 'Uncategorized';
-      else heading = privates.projects.getProject(filter).name;
+      if (filter === 'none') {
+        heading = 'Uncategorized';
+      } else {
+        const project = privates.projects.getProject(filter);
+        heading = project.name;
+        subheading = project.description || null;
+      }
       break;
     case 'priorities': {
       filterOptions = privates.settings.filters.priorities;
