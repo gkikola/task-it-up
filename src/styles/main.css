@@ -89,11 +89,8 @@ a:hover {
 }
 
 #main-panel-heading-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
   font-family: var(--label-font);
+  flex: 1;
 }
 
 #main-panel-heading {
@@ -106,6 +103,10 @@ a:hover {
   font-size: 16px;
   white-space: pre-wrap;
   color: #505050;
+
+  max-height: 64px;
+  overflow: auto;
+  line-height: normal;
 }
 
 #main-panel-header .icon-container {
@@ -185,5 +186,11 @@ a:hover {
 @media (max-width: 400px) {
   .title-container .title {
     display: none;
+  }
+}
+
+@media (max-height: 500px) {
+  #main-panel-subheading {
+    max-height: 24px;
   }
 }
