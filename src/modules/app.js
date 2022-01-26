@@ -180,7 +180,9 @@ function updateMainPanelMenu(instance) {
   const GROUP_ICON = 'category';
   const SORT_ICON = 'sort';
 
-  const { groupBy, sortBy, sortDescending, showCompleted } = filterOptions;
+  const {
+    groupBy, sortBy, sortDescending, showCompleted,
+  } = filterOptions;
   const optionItems = [
     { label: 'Add Task', id: 'add-task', iconType: 'add' },
     { label: 'Add Project', id: 'add-project', iconType: 'add' },
