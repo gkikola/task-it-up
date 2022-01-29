@@ -108,6 +108,10 @@ input[type="radio"], input[type="checkbox"] {
   background-color: white;
 }
 
+.form-button:active {
+  background-color: #f0f0f0;
+}
+
 .form-input-item-container {
   padding: 8px 0;
 }
@@ -120,6 +124,10 @@ input[type="radio"], input[type="checkbox"] {
 
 .form-input-inline.form-input-count {
   width: 90px;
+}
+
+.form-input-hidden {
+  display: none;
 }
 
 .form-weekday-button {
