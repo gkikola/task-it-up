@@ -17,6 +17,14 @@ import { createFormControl } from '../utility';
  *   invoked when the user successfully confirms the modal.
  * @property {Function} [callbacks.cancel] A callback function that will be
  *   invoked when the user cancels the modal.
+ * @property {Object} [controls] An object holding the form input elements for
+ *   the modal.
+ * @property {HTMLElement} controls.dateFormat The select element for the date
+ *   format.
+ * @property {HTMLElement} controls.deleteOld The checkbox element indicating
+ *   whether to delete old completed tasks.
+ * @property {HTMLElement} controls.deleteAfter The input element for entering
+ *   the number of days after which to delete completed tasks.
  */
 
 /**
@@ -26,6 +34,34 @@ import { createFormControl } from '../utility';
  * @see module:settingsModal~SettingsModal~privates
  */
 const privateMembers = new WeakMap();
+
+/**
+ * Initialize the values of the form elements based on current settings.
+ * @param {module:settingsModal~SettingsModal} instance The class instance on
+ *   which to apply the function.
+ */
+function initFormValues(instance) {
+  const { controls, settings } = privateMembers.get(instance);
+
+  controls.dateFormat.value = settings.dateFormat.type;
+
+  const deleteOld = settings.deleteAfter !== null;
+  controls.deleteOld.checked = deleteOld;
+  if (deleteOld) controls.deleteAfter.value = settings.deleteAfter.toString();
+}
+
+/**
+ * Add the event listeners to the form controls in the modal.
+ * @param {module:settingsModal~SettingsModal} instance The class instance on
+ *   which to apply the function.
+ */
+function addListeners(instance) {
+  const { controls } = privateMembers.get(instance);
+  controls.deleteOld.addEventListener('change', (e) => {
+    controls.deleteAfter.disabled = !e.target.checked;
+  });
+  controls.deleteOld.dispatchEvent(new Event('change'));
+}
 
 /**
  * A modal dialog for modifying user settings.
@@ -57,6 +93,11 @@ class SettingsModal {
         confirm: options.confirm || null,
         cancel: options.cancel || null,
       },
+      controls: {
+        dateFormat: null,
+        deleteOld: null,
+        deleteAfter: null,
+      },
     };
     privateMembers.set(this, privates);
   }
@@ -69,9 +110,6 @@ class SettingsModal {
     return 'Edit Settings';
   }
 
-  /* eslint-disable-next-line class-methods-use-this --
-   * Temporary until content is added.
-   */
   addContent(parent) {
     const dateFormats = [
       'local',
@@ -153,6 +191,16 @@ class SettingsModal {
 
     container.appendChild(optionContainer);
     parent.appendChild(container);
+
+    const { controls } = privateMembers.get(this);
+    controls.dateFormat = parent.querySelector('#settings-date-format');
+    controls.deleteOld = parent.querySelector('#settings-delete-old-tasks');
+    controls.deleteAfter = parent.querySelector(
+      '#settings-delete-task-day-count',
+    );
+
+    initFormValues(this);
+    addListeners(this);
   }
 
   confirm() {
