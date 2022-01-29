@@ -439,8 +439,8 @@ function initFormValues(instance) {
       );
     }
 
-    if (initial.allowPastOccurrence) {
-      getControl(instance, 'allow-past').checked = true;
+    if (initial.baseOnCompletion) {
+      getControl(instance, 'base-on-completion').checked = true;
     }
 
     if (initial.onWeekend !== 'no-change') {
@@ -939,11 +939,11 @@ class RecurrenceModal {
 
     container.appendChild(createFormControl({
       type: 'checkbox',
-      id: 'recurring-date-allow-past',
+      id: 'recurring-date-base-on-completion',
       name: 'recurring-date-additional-options',
-      value: 'allow-past-occurrences',
+      value: 'base-on-completion',
       label: {
-        value: 'Allow occurrences in the past',
+        value: 'Repeat from completion date',
         classList: ['form-input-label-inline'],
       },
       container: { classList: ['form-input-item-container'] },
@@ -1076,7 +1076,10 @@ class RecurrenceModal {
         );
       }
 
-      options.allowPastOccurrence = getControl(this, 'allow-past').checked;
+      options.baseOnCompletion = getControl(
+        this,
+        'base-on-completion',
+      ).checked;
 
       if (getControl(this, 'no-weekend').checked) {
         options.onWeekend = getControl(this, 'weekend-select').value;

@@ -45,12 +45,13 @@ class RecurringDate {
    *   recurrence.
    * @param {number} [options.intervalLength=1] The length of the repetition
    *   interval.
-   * @param {Date} [options.startDate] The initial date from which the next
-   *   recurrence is calculated. If this is null, then the next date is
-   *   calculated from the present time.
-   * @param {boolean} [options.allowPastOccurrence=false] If this is true, then
-   *   the next occurrence is allowed to be in the past (this can happen if the
-   *   start date is in the past).
+   * @param {Date} [options.startDate] Indicates the earliest date that the
+   *   next occurrence can happen. Any occurrences that would fall before this
+   *   date are skipped.
+   * @param {boolean} [options.baseOnCompletion=false] If this is true, then
+   *   the next occurrence should be calculated from the task's completion
+   *   date. Otherwise, the occurrence should be calculated from the task's due
+   *   date.
    * @param {number} [options.weekNumber] The number of the week within a month
    *   in which the recurring date should occur. Used in conjunction with
    *   daysOfWeek. A value of 1 indicates the first occurrence of a day within
@@ -88,18 +89,19 @@ class RecurringDate {
     this.intervalLength = options.intervalLength || 1;
 
     /**
-     * The initial date from which the next recurrence is calculated. If this
-     * is null, then the next date is calculated from the present time.
+     * Indicates the earliest date that the next occurrence can happen. Any
+     * occurrences that would fall before this date are skipped.
      * @type {?Date}
      */
     this.startDate = options.startDate || null;
 
     /**
-     * If this is true, then the next occurrence is allowed to be in the past
-     * (this can happen if the start date is in the past).
+     * If this is true, then the next occurrence should be calculated from the
+     * task's completion date. Otherwise, the occurrence should be calculated
+     * from the task's due date.
      * @type {boolean}
      */
-    this.allowPastOccurrence = options.allowPastOccurrence || false;
+    this.baseOnCompletion = options.baseOnCompletion || false;
 
     /**
      * The number of the week within a month in which the recurring date should
@@ -195,7 +197,7 @@ class RecurringDate {
     const def = new RecurringDate(this.intervalUnit);
     if (this.intervalLength !== def.intervalLength) return false;
     if (this.startDate?.getTime() !== def.startDate?.getTime()) return false;
-    if (this.allowPastOccurrence !== def.allowPastOccurrence) return false;
+    if (this.baseOnCompletion !== def.baseOnCompletion) return false;
     if (this.weekNumber !== def.weekNumber) return false;
     if (!_.isEqual(this.daysOfWeek, def.daysOfWeek)) return false;
     if (this.month !== def.month) return false;
@@ -284,8 +286,8 @@ class RecurringDate {
       else strValue += `, ${this.maxCount} times`;
     }
 
-    if (this.allowPastOccurrence) {
-      strValue += ', past allowed';
+    if (this.baseOnCompletion) {
+      strValue += ', based on completion date';
     }
 
     if (this.onWeekend !== 'no-change') {

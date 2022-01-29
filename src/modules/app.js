@@ -106,7 +106,7 @@ function addRandomData(instance, taskCount, projCount) {
     return new RecurringDate(unit, {
       intervalLength: passCheck(0.5) ? 1 : getRandom(2, 10),
       startDate: passCheck(0.5) ? randomDate() : null,
-      allowPastOccurrence: passCheck(0.25),
+      baseOnCompletion: passCheck(0.25),
     });
   };
 
