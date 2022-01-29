@@ -340,6 +340,20 @@ class PopupMenu {
   }
 
   /**
+   * Toggle the state of the popup: if the menu is closed, it will be opened.
+   * If the menu is open, it will be closed.
+   * @param {module:popupMenu~PopupMenu~selectionCallback} callback A callback
+   *   function that will be invoked when the user chooses a menu item.
+   * @param {module:popupMenu~PopupMenu~position} [position] An object
+   *   specifying the position in the document at which to place the menu. If
+   *   not given, the upper-left corner of the document will be used.
+   */
+  toggle(callback, position) {
+    if (this.isOpen()) this.close();
+    else this.open(callback, position);
+  }
+
+  /**
    * Set the menu items that will be shown the next time the popup menu is
    * opened. If the popup menu is currently open, the displayed items will not
    * be altered until the menu is reopened.
