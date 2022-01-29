@@ -47,6 +47,14 @@ class Settings {
     this.setDateFormat('local');
 
     /**
+     * Determines how many days after a task is completed before the task will
+     * be automatically deleted. If set to null, completed tasks will never be
+     * deleted automatically.
+     * @type {?number}
+     */
+    this.deleteAfter = 14;
+
+    /**
      * Holds options for displaying the different types of task filters.
      * @type {Object}
      * @property {module:settings~Settings~filterOptions} default Options for
