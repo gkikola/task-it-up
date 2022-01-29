@@ -260,6 +260,15 @@ class PopupMenu {
   }
 
   /**
+   * Determine whether or not the popup menu is currently open.
+   * @returns {boolean} True if the popup menu is open, or false if it is
+   *   closed.
+   */
+  isOpen() {
+    return privateMembers.get(this).container !== null;
+  }
+
+  /**
    * Open the popup menu at a particular position.
    * @param {module:popupMenu~PopupMenu~selectionCallback} callback A callback
    *   function that will be invoked when the user chooses a menu item.
