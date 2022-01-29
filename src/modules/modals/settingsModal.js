@@ -230,11 +230,13 @@ class SettingsModal {
     if (callbacks.cancel) callbacks.cancel();
   }
 
-  /* eslint-disable-next-line class-methods-use-this --
-   * Necessary since modal must have validate function in order to satisfy
-   * Modal interface.
-   */
   validate() {
+    const { controls } = privateMembers.get(this);
+
+    if (controls.deleteOld.checked) {
+      if (!controls.deleteAfter.reportValidity()) return false;
+    }
+
     return true;
   }
 }
