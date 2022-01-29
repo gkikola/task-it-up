@@ -419,7 +419,10 @@ function initFormValues(instance) {
     if (initial.endDate) {
       getControl(instance, 'end-type-date').checked = true;
       const input = getControl(instance, 'end-date');
-      input.value = formatDate(initial.endDate, privates.dateFormat.internal);
+      input.value = formatDate(
+        initial.endDate,
+        privates.dateFormat.outputPattern,
+      );
     } else if (initial.maxCount) {
       getControl(instance, 'end-type-count').checked = true;
       getControl(instance, 'end-count').value = initial.maxCount;
@@ -430,7 +433,10 @@ function initFormValues(instance) {
     if (initial.startDate) {
       getControl(instance, 'use-start-date').checked = true;
       const input = getControl(instance, 'start-date');
-      input.value = formatDate(initial.startDate, privates.dateFormat.internal);
+      input.value = formatDate(
+        initial.startDate,
+        privates.dateFormat.outputPattern,
+      );
     }
 
     if (initial.allowPastOccurrence) {
@@ -498,7 +504,7 @@ function pickDate(instance, input, modalStack) {
 
   let startDate = null;
   if (input.value) {
-    startDate = parseDate(input.value, privates.dateFormat.internal);
+    startDate = parseDate(input.value, privates.dateFormat.inputPatterns);
   }
 
   let title = null;
@@ -516,7 +522,7 @@ function pickDate(instance, input, modalStack) {
   const field = input;
   modalStack.showModal(new DatePickerModal({
     confirm: (date) => {
-      field.value = formatDate(date, privates.dateFormat.internal);
+      field.value = formatDate(date, privates.dateFormat.outputPattern);
       field.setCustomValidity('');
     },
     startDate,
@@ -705,8 +711,8 @@ function addListeners(instance) {
     const { value } = e.target;
     if (value.length > 0) {
       let message = '';
-      if (!parseDate(value, privates.dateFormat.internal)) {
-        const format = privates.dateFormat.visual;
+      if (!parseDate(value, privates.dateFormat.inputPatterns)) {
+        const format = privates.dateFormat.visualPattern;
         message = `Please enter a valid date in ${format} format.`;
       }
       e.target.setCustomValidity(message);
@@ -839,7 +845,7 @@ class RecurrenceModal {
     optionContainer.appendChild(createDateInputField({
       id: 'recurring-date-end-date',
       name: 'recurring-date-end-date',
-      placeholder: privates.dateFormat.visual,
+      placeholder: privates.dateFormat.visualPattern,
       classList: ['form-input-inline'],
       required: true,
       container: {
@@ -916,7 +922,7 @@ class RecurrenceModal {
     optionContainer.appendChild(createDateInputField({
       id: 'recurring-date-start-date',
       name: 'recurring-date-start-date',
-      placeholder: privates.dateFormat.visual,
+      placeholder: privates.dateFormat.visualPattern,
       classList: ['form-input-inline'],
       required: true,
       container: {
@@ -1053,7 +1059,10 @@ class RecurrenceModal {
 
       if (getControl(this, 'end-type-date').checked) {
         const input = getControl(this, 'end-date');
-        options.endDate = parseDate(input.value, privates.dateFormat.internal);
+        options.endDate = parseDate(
+          input.value,
+          privates.dateFormat.inputPatterns,
+        );
       } else if (getControl(this, 'end-type-count').checked) {
         const input = getControl(this, 'end-count');
         options.maxCount = Number(input.value);
@@ -1063,7 +1072,7 @@ class RecurrenceModal {
         const input = getControl(this, 'start-date');
         options.startDate = parseDate(
           input.value,
-          privates.dateFormat.internal,
+          privates.dateFormat.inputPatterns,
         );
       }
 

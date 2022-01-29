@@ -355,7 +355,7 @@ function updateMainPanel(instance, options = {}) {
       displayOptions.endDate = addToDate(todayEnd, duration);
 
       if (filter !== 'today' && filter !== 'past-due') {
-        const dateFormat = privates.settings.dateFormat.internal;
+        const dateFormat = privates.settings.dateFormat.outputPattern;
         const startStr = formatDate(today, dateFormat);
         const endStr = formatDate(displayOptions.endDate, dateFormat);
         subheading = `${startStr} to ${endStr}`;

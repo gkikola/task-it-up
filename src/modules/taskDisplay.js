@@ -175,7 +175,7 @@ function addTask(instance, list, taskId, task) {
   };
 
   if (task.dueDate) {
-    const dateFormat = privates.dateFormat.internal;
+    const dateFormat = privates.dateFormat.outputPattern;
     const dateStr = formatDate(task.dueDate, dateFormat);
     addDetail(dateStr, 'task-list-item-due-date');
   }
@@ -229,7 +229,7 @@ function getGroupHeading(instance, groupBy, task) {
   switch (groupBy) {
     case 'due-date':
       if (task.dueDate) {
-        const format = privates.dateFormat.internal;
+        const format = privates.dateFormat.outputPattern;
         return formatDate(task.dueDate, format);
       }
       return 'No Due Date';

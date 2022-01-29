@@ -108,7 +108,7 @@ function initFormValues(instance) {
   if (task?.dueDate) {
     controls.dueDate.value = formatDate(
       task.dueDate,
-      privates.dateFormat.internal,
+      privates.dateFormat.outputPattern,
     );
   }
 
@@ -164,12 +164,12 @@ function pickDueDate(instance, modalStack) {
   const input = privates.controls.dueDate;
   let startDate = null;
   if (input.value) {
-    startDate = parseDate(input.value, privates.dateFormat.internal);
+    startDate = parseDate(input.value, privates.dateFormat.inputPatterns);
   }
 
   modalStack.showModal(new DatePickerModal({
     confirm: (date) => {
-      input.value = formatDate(date, privates.dateFormat.internal);
+      input.value = formatDate(date, privates.dateFormat.outputPattern);
       input.setCustomValidity('');
     },
     startDate,
@@ -225,7 +225,7 @@ function addListeners(instance, modalStack) {
         optElem.value = 'custom-result';
         recurringDate.insertBefore(optElem, recurringDate.lastChild);
       }
-      const dateFormatStr = dateFormat.internal;
+      const dateFormatStr = dateFormat.outputPattern;
       optElem.textContent = recurrence.toStringVerbose(dateFormatStr);
     }
 
@@ -243,7 +243,7 @@ function addListeners(instance, modalStack) {
       const dateInput = controls.dueDate;
       let baseDate = null;
       if (dateInput.value) {
-        baseDate = parseDate(dateInput.value, dateFormat.internal);
+        baseDate = parseDate(dateInput.value, dateFormat.inputPatterns);
       }
 
       const modal = new RecurrenceModal({
@@ -284,8 +284,8 @@ function addListeners(instance, modalStack) {
     const { value } = e.target;
     if (value.length > 0) {
       let message = '';
-      if (!parseDate(value, dateFormat.internal)) {
-        const format = dateFormat.visual;
+      if (!parseDate(value, dateFormat.inputPatterns)) {
+        const format = dateFormat.visualPattern;
         message = `Please enter a valid date in ${format} format.`;
       }
       e.target.setCustomValidity(message);
@@ -401,7 +401,7 @@ class AddTaskModal {
     dateContainer.appendChild(createDateInputField({
       id: 'task-due-date',
       name: 'task-due-date',
-      placeholder: privates.dateFormat.visual,
+      placeholder: privates.dateFormat.visualPattern,
       classList: ['form-input-inline'],
       container: { classList: ['form-input-date-container'] },
       button: {
@@ -482,7 +482,7 @@ class AddTaskModal {
 
     let dueDate = null;
     if (controls.dueDate.value) {
-      dueDate = parseDate(controls.dueDate.value, dateFormat.internal);
+      dueDate = parseDate(controls.dueDate.value, dateFormat.inputPatterns);
     }
 
     let creationDate = null;

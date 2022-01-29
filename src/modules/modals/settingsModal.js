@@ -133,7 +133,7 @@ class SettingsModal {
       'day-month-year',
       'year-month-day',
     ].map((value) => {
-      const format = Settings.lookupDateFormat(value).visual;
+      const format = Settings.lookupDateFormat(value).visualPattern;
       let description;
       switch (value) {
         case 'local':
@@ -223,7 +223,7 @@ class SettingsModal {
   confirm() {
     const { callbacks, controls, settings } = privateMembers.get(this);
 
-    settings.dateFormat = Settings.lookupDateFormat(controls.dateFormat.value);
+    settings.setDateFormat(controls.dateFormat.value);
 
     if (controls.deleteOld.checked) {
       settings.deleteAfter = Number(controls.deleteAfter.value);

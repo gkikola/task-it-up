@@ -13,10 +13,13 @@ class Settings {
    * Holds information about the pattern to use for formatting and parsing
    * calendar dates.
    * @typedef {Object} module:settings~Settings~dateFormat
-   * @property {string} internal The internal date format string used for
-   *   formatting and parsing dates.
-   * @property {string} visual The date format as a pattern that can be shown
-   *   to the user.
+   * @property {string} outputPattern The date format string used for
+   *   formatting dates for output.
+   * @property {string[]} inputPatterns An array of date format strings used
+   *   for parsing dates. Each pattern will be tried in sequence until a valid
+   *   match is made.
+   * @property {string} visualPattern A visual representation of the date
+   *   format suitable for displaying to the user.
    * @property {string} type The type of date format. Valid values are 'local',
    *   'iso', 'month-day-year', 'day-month-year', and 'year-month-day'.
    */
@@ -101,27 +104,56 @@ class Settings {
   static lookupDateFormat(type = 'local') {
     switch (type) {
       case 'iso':
-        return { internal: 'yyyy-MM-dd', visual: 'YYYY-MM-DD', type };
+        return {
+          outputPattern: 'yyyy-MM-dd',
+          inputPatterns: ['yyyy-MM-dd'],
+          visualPattern: 'YYYY-MM-DD',
+          type,
+        };
       case 'month-day-year':
-        return { internal: 'MM/dd/yyyy', visual: 'MM/DD/YYYY', type };
+        return {
+          outputPattern: 'MM/dd/yyyy',
+          inputPatterns: ['MM/dd/yy', 'MM/dd/yyyy'],
+          visualPattern: 'MM/DD/YYYY',
+          type,
+        };
       case 'day-month-year':
-        return { internal: 'dd/MM/yyyy', visual: 'DD/MM/YYYY', type };
+        return {
+          outputPattern: 'dd/MM/yyyy',
+          inputPatterns: ['dd/MM/yy', 'dd/MM/yyyy'],
+          visualPattern: 'DD/MM/YYYY',
+          type,
+        };
       case 'year-month-day':
-        return { internal: 'yyyy/MM/dd', visual: 'YYYY/MM/DD', type };
+        return {
+          outputPattern: 'yyyy/MM/dd',
+          inputPatterns: ['yy/MM/dd', 'yyyy/MM/dd'],
+          visualPattern: 'YYYY/MM/DD',
+          type,
+        };
       case 'local':
       default: {
         const formatOpts = {
           tokenStyle: 'internal',
-          fullYear: true,
+          fullYear: false,
           padMonths: true,
           padDays: true,
         };
-        const internal = getDateFormat(null, formatOpts);
+        const inputPatterns = [getDateFormat(null, formatOpts)];
+
+        formatOpts.fullYear = true;
+        const outputPattern = getDateFormat(null, formatOpts);
+        inputPatterns.push(outputPattern);
 
         formatOpts.tokenStyle = 'visual';
-        const visual = getDateFormat(null, formatOpts);
+        const visualPattern = getDateFormat(null, formatOpts);
 
-        return { internal, visual, type: 'local' };
+        return {
+          outputPattern,
+          inputPatterns,
+          visualPattern,
+          type: 'local',
+        };
       }
     }
   }
