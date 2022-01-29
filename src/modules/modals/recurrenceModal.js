@@ -107,7 +107,7 @@ function createWeekContextForm() {
     value: 'use-previous',
     checked: true,
     label: {
-      value: 'The same day of the week as last occurrence',
+      value: 'The same day of the week as before',
       classList: ['form-input-label-inline'],
     },
     container: { classList: ['form-input-item-container'] },
@@ -169,7 +169,7 @@ function createMonthContextForm() {
     value: 'use-previous',
     checked: true,
     label: {
-      value: 'The same day of the month as last occurrence',
+      value: 'The same day of the month as before',
       classList: ['form-input-label-inline'],
     },
     container: { classList: ['form-input-item-container'] },
@@ -287,7 +287,7 @@ function createYearContextForm() {
     value: 'use-previous',
     checked: true,
     label: {
-      value: 'The same month and day as last occurrence',
+      value: 'The same month and day as before',
       classList: ['form-input-label-inline'],
     },
     container: { classList: ['form-input-item-container'] },
@@ -305,23 +305,7 @@ function createYearContextForm() {
   label = document.createElement('label');
   label.classList.add('form-input-label-inline');
   label.htmlFor = 'recurring-date-year-type-day';
-  label.textContent = 'On ';
-  optionContainer.appendChild(label);
-
-  selectItems = MONTHS.map((month) => (
-    { value: month.name.toLowerCase(), label: month.name }
-  ));
-  optionContainer.appendChild(createFormControl({
-    type: 'select',
-    id: 'recurring-date-year-month',
-    name: 'recurring-date-year-month',
-    classList: ['form-select-inline'],
-    menuItems: selectItems,
-  }));
-
-  label = document.createElement('span');
-  label.classList.add('form-input-label-inline');
-  label.textContent = ' ';
+  label.textContent = 'The ';
   optionContainer.appendChild(label);
 
   selectItems = [];
@@ -332,6 +316,22 @@ function createYearContextForm() {
     type: 'select',
     id: 'recurring-date-year-day',
     name: 'recurring-date-year-day',
+    classList: ['form-select-inline'],
+    menuItems: selectItems,
+  }));
+
+  label = document.createElement('span');
+  label.classList.add('form-input-label-inline');
+  label.textContent = ' day of ';
+  optionContainer.appendChild(label);
+
+  selectItems = MONTHS.map((month) => (
+    { value: month.name.toLowerCase(), label: month.name }
+  ));
+  optionContainer.appendChild(createFormControl({
+    type: 'select',
+    id: 'recurring-date-year-month',
+    name: 'recurring-date-year-month',
     classList: ['form-select-inline'],
     menuItems: selectItems,
   }));
