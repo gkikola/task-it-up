@@ -613,11 +613,13 @@ function formatDate(date, format) {
 }
 
 /**
- * Parse a date from a string according to a given pattern.
+ * Parse a date from a string according to a pattern or sequence of patterns.
  * @param {string} dateString The string to parse.
- * @param {string} [format] The format string to use as a pattern. If not
- *   given, then the format from the browser's default locale is used. The
- *   format tokens are the same as used by the
+ * @param {string|string[]} [format] The format string or sequence of format
+ *   strings to use as patterns. If an array is given, then each string in the
+ *   array is attempted to be used as a pattern until a match is found. If no
+ *   pattern is given, then the format from the browser's default locale is
+ *   used. The format tokens are the same as used by the
  *   [date-fns]{@link https://date-fns.org/} library, as specified in the
  *   documentation for the
  *   [format function]{@link https://date-fns.org/v2.28.0/docs/format}.
@@ -625,9 +627,18 @@ function formatDate(date, format) {
  *   pattern.
  */
 function parseDate(dateString, format) {
-  const pattern = format || getDateFormat();
-  const result = dfParse(dateString, pattern, new Date());
-  return Number.isFinite(result.getTime()) ? result : null;
+  let patterns;
+  if (typeof format === 'string') patterns = [format];
+  else if (Array.isArray(format) && format.length > 0) patterns = format;
+  else patterns = [getDateFormat()];
+
+  const today = new Date();
+  for (let i = 0; i < patterns.length; i += 1) {
+    const result = dfParse(dateString, patterns[i], today);
+    if (Number.isFinite(result.getTime())) return result;
+  }
+
+  return null;
 }
 
 /**
