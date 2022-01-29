@@ -17,7 +17,7 @@ const CHECKED_ICON = 'check_circle_outline';
 const UNCHECKED_ICON = 'radio_button_unchecked';
 
 const STANDARD_MENU_ITEMS = [
-  { label: 'Edit Task', id: 'edit', iconType: 'edit' },
+  { label: 'Edit Task...', id: 'edit', iconType: 'edit' },
   { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
   { label: 'Delete Task', id: 'delete', iconType: 'delete' },
 ];

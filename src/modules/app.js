@@ -185,15 +185,15 @@ function updateMainPanelMenu(instance) {
     groupBy, sortBy, sortDescending, showCompleted,
   } = filterOptions;
   const optionItems = [
-    { label: 'Add Task', id: 'add-task', iconType: 'add' },
-    { label: 'Add Project', id: 'add-project', iconType: 'add' },
+    { label: 'Add Task...', id: 'add-task', iconType: 'add' },
+    { label: 'Add Project...', id: 'add-project', iconType: 'add' },
   ];
   const groupByItems = [];
   const sortByItems = [];
 
   if (group === 'projects' && filter !== 'none') {
     optionItems.push({
-      label: 'Edit Project',
+      label: 'Edit Project...',
       id: 'edit-project',
       iconType: 'edit',
     });
