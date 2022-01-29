@@ -25,6 +25,8 @@ import { createFormControl } from '../utility';
  *   whether to delete old completed tasks.
  * @property {HTMLElement} controls.deleteAfter The input element for entering
  *   the number of days after which to delete completed tasks.
+ * @property {HTMLElement} controls.deleteAfterLabel The label element for the
+ *   deleteAfter control.
  */
 
 /**
@@ -57,10 +59,22 @@ function initFormValues(instance) {
  */
 function addListeners(instance) {
   const { controls } = privateMembers.get(instance);
+  const fireEvent = (input) => input.dispatchEvent(new Event('change'));
+
   controls.deleteOld.addEventListener('change', (e) => {
     controls.deleteAfter.disabled = !e.target.checked;
   });
-  controls.deleteOld.dispatchEvent(new Event('change'));
+  fireEvent(controls.deleteOld);
+
+  // Make delete-after label singular/plural based on value
+  controls.deleteAfter.addEventListener('change', (e) => {
+    const count = Number(e.target.value);
+    if (e.target.value.length > 0 && Number.isFinite(count)) {
+      const label = count === 1 ? ' day' : ' days';
+      controls.deleteAfterLabel.textContent = label;
+    }
+  });
+  fireEvent(controls.deleteAfter);
 }
 
 /**
@@ -97,6 +111,7 @@ class SettingsModal {
         dateFormat: null,
         deleteOld: null,
         deleteAfter: null,
+        deleteAfterLabel: null,
       },
     };
     privateMembers.set(this, privates);
@@ -176,16 +191,17 @@ class SettingsModal {
 
     optionContainer.appendChild(createFormControl({
       type: 'number',
-      id: 'settings-delete-task-day-count',
-      name: 'settings-delete-task-day-count',
+      id: 'settings-delete-after',
+      name: 'settings-delete-after',
       value: '1',
       classList: ['form-input-inline', 'form-input-count'],
       required: true,
       min: 0,
     }));
     label = document.createElement('label');
+    label.id = 'settings-delete-after-label';
     label.classList.add('form-input-label-inline');
-    label.htmlFor = 'settings-delete-task-day-count';
+    label.htmlFor = 'settings-delete-after';
     label.textContent = ' days';
     optionContainer.appendChild(label);
 
@@ -195,8 +211,9 @@ class SettingsModal {
     const { controls } = privateMembers.get(this);
     controls.dateFormat = parent.querySelector('#settings-date-format');
     controls.deleteOld = parent.querySelector('#settings-delete-old-tasks');
-    controls.deleteAfter = parent.querySelector(
-      '#settings-delete-task-day-count',
+    controls.deleteAfter = parent.querySelector('#settings-delete-after');
+    controls.deleteAfterLabel = parent.querySelector(
+      '#settings-delete-after-label',
     );
 
     initFormValues(this);
