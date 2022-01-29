@@ -193,7 +193,7 @@ class SettingsModal {
       type: 'number',
       id: 'settings-delete-after',
       name: 'settings-delete-after',
-      value: '1',
+      value: '14',
       classList: ['form-input-inline', 'form-input-count'],
       required: true,
       min: 0,
@@ -221,7 +221,16 @@ class SettingsModal {
   }
 
   confirm() {
-    const { callbacks, settings } = privateMembers.get(this);
+    const { callbacks, controls, settings } = privateMembers.get(this);
+
+    settings.dateFormat = Settings.lookupDateFormat(controls.dateFormat.value);
+
+    if (controls.deleteOld.checked) {
+      settings.deleteAfter = Number(controls.deleteAfter.value);
+    } else {
+      settings.deleteAfter = null;
+    }
+
     if (callbacks.confirm) callbacks.confirm(settings);
   }
 
