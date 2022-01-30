@@ -318,7 +318,7 @@ class TaskList {
           return false;
         }
       }
-      if (!options.completed && task.completionDate) return false;
+      if (!options.completed && task.isComplete()) return false;
       if (options.requireDueDate && !task.dueDate) return false;
       if (options.project) {
         if (options.project === 'none' && task.project) return false;

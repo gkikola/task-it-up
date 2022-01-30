@@ -127,17 +127,17 @@ function addTask(instance, list, taskId, task) {
   itemElem.classList.add('task-list-item');
   list.appendChild(itemElem);
 
-  const iconType = task.completionDate ? CHECKED_ICON : UNCHECKED_ICON;
+  const iconType = task.isComplete() ? CHECKED_ICON : UNCHECKED_ICON;
   const checkButton = createIconButton(iconType, {
     classList: ['task-list-item-checkbox'],
   });
   itemElem.appendChild(checkButton);
   checkButton.addEventListener('click', (e) => {
-    const newIcon = task.completionDate ? UNCHECKED_ICON : CHECKED_ICON;
+    const newIcon = task.isComplete() ? UNCHECKED_ICON : CHECKED_ICON;
     e.target.textContent = newIcon;
     e.target.dataset.iconType = newIcon;
     if (privates.taskCallback) {
-      const type = task.completionDate ? 'mark-incomplete' : 'mark-complete';
+      const type = task.isComplete() ? 'mark-incomplete' : 'mark-complete';
       privates.taskCallback(type, taskId, task);
     }
   });

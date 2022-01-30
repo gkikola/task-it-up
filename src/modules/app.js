@@ -597,11 +597,11 @@ function handleTaskUpdate(instance, type, id, task) {
   const taskCopy = task;
   switch (type) {
     case 'mark-complete':
-      taskCopy.completionDate = new Date();
+      taskCopy.markComplete();
       privates.tasks.updateTask(id, taskCopy);
       break;
     case 'mark-incomplete':
-      taskCopy.completionDate = null;
+      taskCopy.markIncomplete();
       privates.tasks.updateTask(id, taskCopy);
       break;
     case 'edit':

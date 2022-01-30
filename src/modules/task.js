@@ -102,6 +102,31 @@ class Task {
   }
 
   /**
+   * Mark the task as completed.
+   * @param {Date} [date] The date and time of completion. If not given, then
+   *   the present time is used.
+   */
+  markComplete(date) {
+    this.completionDate = date || new Date();
+  }
+
+  /**
+   * Mark the task as incomplete.
+   */
+  markIncomplete() {
+    this.completionDate = null;
+  }
+
+  /**
+   * Determine whether or not the task has been completed.
+   * @returns {boolean} True if the task has been completed and false
+   *   otherwise.
+   */
+  isComplete() {
+    return Boolean(this.completionDate);
+  }
+
+  /**
    * Get a string representation of the task.
    * @returns {string} A string representation of the task.
    */
