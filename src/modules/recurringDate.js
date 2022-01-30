@@ -5,6 +5,16 @@
 
 import _ from 'lodash';
 import ordinal from 'ordinal';
+import {
+  add as addToDate,
+  getDaysInMonth,
+  isBefore as isDateBefore,
+  isWeekend,
+  nextDay,
+  previousDay,
+  startOfDay,
+  startOfMonth,
+} from 'date-fns';
 
 import { formatDate } from './utility';
 
@@ -31,6 +41,103 @@ const MONTHS = [
   'November',
   'December',
 ];
+
+/**
+ * Starting from the given date, find the next date landing on one of the given
+ * days of the week.
+ * @param {Date} date The initial date to start from.
+ * @param {number[]} daysOfWeek An array of desired weekdays. Each day is a
+ *   value from 0-6, with Sunday being 0.
+ * @returns {Date} The first date on or after the given date that matches one
+ *   of the given weekdays.
+ */
+function nextDayOfWeek(date, daysOfWeek) {
+  let result = startOfDay(date);
+  if (daysOfWeek.length === 0) return result;
+
+  const currentDay = result.getDay();
+  const daysToAdd = daysOfWeek.map((day) => (
+    day >= currentDay ? day - currentDay : day + 7 - currentDay
+  )).reduce((min, current) => (current < min ? current : min));
+
+  if (daysToAdd > 0) result = addToDate(result, { days: daysToAdd });
+  return result;
+}
+
+/**
+ * Starting from the given date, find the next date with the indicated day of
+ * the month.
+ * @param {Date} date The initial date to start from.
+ * @param {number} dayOfMonth The desired day of the month, from 1-31.
+ * @returns {Date} The first date on or after the given date that matches the
+ *   day of the month.
+ */
+function nextDayOfMonth(date, dayOfMonth) {
+  const currentMonth = startOfMonth(date);
+  const nextMonth = startOfMonth(addToDate(currentMonth, { months: 1 }));
+
+  const result = (date.getDate() <= dayOfMonth) ? currentMonth : nextMonth;
+  const daysInMonth = getDaysInMonth(result);
+  result.setDate(Math.min(dayOfMonth, daysInMonth));
+  return result;
+}
+
+/**
+ * Starting from the given date, find the next date belonging to the indicated
+ * week and weekday of the month.
+ * @param {Date} date The initial date to start from.
+ * @param {number} weekNumber The week of the month, from 1-5.
+ * @param {number} weekDay The day of the week, from 0-6 with Sunday being 0.
+ * @returns {Date} The first date on or after the given date that matches the
+ *   week and day of the month.
+ */
+function nextWeekOfMonth(date, weekNumber, weekDay) {
+  const currentMonth = startOfMonth(date);
+  const nextMonth = startOfMonth(addToDate(currentMonth, { months: 1 }));
+
+  const findDay = (month) => {
+    const daysInMonth = getDaysInMonth(month);
+    let result = month;
+    if (result.getDay() !== weekDay) result = nextDay(result, weekDay);
+
+    let daysToAdd = (weekNumber - 1) * 7;
+    if (result.getDate() + daysToAdd > daysInMonth) {
+      daysToAdd = Math.floor((daysInMonth - result.getDate()) / 7) * 7;
+    }
+    if (weekNumber > 1) result = addToDate(result, { days: daysToAdd });
+    return result;
+  };
+
+  let result = findDay(currentMonth);
+  if (isDateBefore(result, date)) result = findDay(nextMonth);
+
+  return result;
+}
+
+/**
+ * Starting from the given date, find the next date belonging to the given
+ * month and day of the year.
+ * @param {Date} date The initial date to start from.
+ * @param {number} month The desired month, from 0-11 with January being 0.
+ * @param {number} dayOfMonth The desired day of the month, from 1-31.
+ * @returns {Date} The first date on or after the given date that matches the
+ *   month and day of the year.
+ */
+function nextDayOfYear(date, month, dayOfMonth) {
+  const dateOfCurrentYear = new Date(date.getFullYear(), month, 1);
+  dateOfCurrentYear.setDate(
+    Math.min(dayOfMonth, getDaysInMonth(dateOfCurrentYear)),
+  );
+
+  const dateOfNextYear = new Date(date.getFullYear() + 1, month, 1);
+  dateOfNextYear.setDate(
+    Math.min(dayOfMonth, getDaysInMonth(dateOfNextYear)),
+  );
+
+  let result = dateOfCurrentYear;
+  if (isDateBefore(result, date)) result = dateOfNextYear;
+  return result;
+}
 
 /**
  * Represents a recurring date.
@@ -163,29 +270,163 @@ class RecurringDate {
     this.maxCount = options.maxCount || null;
   }
 
-  /* eslint-disable class-methods-use-this --
-   * TODO: This linter rule should be reenabled after methods are implemented.
-   */
-
   /**
    * Get the next occurrence of the recurring date.
+   * @param {Date} [baseDate] The base date from which the next occurrence
+   *   should be calculated. If not given, then the present day is used.
    * @returns {?Date} The date on which the recurrence will next occur, or null
    *   if the recurrence has ended.
    */
-  getNextOccurrence() {
-    return null;
+  getNextOccurrence(baseDate) {
+    if (typeof this.maxCount === 'number' && this.maxCount < 1) return null;
+
+    const reference = startOfDay(baseDate || new Date());
+
+    let startDate = reference;
+    if (this.startDate && isDateBefore(reference, this.startDate)) {
+      startDate = startOfDay(this.startDate);
+    }
+
+    if (this.onWeekend === 'previous-weekday' && isWeekend(startDate)) {
+      // Move starting date to following Monday
+      startDate = nextDay(startDate, 1);
+    } else if (this.onWeekend === 'nearest-weekday'
+      && startDate.getDay() === 6) {
+      // Move starting date to Sunday
+      startDate = nextDay(startDate, 0);
+    }
+
+    const isBeforeStart = (date) => startDate && isDateBefore(date, startDate);
+
+    let result = reference;
+    switch (this.intervalUnit) {
+      case 'day':
+        result = addToDate(result, { days: this.intervalLength });
+        if (isBeforeStart(result)) result = startDate;
+        break;
+      case 'month':
+        if (this.dayOfMonth || this.weekNumber) {
+          result = addToDate(result, {
+            months: this.intervalLength,
+            days: -14,
+          });
+
+          if (this.dayOfMonth) {
+            result = nextDayOfMonth(result, this.dayOfMonth);
+
+            if (isBeforeStart(result)) {
+              result = nextDayOfMonth(startDate, this.dayOfMonth);
+            }
+          } else if (this.weekNumber) {
+            let weekDay = 0;
+            if (this.daysOfWeek && this.daysOfWeek.length > 0) {
+              [weekDay] = this.daysOfWeek;
+            }
+            result = nextWeekOfMonth(result, this.weekNumber, weekDay);
+
+            if (isBeforeStart(result)) {
+              result = nextWeekOfMonth(startDate, this.weekNumber, weekDay);
+            }
+          }
+        } else {
+          result = addToDate(result, { months: this.intervalLength });
+          if (isBeforeStart(result)) {
+            result = nextDayOfMonth(startDate, reference.getDate());
+          }
+        }
+        break;
+      case 'year':
+        if (typeof this.month === 'number') {
+          result = addToDate(result, {
+            years: this.intervalLength,
+            months: -6,
+          });
+
+          result = nextDayOfYear(result, this.month, this.dayOfMonth || 1);
+          if (isBeforeStart(result)) {
+            result = nextDayOfYear(
+              startDate,
+              this.month,
+              this.dayOfMonth || 1,
+            );
+          }
+        } else {
+          result = addToDate(result, { years: this.intervalLength });
+          if (isBeforeStart(result)) {
+            result = nextDayOfYear(
+              startDate,
+              reference.getMonth(),
+              reference.getDate(),
+            );
+          }
+        }
+        break;
+      case 'week':
+        if (this.daysOfWeek && this.daysOfWeek.length > 0) {
+          // Check for occurrences remaining for the current week
+          if (this.daysOfWeek.findIndex((day) => (
+            day > result.getDay()
+          )) !== -1) {
+            result = addToDate(result, { days: 1 });
+            result = nextDayOfWeek(result, this.daysOfWeek);
+          } else {
+            // Done with current week, start at following Sunday
+            result = nextDay(result, 0);
+            if (this.intervalLength > 1) {
+              result = addToDate(result, { weeks: this.intervalLength - 1 });
+            }
+            result = nextDayOfWeek(result, this.daysOfWeek);
+          }
+
+          if (isBeforeStart(result)) {
+            result = nextDayOfWeek(startDate, this.daysOfWeek);
+          }
+        } else {
+          result = addToDate(result, { weeks: this.intervalLength });
+          if (isBeforeStart(result)) {
+            result = nextDayOfWeek(startDate, [reference.getDay()]);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (this.onWeekend !== 'no-change' && isWeekend(result)) {
+      let forward;
+      switch (this.onWeekend) {
+        case 'previous-weekday':
+          forward = false;
+          break;
+        case 'next-weekday':
+          forward = true;
+          break;
+        case 'nearest-weekday':
+          forward = result.getDay() === 0;
+          break;
+        default:
+          forward = true;
+          break;
+      }
+
+      if (forward) result = nextDay(result, 1); // Next Monday
+      else result = previousDay(result, 5); // Previous Friday
+    }
+
+    if (this.endDate && isDateBefore(this.endDate, result)) return null;
+
+    return result;
   }
 
   /**
-   * Update the recurrence to move to the next recurring date. This will update
-   * the starting date and remaining repetition count if appropriate.
+   * Advance the recurrence to the next date. This will update the remaining
+   * repetition count if needed.
    */
   advance() {
+    if (typeof this.maxCount === 'number' && this.maxCount > 0) {
+      this.maxCount -= 1;
+    }
   }
-
-  /* eslint-enable class-methods-use-this --
-   * TODO: Remove after implementing above methods.
-   */
 
   /**
    * Determine whether or not the recurrence was created with the default
