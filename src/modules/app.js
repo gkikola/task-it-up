@@ -584,6 +584,38 @@ function handleMainPanelMenuSelection(instance, itemId) {
 }
 
 /**
+ * Complete a task in the task list.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ * @param {string} id The unique identifier of the task to complete.
+ */
+function completeTask(instance, id) {
+  const { tasks: taskList } = privateMembers.get(instance);
+  const task = taskList.getTask(id);
+  const now = new Date();
+
+  if (task.recurringDate) {
+    let baseDate = now;
+    if (task.dueDate && !task.recurringDate.baseOnCompletion) {
+      baseDate = task.dueDate;
+    }
+    const newDueDate = task.recurringDate.getNextOccurrence(baseDate);
+    if (!newDueDate) {
+      task.markComplete();
+      task.recurringDate = null;
+    } else {
+      task.markIncomplete();
+      task.recurringDate.advance();
+      task.dueDate = newDueDate;
+    }
+  } else {
+    task.markComplete();
+  }
+
+  taskList.updateTask(id, task);
+}
+
+/**
  * Respond to an action that the user performed on a task.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -594,33 +626,35 @@ function handleMainPanelMenuSelection(instance, itemId) {
  */
 function handleTaskUpdate(instance, type, id, task) {
   const privates = privateMembers.get(instance);
-  const taskCopy = task;
+  let needUpdate = true;
   switch (type) {
     case 'mark-complete':
-      taskCopy.markComplete();
-      privates.tasks.updateTask(id, taskCopy);
+      completeTask(instance, id);
       break;
     case 'mark-incomplete':
-      taskCopy.markIncomplete();
-      privates.tasks.updateTask(id, taskCopy);
+      task.markIncomplete();
+      privates.tasks.updateTask(id, task);
       break;
     case 'edit':
       showAddTaskModal(instance, { taskId: id });
+      needUpdate = false;
       break;
     case 'clone':
-      privates.tasks.addTask(taskCopy);
-      updateMainPanel(instance, { resetScroll: false });
+      privates.tasks.addTask(task);
       break;
     case 'delete':
       privates.tasks.deleteTask(id);
-      updateMainPanel(instance, { resetScroll: false });
       break;
     case 'go-to-project':
       privates.filterMenu.selectFilter('projects', task.project || 'none');
+      needUpdate = false;
       break;
     default:
+      needUpdate = false;
       break;
   }
+
+  if (needUpdate) updateMainPanel(instance, { resetScroll: false });
 }
 
 /**

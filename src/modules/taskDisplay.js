@@ -132,15 +132,12 @@ function addTask(instance, list, taskId, task) {
     classList: ['task-list-item-checkbox'],
   });
   itemElem.appendChild(checkButton);
-  checkButton.addEventListener('click', (e) => {
-    const newIcon = task.isComplete() ? UNCHECKED_ICON : CHECKED_ICON;
-    e.target.textContent = newIcon;
-    e.target.dataset.iconType = newIcon;
-    if (privates.taskCallback) {
+  if (privates.taskCallback) {
+    checkButton.addEventListener('click', () => {
       const type = task.isComplete() ? 'mark-incomplete' : 'mark-complete';
       privates.taskCallback(type, taskId, task);
-    }
-  });
+    });
+  }
 
   const infoContainer = document.createElement('div');
   infoContainer.classList.add('task-list-item-info-container');
