@@ -46,7 +46,7 @@ class Settings {
      * The format to use for calendar dates.
      * @type {module:settings~Settings~dateFormat}
      */
-    this.dateFormat = null;
+    this.dateFormat = {};
     this.setDateFormat('local');
 
     /**
@@ -91,7 +91,7 @@ class Settings {
    *   'month-day-year', 'day-month-year', or 'year-month-day'.
    */
   setDateFormat(type = 'local') {
-    this.dateFormat = Settings.lookupDateFormat(type);
+    Object.assign(this.dateFormat, Settings.lookupDateFormat(type));
   }
 
   /**
