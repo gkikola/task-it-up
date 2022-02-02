@@ -680,6 +680,26 @@ function handleFilterChange(instance, event) {
 }
 
 /**
+ * Respond to a selection in the User menu.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ * @param {string} itemId The identifier of the menu item that was selected.
+ */
+function handleUserMenuSelection(instance, itemId) {
+  switch (itemId) {
+    case 'settings':
+      showSettingsModal(instance);
+      break;
+    case 'data':
+      break;
+    case 'about':
+      break;
+    default:
+      break;
+  }
+}
+
+/**
  * Create the app's task filter menu.
  * @param {module:app~App} instance The class instances on which to apply the
  *   function.
@@ -748,7 +768,7 @@ function createHeader(instance, parent) {
 
   const toolContainer = document.createElement('div');
   toolContainer.classList.add('tools');
-  toolContainer.appendChild(createIconButton('settings'));
+  toolContainer.appendChild(createIconButton('account_circle'));
   header.appendChild(toolContainer);
 
   parent.appendChild(header);
@@ -970,9 +990,22 @@ class App {
     const menuIcon = document.querySelector(menuSelector);
     menuIcon.addEventListener('click', () => toggleSidePanel(this));
 
-    const settingsSelector = '#header .icon[data-icon-type="settings"]';
-    const settingsIcon = document.querySelector(settingsSelector);
-    settingsIcon.addEventListener('click', () => showSettingsModal(this));
+    const userMenu = new PopupMenu({
+      menuItems: [
+        { label: 'Settings...', id: 'settings', iconType: 'settings' },
+        { label: 'Data Management...', id: 'data', iconType: 'save' },
+        { label: 'About...', id: 'about', iconType: 'info' },
+      ],
+    });
+    const userIcon = document.querySelector(
+      '#header .icon[data-icon-type="account_circle"]',
+    );
+    userIcon.addEventListener('click', () => {
+      userMenu.open(
+        (itemId) => handleUserMenuSelection(this, itemId),
+        { referenceElement: userIcon },
+      );
+    });
 
     const mainPanelHeader = document.getElementById('main-panel-header');
     const addTaskIcon = mainPanelHeader.querySelector(
