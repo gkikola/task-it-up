@@ -15,6 +15,8 @@
  *   item, if any.
  * @property {HTMLElement} [container] The container element holding the menu.
  *   Will be null when the menu is hidden.
+ * @property {HTMLElement} [overlay] The element that will overlay the
+ *   background of the menu. Will be null when the menu is hidden.
  * @property {module:popupMenu~PopupMenu~selectionCallback} [callback] Holds
  *   the function to be invoked when the user selects a menu item. This will be
  *   null when the menu is closed.
@@ -251,6 +253,7 @@ class PopupMenu {
       menuItems: options.menuItems || [],
       activeItem: null,
       container: null,
+      overlay: null,
       callback: null,
       eventListener: (e) => handleEvent(this, e),
       scrollTimeout: null,
@@ -280,6 +283,11 @@ class PopupMenu {
     const privates = privateMembers.get(this);
     if (privates.container) this.close();
     if (privates.menuItems.length === 0) return;
+
+    const overlay = document.createElement('div');
+    overlay.classList.add('popup-menu-overlay');
+    privates.parent.appendChild(overlay);
+    privates.overlay = overlay;
 
     const menu = document.createElement('div');
     menu.classList.add('popup-menu');
@@ -328,8 +336,10 @@ class PopupMenu {
     const privates = privateMembers.get(this);
     if (privates.container) {
       privates.parent.removeChild(privates.container);
+      privates.parent.removeChild(privates.overlay);
       privates.activeItem = null;
       privates.container = null;
+      privates.overlay = null;
       privates.callback = null;
       document.removeEventListener('mousedown', privates.eventListener);
       document.removeEventListener('keydown', privates.eventListener);

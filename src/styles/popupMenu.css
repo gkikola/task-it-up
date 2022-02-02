@@ -1,3 +1,13 @@
+.popup-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 950;
+  background-color: transparent;
+}
+
 .popup-menu {
   position: absolute;
   top: 0;
