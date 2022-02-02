@@ -502,7 +502,9 @@ function showAddProjectModal(instance, options = {}) {
  */
 function showSettingsModal(instance) {
   const privates = privateMembers.get(instance);
-  const modal = new SettingsModal(privates.settings);
+  const modal = new SettingsModal(privates.settings, {
+    confirm: () => updateMainPanel(instance, { resetScroll: false }),
+  });
   privates.modalStack.showModal(modal);
 }
 
