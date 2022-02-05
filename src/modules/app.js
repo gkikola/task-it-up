@@ -13,6 +13,7 @@ import '../styles/reset.css';
 import '../styles/main.css';
 import AddProjectModal from './modals/addProjectModal';
 import AddTaskModal from './modals/addTaskModal';
+import DataModal from './modals/dataModal';
 import FilterMenu from './filterMenu';
 import ModalStack from './modalStack';
 import PopupMenu from './popupMenu';
@@ -509,6 +510,17 @@ function showSettingsModal(instance) {
 }
 
 /**
+ * Display the modal dialog for managing user data.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function showDataModal(instance) {
+  const privates = privateMembers.get(instance);
+  const modal = new DataModal();
+  privates.modalStack.showModal(modal);
+}
+
+/**
  * Respond to a selection in the main panel menu.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -693,6 +705,7 @@ function handleUserMenuSelection(instance, itemId) {
       showSettingsModal(instance);
       break;
     case 'data':
+      showDataModal(instance);
       break;
     case 'about':
       break;
