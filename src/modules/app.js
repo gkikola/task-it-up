@@ -13,6 +13,7 @@ import '../styles/reset.css';
 import '../styles/main.css';
 import AddProjectModal from './modals/addProjectModal';
 import AddTaskModal from './modals/addTaskModal';
+import ConfirmModal from './modals/confirmModal';
 import DataModal from './modals/dataModal';
 import FilterMenu from './filterMenu';
 import ModalStack from './modalStack';
@@ -434,6 +435,25 @@ function updateProjectFilters(instance) {
 }
 
 /**
+ * Display a modal confirmation dialog.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ * @param {string} message The message to display to the user.
+ * @param {Function} [onConfirm] A callback function to be invoked when the
+ *   user confirms the modal.
+ * @param {Function} [onCancel] A callback function to be invoked when the user
+ *   cancels the modal.
+ */
+function showConfirmation(instance, message, onConfirm, onCancel) {
+  const privates = privateMembers.get(instance);
+  const modal = new ConfirmModal(message, {
+    confirm: onConfirm || null,
+    cancel: onCancel || null,
+  });
+  privates.modalStack.showModal(modal);
+}
+
+/**
  * Display the modal dialog for adding or editing a task. After the user
  * confirms the dialog, the task is added to the task list.
  * @param {module:app~App} instance The class instance on which to apply the
@@ -657,7 +677,15 @@ function handleTaskUpdate(instance, type, id, task) {
       privates.tasks.addTask(task);
       break;
     case 'delete':
-      privates.tasks.deleteTask(id);
+      showConfirmation(
+        instance,
+        `Are you sure you want to delete the task '${task.name}'?`,
+        () => {
+          privates.tasks.deleteTask(id);
+          updateMainPanel(instance, { resetScroll: false });
+        },
+      );
+      needUpdate = false;
       break;
     case 'go-to-project':
       privates.filterMenu.selectFilter('projects', task.project || 'none');
