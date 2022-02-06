@@ -16,6 +16,7 @@ module.exports = {
     polyfills: [
       'Number.isFinite',
       'Object.assign',
+      'URL',
     ],
   },
 };
