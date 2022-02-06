@@ -199,6 +199,11 @@ function updateMainPanelMenu(instance) {
       id: 'edit-project',
       iconType: 'edit',
     });
+    optionItems.push({
+      label: 'Delete Project...',
+      id: 'delete-project',
+      iconType: 'delete',
+    });
   }
 
   optionItems.push(
@@ -571,6 +576,22 @@ function handleMainPanelMenuSelection(instance, itemId) {
     case 'edit-project':
       showAddProjectModal(instance, { projectId: filter });
       break;
+    case 'delete-project': {
+      const project = privates.projects.getProject(filter);
+      if (!project) break;
+      showConfirmation(
+        instance,
+        `Are you sure you want to delete the project '${project.name}'?`,
+        () => {
+          privates.tasks.clearProject(filter);
+          privates.projects.removeProject(filter);
+          updateProjectFilters(instance);
+          privates.filterMenu.selectFilter('projects', 'none');
+        },
+      );
+      needUpdate = false;
+      break;
+    }
     case 'show-completed':
       filterOptions.showCompleted = true;
       break;
