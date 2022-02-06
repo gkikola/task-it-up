@@ -214,9 +214,26 @@ class TaskList {
   }
 
   /**
-   * Returns an array of
-   * [taskWrapper]{@link module:taskList~TaskList~taskWrapper} objects filtered
-   * and sorted according to the given options.
+   * For each task belonging to a given project, remove the task from that
+   * project. Afterward, there will be no tasks assigned to the project.
+   * @param {string} projectId The unique identifier of the project to clear.
+   */
+  clearProject(projectId) {
+    const map = privateMembers.get(this).tasksByProject;
+    const tasks = map.get(projectId);
+    if (!tasks) return;
+
+    tasks.forEach((entry) => {
+      const { task } = entry;
+      task.project = null;
+      addToMapArray(map, 'none', entry);
+    });
+    map.delete(projectId);
+  }
+
+  /**
+   * Get an array of [taskWrapper]{@link module:taskList~TaskList~taskWrapper}
+   * objects filtered and sorted according to the given options.
    * @param {Object} [options={}] An object holding options to control which
    *   tasks to include in the Iterator.
    * @param {module:projectList~ProjectList} [options.projectList] The project
