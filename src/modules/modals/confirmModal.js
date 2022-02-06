@@ -119,7 +119,7 @@ class ConfirmModal {
       },
       controls: {
         confirmBox: null,
-      }
+      },
     };
 
     const { confirmBox } = options;
@@ -127,8 +127,8 @@ class ConfirmModal {
       privates.confirmBox = {
         value: confirmBox.value || 'confirm',
         label: confirmBox.label || `Please enter '${confirmBox.value}':`,
-        errorMessage: confirmBox.errorMessage ||
-          `Please enter '${confirm.value}.`,
+        errorMessage: confirmBox.errorMessage
+          || `Please enter '${confirmBox.value}'.`,
       };
     }
 
