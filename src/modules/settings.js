@@ -43,6 +43,13 @@ class Settings {
    */
   constructor() {
     /**
+     * The method for storing data: 'none' (no storage) or 'local' (local
+     * storage in the browser).
+     * @type {string}
+     */
+    this.storageMethod = 'local';
+
+    /**
      * The format to use for calendar dates.
      * @type {module:settings~Settings~dateFormat}
      */

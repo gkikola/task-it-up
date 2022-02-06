@@ -4,6 +4,7 @@
  */
 
 import Settings from '../settings';
+import { isLocalStorageSupported } from '../storage';
 import { createFormControl } from '../utility';
 
 /**
@@ -19,6 +20,10 @@ import { createFormControl } from '../utility';
  *   invoked when the user cancels the modal.
  * @property {Object} [controls] An object holding the form input elements for
  *   the modal.
+ * @property {HTMLElement} controls.saveLocal The radio button element for
+ *   indicating that data should be saved to local storage.
+ * @property {HTMLElement} controls.saveNever The radio button element for
+ *   indicating that data should not be saved.
  * @property {HTMLElement} controls.dateFormat The select element for the date
  *   format.
  * @property {HTMLElement} controls.deleteOld The checkbox element indicating
@@ -45,11 +50,27 @@ const privateMembers = new WeakMap();
 function initFormValues(instance) {
   const { controls, settings } = privateMembers.get(instance);
 
+  switch (settings.storageMethod) {
+    case 'none':
+      controls.saveNever.checked = true;
+      break;
+    case 'local':
+    default:
+      controls.saveLocal.checked = true;
+      break;
+  }
+
   controls.dateFormat.value = settings.dateFormat.type;
 
   const deleteOld = settings.deleteAfter !== null;
   controls.deleteOld.checked = deleteOld;
   if (deleteOld) controls.deleteAfter.value = settings.deleteAfter.toString();
+
+  // Disable storage options if local storage is unsupported or disabled
+  if (!isLocalStorageSupported()) {
+    controls.saveNever.disabled = true;
+    controls.saveLocal.disabled = true;
+  }
 }
 
 /**
@@ -108,6 +129,8 @@ class SettingsModal {
         cancel: options.cancel || null,
       },
       controls: {
+        saveLocal: null,
+        saveNever: null,
         dateFormat: null,
         deleteOld: null,
         deleteAfter: null,
@@ -126,6 +149,38 @@ class SettingsModal {
   }
 
   addContent(parent) {
+    let container = document.createElement('div');
+    container.classList.add('form-input-container');
+
+    let label = document.createElement('div');
+    label.classList.add('form-input-label');
+    label.textContent = 'Data Storage';
+    container.appendChild(label);
+
+    container.appendChild(createFormControl({
+      type: 'radio',
+      id: 'settings-save-local',
+      name: 'settings-save-method',
+      value: 'local',
+      label: {
+        value: 'Save data in browser\'s local storage area',
+        classList: ['form-input-label-inline'],
+      },
+      container: { classList: ['form-input-item-container'] },
+    }));
+    container.appendChild(createFormControl({
+      type: 'radio',
+      id: 'settings-save-never',
+      name: 'settings-save-method',
+      value: 'never',
+      label: {
+        value: 'Do not save data',
+        classList: ['form-input-label-inline'],
+      },
+      container: { classList: ['form-input-item-container'] },
+    }));
+    parent.appendChild(container);
+
     const dateFormats = [
       'local',
       'iso',
@@ -167,10 +222,10 @@ class SettingsModal {
       menuItems: dateFormats,
     }));
 
-    const container = document.createElement('div');
+    container = document.createElement('div');
     container.classList.add('form-input-container');
 
-    let label = document.createElement('div');
+    label = document.createElement('div');
     label.classList.add('form-input-label');
     label.textContent = 'Additional Options';
     container.appendChild(label);
@@ -209,6 +264,8 @@ class SettingsModal {
     parent.appendChild(container);
 
     const { controls } = privateMembers.get(this);
+    controls.saveLocal = parent.querySelector('#settings-save-local');
+    controls.saveNever = parent.querySelector('#settings-save-never');
     controls.dateFormat = parent.querySelector('#settings-date-format');
     controls.deleteOld = parent.querySelector('#settings-delete-old-tasks');
     controls.deleteAfter = parent.querySelector('#settings-delete-after');
@@ -222,6 +279,10 @@ class SettingsModal {
 
   confirm() {
     const { callbacks, controls, settings } = privateMembers.get(this);
+
+    if (!controls.saveLocal.disabled) {
+      settings.storageMethod = controls.saveLocal.checked ? 'local' : 'none';
+    }
 
     settings.setDateFormat(controls.dateFormat.value);
 
