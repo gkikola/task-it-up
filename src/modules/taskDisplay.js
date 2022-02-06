@@ -19,7 +19,7 @@ const UNCHECKED_ICON = 'radio_button_unchecked';
 const STANDARD_MENU_ITEMS = [
   { label: 'Edit Task...', id: 'edit', iconType: 'edit' },
   { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
-  { label: 'Delete Task', id: 'delete', iconType: 'delete' },
+  { label: 'Delete Task...', id: 'delete', iconType: 'delete' },
 ];
 const PROJECT_MENU_ITEMS = [
   { label: 'Go To Project', id: 'go-to-project', iconType: 'assignment' },
