@@ -120,11 +120,14 @@ function generateFile(content, filename, type = 'text/plain') {
  * specified callback function once the read operation is complete.
  * @param {Blob} file The file to be read.
  * @param {Function} callback The callback function that will receive the file
- *   contents.
+ *   contents. If an error occurs, the callback function will be invoked with a
+ *   null argument instead.
  */
 function readFile(file, callback) {
   const reader = new FileReader();
   reader.addEventListener('load', () => callback(reader.result));
+  reader.addEventListener('error', () => callback(null));
+  reader.addEventListener('abort', () => callback(null));
   reader.readAsText(file);
 }
 
