@@ -8,6 +8,12 @@
  * [DataModal]{@link module:dataModal~dataModal} class.
  * @typedef {Object} module:dataModal~DataModal~privates
  * @property {Object} callbacks An object holding callback functions.
+ * @property {Function} [callbacks.importData] A callback function that will be
+ *   invoked if the user chooses to import data from a file.
+ * @property {Function} [callbacks.exportData] A callback function that will be
+ *   invoked if the user chooses to export data to a file.
+ * @property {Function} [callbacks.deleteAll] A callback function that will be
+ *   invoked if the user chooses to delete all data.
  * @property {Function} [callbacks.close] A callback function that will be
  *   invoked when the user closes the modal.
  * @property {Object} buttons An object holding the form buttons in the modal
@@ -31,10 +37,37 @@ const privateMembers = new WeakMap();
  */
 class DataModal {
   /**
+   * A callback function that will be invoked when the user chooses to import
+   * data from a file and the file is read successfully.
+   * @callback module:dataModal~DataModal~importData
+   * @param {string} fileType A string specifying the type of file format. This
+   *   can be 'json', 'csv', or 'auto'. If 'auto' is given, then an attempt
+   *   should be made to detect the format automatically based on the contents.
+   * @param {string} fileContent The contents of the file.
+   */
+
+  /**
+   * A callback function that will be invoked when the user chooses to export
+   * data to a file.
+   * @callback module:dataModal~DataModal~exportData
+   * @param {string} fileType A string specifying the file format to use for
+   *   export. This can be either 'json' or 'csv'.
+   */
+
+  /**
    * Specifies options for the modal.
    * @typedef {Object} module:dataModal~DataModal~options
+   * @property {module:dataModal~DataModal~importData} [importData] A callback
+   *   function that will be invoked when the user chooses to import data from
+   *   a file and the file is read successfully.
+   * @property {module:dataModal~DataModal~exportData} [exportData] A callback
+   *   function that will be invoked when the user chooses to export data to a
+   *   file.
+   * @property {Function} [deleteAll] A callback function that will be invoked
+   *   when the user chooses (and confirms the choice) to delete all data.
    * @property {Function} [close] A callback function that will be invoked when
-   *   the user closes the modal.
+   *   the user closes the modal. This will not be invoked if the modal is
+   *   automatically closed following a data management operation.
    */
 
   /**
@@ -45,6 +78,9 @@ class DataModal {
   constructor(options = {}) {
     const privates = {
       callbacks: {
+        importData: options.importData || null,
+        exportData: options.exportData || null,
+        deleteAll: options.deleteAll || null,
         close: options.close || null,
       },
       buttons: {
