@@ -86,8 +86,9 @@ class ConfirmModal {
    *   button.
    * @property {string} [cancelLabel=No] The label to be used for the cancel
    *   button.
-   * @property {string} [initFocus=cancel] Which button to give initial
-   *   keyboard focus: 'confirm', 'cancel', or 'none'.
+   * @property {string} [initFocus=cancel] Which element to give initial
+   *   keyboard focus: 'confirm' (the Confirm button), 'cancel' (the Cancel
+   *   button), 'confirm-box' (the confirmation text box), or 'none'.
    * @property {module:confirmModal~ConfirmModal~confirmBox} [confirmBox] An
    *   object specifying options for text that the user must enter in order to
    *   confirm the action. If this property is provided, then a textbox will be
@@ -148,7 +149,13 @@ class ConfirmModal {
   }
 
   get initFocus() {
-    return privateMembers.get(this).initFocus;
+    const privates = privateMembers.get(this);
+
+    if (privates.initFocus === 'confirm-box') {
+      return privates.controls.confirmBox || 'none';
+    }
+
+    return privates.initFocus;
   }
 
   addContent(parent) {
