@@ -170,7 +170,7 @@ class ConfirmModal {
         type: 'text',
         id: 'confirmation-box',
         name: 'confirmation-box',
-        classList: ['form-input'],
+        classList: ['form-input', 'confirmation-box'],
         required: true,
         placeholder: confirmBox.value,
         label: {

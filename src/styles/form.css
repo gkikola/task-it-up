@@ -150,3 +150,8 @@ input[type="radio"], input[type="checkbox"] {
   background-color: var(--input-disabled-bg-color);
   border-color: var(--input-disabled-bg-color);
 }
+
+.confirmation-box {
+  display: block;
+  margin-top: 8px;
+}
