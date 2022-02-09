@@ -3,15 +3,21 @@
  * @module dataModal
  */
 
+import ConfirmModal from './confirmModal';
+import ExportModal from './exportModal';
+import ImportModal from './importModal';
+
 /**
  * Object holding the private members for the
  * [DataModal]{@link module:dataModal~dataModal} class.
  * @typedef {Object} module:dataModal~DataModal~privates
  * @property {Object} callbacks An object holding callback functions.
- * @property {Function} [callbacks.importData] A callback function that will be
- *   invoked if the user chooses to import data from a file.
- * @property {Function} [callbacks.exportData] A callback function that will be
- *   invoked if the user chooses to export data to a file.
+ * @property {module:dataModal~DataModal~importData} [callbacks.importData] A
+ *   callback function that will be invoked if the user chooses to import data
+ *   from a file.
+ * @property {module:dataModal~DataModal~exportData} [callbacks.exportData] A
+ *   callback function that will be invoked if the user chooses to export data
+ *   to a file.
  * @property {Function} [callbacks.deleteAll] A callback function that will be
  *   invoked if the user chooses to delete all data.
  * @property {Function} [callbacks.close] A callback function that will be
@@ -30,6 +36,81 @@
  * @see module:dataModal~DataModal~privates
  */
 const privateMembers = new WeakMap();
+
+/**
+ * Perform a data import that was requested by the user.
+ * @param {module:dataModal~DataModal} instance The class instance on which to
+ *   apply the function.
+ * @param {string} fileType A string specifying the file format to use when
+ *   interpreting the data: 'json', 'csv', or 'auto'.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal is being inserted.
+ */
+function doImport(instance, fileType, modalStack) {
+}
+
+/**
+ * Perform a data export that was requested by the user.
+ * @param {module:dataModal~DataModal} instance The class instance on which to
+ *   apply the function.
+ * @param {string} fileType A string specifying the file format to use for
+ *   export: 'json' or 'csv'.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal is being inserted.
+ */
+function doExport(instance, fileType, modalStack) {
+}
+
+/**
+ * Perform a data deletion operation that was requested by the user.
+ * @param {module:dataModal~DataModal} instance The class instance on which to
+ *   apply the function.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal is being inserted.
+ */
+function doDelete(instance, modalStack) {
+}
+
+/**
+ * Add the event listeners to the buttons in the modal.
+ * @param {module:dataModal~DataModal} instance The class instance on which to
+ *   apply the function.
+ * @param {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal is being inserted.
+ */
+function addListeners(instance, modalStack) {
+  const { buttons } = privateMembers.get(instance);
+
+  buttons.importButton.addEventListener('click', () => {
+    const modal = new ImportModal({
+      confirm: (fileType) => doImport(instance, fileType, modalStack),
+    });
+    modalStack.showModal(modal);
+  });
+
+  buttons.exportButton.addEventListener('click', () => {
+    const modal = new ExportModal({
+      confirm: (fileType) => doExport(instance, fileType, modalStack),
+    });
+    modalStack.showModal(modal);
+  });
+
+  buttons.deleteButton.addEventListener('click', () => {
+    const modal = new ConfirmModal(
+      'Are you sure you want to delete all tasks and projects?',
+      {
+        initFocus: 'confirm-box',
+        confirmBox: {
+          value: 'delete',
+          label: 'This action cannot be undone. Please confirm your intention by typing the word \'delete\' (without quotes) in the box:',
+          errorMessage: 'Please enter the word \'delete\'.',
+        },
+        confirm: () => doDelete(instance, modalStack),
+      },
+    );
+    modalStack.showModal(modal);
+  });
+}
 
 /**
  * A modal dialog for managing user data.
@@ -116,7 +197,7 @@ class DataModal {
 
   /* eslint-enable class-methods-use-this */
 
-  addContent(parent) {
+  addContent(parent, modalStack) {
     const addContainer = () => {
       const container = document.createElement('div');
       container.classList.add('form-input-container');
@@ -149,6 +230,8 @@ class DataModal {
     container = addContainer();
     addHeading('Delete Data', container);
     buttons.deleteButton = addButton('Erase All Data...', container);
+
+    addListeners(this, modalStack);
   }
 
   confirm() {
