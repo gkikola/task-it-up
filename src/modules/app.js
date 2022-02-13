@@ -26,12 +26,14 @@ import SettingsModal from './modals/settingsModal';
 import Task from './task';
 import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
+import { generateFile } from './storage';
 import { createIconButton, formatDate } from './utility';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
 const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
 const APP_COPYRIGHT_YEARS = '2021-2022';
+const APP_VERSION = PACKAGE_VERSION;
 
 const NARROW_LAYOUT_CUTOFF = 700;
 
@@ -440,6 +442,29 @@ function updateProjectFilters(instance) {
 }
 
 /**
+ * Export app data to a JSON file.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance
+ *   whose data is to be exported.
+ */
+function exportToJson(instance) {
+  generateFile(
+    `${JSON.stringify(instance, null, 2)}\n`,
+    'tasks.json',
+    'application/json',
+  );
+}
+
+/**
+ * Export app data to a CSV file.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance
+ *   whose data is to be exported.
+ */
+function exportToCsv(instance) {
+  const lines = [];
+  generateFile(lines.join('\n'), 'tasks.csv', 'text/csv');
+}
+
+/**
  * Display a modal confirmation dialog.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -541,7 +566,12 @@ function showSettingsModal(instance) {
  */
 function showDataModal(instance) {
   const privates = privateMembers.get(instance);
-  const modal = new DataModal();
+  const modal = new DataModal({
+    exportData: (fileType) => {
+      if (fileType === 'csv') exportToCsv(instance);
+      else exportToJson(instance);
+    },
+  });
   privates.modalStack.showModal(modal);
 }
 
@@ -1093,6 +1123,24 @@ class App {
     addRandomData(this, 50, 10);
     updateProjectFilters(this);
     privates.filterMenu.selectFilter('default', 'all');
+  }
+
+  /**
+   * Returns an object suitable for serialization.
+   * @returns {Object} An object representing serializable data for the class.
+   */
+  toJSON() {
+    const privates = privateMembers.get(this);
+
+    return {
+      app: {
+        name: APP_NAME,
+        version: APP_VERSION,
+      },
+      settings: privates.settings,
+      tasks: privates.tasks,
+      projects: privates.projects,
+    };
   }
 }
 

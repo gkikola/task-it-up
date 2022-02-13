@@ -424,6 +424,28 @@ class TaskList {
 
     return output;
   }
+
+  /**
+   * Returns an object suitable for serialization.
+   * @returns {Object} An object representing serializable data for the class.
+   */
+  toJSON() {
+    const tasks = [];
+    privateMembers.get(this).tasks.forEach((task, id) => {
+      tasks.push({
+        name: task.name,
+        id,
+        dueDate: task.dueDate,
+        creationDate: task.creationDate,
+        completionDate: task.completionDate,
+        priority: task.priority,
+        description: task.description,
+        recurringDate: task.recurringDate,
+        project: task.project,
+      });
+    });
+    return tasks;
+  }
 }
 
 export default TaskList;

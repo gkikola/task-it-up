@@ -169,6 +169,22 @@ class ProjectList {
       callback(copy, index);
     });
   }
+
+  /**
+   * Returns an object suitable for serialization.
+   * @returns {Object} An object representing serializable data for the class.
+   */
+  toJSON() {
+    const projects = [];
+    privateMembers.get(this).projects.forEach(({ id, project }) => {
+      projects.push({
+        name: project.name,
+        id,
+        description: project.description,
+      });
+    });
+    return projects;
+  }
 }
 
 export default ProjectList;
