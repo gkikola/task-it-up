@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
@@ -18,6 +19,9 @@ module.exports = (env, argv) => {
         title: 'Task It Up',
       }),
       new MiniCssExtractPlugin(),
+      new webpack.DefinePlugin({
+        PACKAGE_VERSION: JSON.stringify(require('./package.json').version),
+      }),
     ],
     output: {
       filename: 'main.js',

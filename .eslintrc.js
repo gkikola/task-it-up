@@ -6,6 +6,9 @@ module.exports = {
     'airbnb-base',
     'plugin:compat/recommended'
   ],
+  globals: {
+    PACKAGE_VERSION: 'readonly',
+  },
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
