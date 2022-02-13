@@ -24,9 +24,9 @@ import ImportModal from './importModal';
  *   invoked when the user closes the modal.
  * @property {Object} buttons An object holding the form buttons in the modal
  *   content.
- * @property {HTMLElement} importButton The import button.
- * @property {HTMLElement} exportButton The export button.
- * @property {HTMLElement} deleteButton The delete button.
+ * @property {HTMLElement} buttons.importButton The import button.
+ * @property {HTMLElement} buttons.exportButton The export button.
+ * @property {HTMLElement} buttons.deleteButton The delete button.
  */
 
 /**
@@ -59,6 +59,11 @@ function doImport(instance, fileType, modalStack) {
  *   the modal is being inserted.
  */
 function doExport(instance, fileType, modalStack) {
+  const callback = privateMembers.get(instance).callbacks.exportData;
+  if (callback) callback(fileType);
+
+  // Close the data modal (using setTimeout to wait for export modal to finish)
+  setTimeout(() => modalStack.closeModal());
 }
 
 /**
