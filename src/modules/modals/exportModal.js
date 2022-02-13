@@ -3,6 +3,8 @@
  * @module exportModal
  */
 
+import { createFormControl } from '../utility';
+
 /**
  * Object holding private members for the
  * [ExportModal]{@link module:exportModal~ExportModal} class.
@@ -12,6 +14,12 @@
  *   invoked when the user successfully confirms the modal.
  * @property {Function} [callbacks.cancel] A callback function that will be
  *   invoked when the user cancels the modal.
+ * @property {Object} controls An object holding the form input elements for
+ *   the modal.
+ * @property {HTMLElement} controls.exportJson The radio button for selecting
+ *   the JSON file format.
+ * @property {HTMLElement} controls.exportCsv The radio button for selecting
+ *   the CSV file format.
  */
 
 /**
@@ -56,6 +64,10 @@ class ExportModal {
         confirm: options.confirm || null,
         cancel: options.cancel || null,
       },
+      controls: {
+        exportJson: null,
+        exportCsv: null,
+      },
     };
     privateMembers.set(this, privates);
   }
@@ -77,15 +89,55 @@ class ExportModal {
   /* eslint-enable class-methods-use-this */
 
   addContent(parent) {
-    const message = document.createElement('p');
-    message.textContent = 'TODO: Add modal content.';
-    parent.appendChild(message);
+    const radioLabel = (value) => (
+      { value, classList: ['form-input-label-inline'] }
+    );
+
+    const container = document.createElement('div');
+    container.classList.add('form-input-container');
+
+    const label = document.createElement('div');
+    label.classList.add('form-input-label');
+    label.textContent = 'File Format';
+    container.appendChild(label);
+
+    container.appendChild(createFormControl({
+      type: 'radio',
+      id: 'export-format-json',
+      name: 'export-format',
+      value: 'json',
+      checked: true,
+      label: radioLabel('Export all data to JSON format'),
+      container: { classList: ['form-input-item-container'] },
+    }));
+    container.appendChild(createFormControl({
+      type: 'radio',
+      id: 'export-format-csv',
+      name: 'export-format',
+      value: 'csv',
+      label: radioLabel('Export tasks to CSV format'),
+      container: { classList: ['form-input-item-container'] },
+    }));
+
+    parent.appendChild(container);
+
+    const { controls } = privateMembers.get(this);
+    controls.exportJson = container.querySelector('#export-format-json');
+    controls.exportCsv = container.querySelector('#export-format-csv');
   }
 
   confirm() {
+    const { callbacks, controls } = privateMembers.get(this);
+
+    if (callbacks.confirm) {
+      const fileType = controls.exportJson.checked ? 'json' : 'csv';
+      callbacks.confirm(fileType);
+    }
   }
 
   cancel() {
+    const callback = privateMembers.get(this).callbacks.cancel;
+    if (callback) callback();
   }
 
   /* eslint-disable-next-line class-methods-use-this --
@@ -93,6 +145,7 @@ class ExportModal {
    * Modal interface.
    */
   validate() {
+    return true;
   }
 }
 
