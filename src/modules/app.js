@@ -445,10 +445,19 @@ function updateProjectFilters(instance) {
  * Export app data to a JSON file.
  * @param {module:app~App} instance The [App]{@link module:app~App} instance
  *   whose data is to be exported.
+ * @param {Object} [options={}] An object holding additional file options.
+ * @param {string} [options.newlineSequence] The character sequence to use for
+ *   newlines.
  */
-function exportToJson(instance) {
+function exportToJson(instance, options = {}) {
+  let output = `${JSON.stringify(instance, null, 2)}\n`;
+
+  if (options.newlineSequence) {
+    output = output.replace(/\n/g, options.newlineSequence);
+  }
+
   generateFile(
-    `${JSON.stringify(instance, null, 2)}\n`,
+    output,
     'tasks.json',
     'application/json',
   );
@@ -458,8 +467,11 @@ function exportToJson(instance) {
  * Export app data to a CSV file.
  * @param {module:app~App} instance The [App]{@link module:app~App} instance
  *   whose data is to be exported.
+ * @param {Object} [options={}] An object holding additional file options.
+ * @param {string} [options.newlineSequence] The character sequence to use for
+ *   newlines.
  */
-function exportToCsv(instance) {
+function exportToCsv(instance, options = {}) {
   const lines = [];
   generateFile(lines.join('\n'), 'tasks.csv', 'text/csv');
 }
@@ -567,9 +579,9 @@ function showSettingsModal(instance) {
 function showDataModal(instance) {
   const privates = privateMembers.get(instance);
   const modal = new DataModal({
-    exportData: (fileType) => {
-      if (fileType === 'csv') exportToCsv(instance);
-      else exportToJson(instance);
+    exportData: (fileType, fileOptions) => {
+      if (fileType === 'csv') exportToCsv(instance, fileOptions);
+      else exportToJson(instance, fileOptions);
     },
   });
   privates.modalStack.showModal(modal);

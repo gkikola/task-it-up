@@ -53,14 +53,15 @@ function doImport(instance, fileType, modalStack) {
  * Perform a data export that was requested by the user.
  * @param {module:dataModal~DataModal} instance The class instance on which to
  *   apply the function.
- * @param {string} fileType A string specifying the file format to use for
- *   export: 'json' or 'csv'.
  * @param {module:modalStack~ModalStack} modalStack The modal stack in which
  *   the modal is being inserted.
+ * @param {string} fileType A string specifying the file format to use for
+ *   export: 'json' or 'csv'.
+ * @param {Object} fileOptions An object specifying additional file options.
  */
-function doExport(instance, fileType, modalStack) {
+function doExport(instance, modalStack, fileType, fileOptions) {
   const callback = privateMembers.get(instance).callbacks.exportData;
-  if (callback) callback(fileType);
+  if (callback) callback(fileType, fileOptions);
 
   // Close the data modal (using setTimeout to wait for export modal to finish)
   setTimeout(() => modalStack.closeModal());
@@ -95,7 +96,9 @@ function addListeners(instance, modalStack) {
 
   buttons.exportButton.addEventListener('click', () => {
     const modal = new ExportModal({
-      confirm: (fileType) => doExport(instance, fileType, modalStack),
+      confirm: (fileType, options) => {
+        doExport(instance, modalStack, fileType, options);
+      },
     });
     modalStack.showModal(modal);
   });
@@ -138,6 +141,9 @@ class DataModal {
    * @callback module:dataModal~DataModal~exportData
    * @param {string} fileType A string specifying the file format to use for
    *   export. This can be either 'json' or 'csv'.
+   * @param {Object} [options] An object specifying additional file options.
+   * @param {string} [options.newlineSequence] The character sequence to use
+   *   for newlines.
    */
 
   /**

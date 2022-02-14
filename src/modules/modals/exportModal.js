@@ -20,6 +20,8 @@ import { createFormControl } from '../utility';
  *   the JSON file format.
  * @property {HTMLElement} controls.exportCsv The radio button for selecting
  *   the CSV file format.
+ * @property {HTMLElement} controls.newlineSequence The select box for choosing
+ *   the newline style.
  */
 
 /**
@@ -41,6 +43,9 @@ class ExportModal {
    * @callback module:exportModal~ExportModal~exportCallback
    * @param {string} fileType A string specifying the file format to use for
    *   export. This can be either 'json' or 'csv'.
+   * @param {Object} [options] An object specifying additional file options.
+   * @param {string} [options.newlineSequence] The character sequence to use
+   *   for newlines.
    */
 
   /**
@@ -67,6 +72,7 @@ class ExportModal {
       controls: {
         exportJson: null,
         exportCsv: null,
+        newlineSequence: null,
       },
     };
     privateMembers.set(this, privates);
@@ -121,9 +127,34 @@ class ExportModal {
 
     parent.appendChild(container);
 
+    parent.appendChild(createFormControl({
+      type: 'select',
+      id: 'export-line-ending',
+      name: 'export-line-ending',
+      classList: ['form-select'],
+      label: { value: 'Line Ending Style', classList: ['form-input-label'] },
+      container: { classList: ['form-input-container'] },
+      menuItems: [
+        {
+          value: 'crlf',
+          label: 'Windows Standard: CRLF',
+          selected: true,
+        },
+        {
+          value: 'lf',
+          label: 'Unix Standard: LF',
+        },
+        {
+          value: 'cr',
+          label: 'Classic Mac OS Standard (Before OS X): CR',
+        },
+      ],
+    }));
+
     const { controls } = privateMembers.get(this);
-    controls.exportJson = container.querySelector('#export-format-json');
-    controls.exportCsv = container.querySelector('#export-format-csv');
+    controls.exportJson = parent.querySelector('#export-format-json');
+    controls.exportCsv = parent.querySelector('#export-format-csv');
+    controls.newlineSequence = parent.querySelector('#export-line-ending');
   }
 
   confirm() {
@@ -131,7 +162,20 @@ class ExportModal {
 
     if (callbacks.confirm) {
       const fileType = controls.exportJson.checked ? 'json' : 'csv';
-      callbacks.confirm(fileType);
+      let newlineSequence;
+      switch (controls.newlineSequence.value) {
+        case 'lf':
+          newlineSequence = '\n';
+          break;
+        case 'cr':
+          newlineSequence = '\r';
+          break;
+        case 'crlf':
+        default:
+          newlineSequence = '\r\n';
+          break;
+      }
+      callbacks.confirm(fileType, { newlineSequence });
     }
   }
 
