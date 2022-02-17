@@ -446,16 +446,17 @@ class TaskList {
   toJSON() {
     const tasks = [];
     privateMembers.get(this).tasks.forEach((task, id) => {
+      const copy = _.cloneDeep(task);
       tasks.push({
-        name: task.name,
+        name: copy.name,
         id,
-        dueDate: task.dueDate,
-        creationDate: task.creationDate,
-        completionDate: task.completionDate,
-        priority: task.priority,
-        description: task.description,
-        recurringDate: task.recurringDate,
-        project: task.project,
+        dueDate: copy.dueDate,
+        creationDate: copy.creationDate,
+        completionDate: copy.completionDate,
+        priority: copy.priority,
+        description: copy.description,
+        recurringDate: copy.recurringDate,
+        project: copy.project,
       });
     });
     return tasks;
