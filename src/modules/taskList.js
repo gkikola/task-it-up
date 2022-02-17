@@ -232,6 +232,20 @@ class TaskList {
   }
 
   /**
+   * Execute the provided function on each task in the list.
+   * @param {Function} callback The function to execute on each task. The
+   *   function will be passed a
+   *   [wrapper]{@link module:taskList~TaskList~taskWrapper} containing the
+   *   task and its identifier.
+   */
+  forEach(callback) {
+    privateMembers.get(this).tasks.forEach((task, id) => {
+      const copy = _.cloneDeep(task);
+      callback({ id, task: copy });
+    });
+  }
+
+  /**
    * Get an array of [taskWrapper]{@link module:taskList~TaskList~taskWrapper}
    * objects filtered and sorted according to the given options.
    * @param {Object} [options={}] An object holding options to control which
