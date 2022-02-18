@@ -10,11 +10,9 @@ import { v4 as uuid } from 'uuid';
 import {
   addToMapArray,
   findInMapArray,
-  formatDate,
+  formatIsoDate,
   removeFromMapArrayBy,
 } from './utility';
-
-const ISO_FORMAT = 'yyyy-MM-dd';
 
 /**
  * Object holding private members for the
@@ -104,7 +102,7 @@ class TaskList {
     // Add task to lookup maps
     const wrapper = { id, task: copy };
     let dateStr = 'none';
-    if (task.dueDate) dateStr = formatDate(task.dueDate, ISO_FORMAT);
+    if (task.dueDate) dateStr = formatIsoDate(task.dueDate);
     const projectStr = task.project || 'none';
     const { priority } = task;
     addToMapArray(
@@ -168,8 +166,8 @@ class TaskList {
 
     let oldKey = 'none';
     let newKey = 'none';
-    if (oldTask.dueDate) oldKey = formatDate(oldTask.dueDate, ISO_FORMAT);
-    if (copy.dueDate) newKey = formatDate(copy.dueDate, ISO_FORMAT);
+    if (oldTask.dueDate) oldKey = formatIsoDate(oldTask.dueDate);
+    if (copy.dueDate) newKey = formatIsoDate(copy.dueDate);
     updateIndex(privates.tasksByDueDate, oldKey, newKey);
 
     oldKey = oldTask.project || 'none';
@@ -195,7 +193,7 @@ class TaskList {
     if (!task) return false;
 
     let dateStr = 'none';
-    if (task.dueDate) dateStr = formatDate(task.dueDate, ISO_FORMAT);
+    if (task.dueDate) dateStr = formatIsoDate(task.dueDate);
     const projectStr = task.project || 'none';
     const { priority } = task;
 
@@ -300,10 +298,10 @@ class TaskList {
         let startKey = null;
         let endKey = null;
         if (options.startDate) {
-          startKey = formatDate(options.startDate, ISO_FORMAT);
+          startKey = formatIsoDate(options.startDate);
         }
         if (options.endDate) {
-          endKey = formatDate(options.endDate, ISO_FORMAT);
+          endKey = formatIsoDate(options.endDate);
         }
 
         let lowIndex = 0;

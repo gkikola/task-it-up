@@ -3,7 +3,12 @@
  * @module utility
  */
 
-import { format as dfFormat, parse as dfParse } from 'date-fns';
+import {
+  format as dfFormat,
+  formatISO,
+  parse as dfParse,
+  parseISO,
+} from 'date-fns';
 
 /**
  * Add a value to an array belonging to a Map having array values. If the given
@@ -655,6 +660,28 @@ function formatDate(date, format) {
 }
 
 /**
+ * Format a date into a string representation in ISO 8601 format. The returned
+ * date string will not include a time component. To include the time and time
+ * zone, use [formatIsoDateTime]{@link module:utility~formatIsoDateTime}
+ * instead.
+ * @param {Date} date The date to be formatted.
+ * @returns {string} The formatted date string.
+ */
+function formatIsoDate(date) {
+  return formatISO(date, { representation: 'date' });
+}
+
+/**
+ * Format a date and time into a string representation in ISO 8601 format. The
+ * returned date string will include the time and time zone.
+ * @param {Date} date The date to be formatted.
+ * @returns {string} The formatted date string.
+ */
+function formatIsoDateTime(date) {
+  return formatISO(date);
+}
+
+/**
  * Parse a date from a string according to a pattern or sequence of patterns.
  * @param {string} dateString The string to parse.
  * @param {string|string[]} [format] The format string or sequence of format
@@ -681,6 +708,18 @@ function parseDate(dateString, format) {
   }
 
   return null;
+}
+
+/**
+ * Parse a date from an ISO 8601 string representation.
+ * @param {string} dateString The string to parse.
+ * @returns {Date} The parsed date, or null if the string does not match the
+ *   pattern.
+ */
+function parseIsoDateTime(dateString) {
+  const result = parseISO(dateString);
+
+  return Number.isFinite(result.getTime()) ? result : null;
 }
 
 /**
@@ -735,7 +774,10 @@ export {
   findInMapArray,
   getDateFormat,
   formatDate,
+  formatIsoDate,
+  formatIsoDateTime,
   parseDate,
+  parseIsoDateTime,
   removeFromMapArrayBy,
   removeFromMapArray,
 };
