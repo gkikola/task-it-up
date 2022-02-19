@@ -444,7 +444,7 @@ class TaskList {
    */
   toJSON() {
     const tasks = [];
-    const convertDate = (date) => date ? formatIsoDateTime(date) : null;
+    const convertDate = (date) => (date ? formatIsoDateTime(date) : null);
     privateMembers.get(this).tasks.forEach((task, id) => {
       const copy = _.cloneDeep(task);
       tasks.push({
