@@ -16,31 +16,12 @@ import {
   startOfMonth,
 } from 'date-fns';
 
-import { formatDate, formatIsoDateTime } from './utility';
-
-const WEEKDAYS = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-];
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
+import {
+  formatDate,
+  formatIsoDateTime,
+  getWeekdayName,
+  getMonthName,
+} from './utility';
 
 /**
  * Starting from the given date, find the next date landing on one of the given
@@ -471,7 +452,7 @@ class RecurringDate {
           } else {
             this.daysOfWeek.forEach((day, index) => {
               if (index > 0) strValue += ', ';
-              strValue += WEEKDAYS[day];
+              strValue += getWeekdayName(day);
             });
           }
         }
@@ -485,7 +466,7 @@ class RecurringDate {
           let weekStr;
           if (this.weekNumber < 5) weekStr = ordinal(this.weekNumber);
           else weekStr = 'last';
-          const dayStr = WEEKDAYS[this.daysOfWeek[0]];
+          const dayStr = getWeekdayName(this.daysOfWeek[0]);
           strValue += ` on the ${weekStr} ${dayStr}`;
         }
         break;
@@ -493,7 +474,7 @@ class RecurringDate {
         strValue = length === 1 ? 'Annually' : `Every ${length} years`;
 
         if (Number.isInteger(this.month) && this.dayOfMonth) {
-          const monthStr = MONTHS[this.month];
+          const monthStr = getMonthName(this.month);
           const dayStr = ordinal(this.dayOfMonth);
           strValue += ` on ${monthStr} ${dayStr}`;
         }
@@ -556,7 +537,7 @@ class RecurringDate {
    * @returns {Object} An object representing serializable data for the class.
    */
   toJSON() {
-    const convertDate = (date) => date ? formatIsoDateTime(date) : null;
+    const convertDate = (date) => (date ? formatIsoDateTime(date) : null);
     return {
       intervalUnit: this.intervalUnit,
       intervalLength: this.intervalLength,

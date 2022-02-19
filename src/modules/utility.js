@@ -10,6 +10,30 @@ import {
   parseISO,
 } from 'date-fns';
 
+const WEEKDAYS = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+const MONTHS = [
+  { name: 'January', maxDays: 31 },
+  { name: 'February', maxDays: 29 },
+  { name: 'March', maxDays: 31 },
+  { name: 'April', maxDays: 30 },
+  { name: 'May', maxDays: 31 },
+  { name: 'June', maxDays: 30 },
+  { name: 'July', maxDays: 31 },
+  { name: 'August', maxDays: 31 },
+  { name: 'September', maxDays: 30 },
+  { name: 'October', maxDays: 31 },
+  { name: 'November', maxDays: 30 },
+  { name: 'December', maxDays: 31 },
+];
+
 /**
  * Add a value to an array belonging to a Map having array values. If the given
  * key does not exist in the map, then a new array will be inserted at that
@@ -723,6 +747,38 @@ function parseIsoDateTime(dateString) {
 }
 
 /**
+ * Get the name of a day of the week.
+ * @param {number} dayIndex The index of the weekday as an integer from 0 to 6,
+ *   with 0 representing Sunday, 1 representing Monday, and so on.
+ * @returns {string} The English name of the weekday.
+ */
+function getWeekdayName(dayIndex) {
+  return WEEKDAYS[dayIndex] || 'Unknown';
+}
+
+/**
+ * Get the name of a month.
+ * @param {number} monthIndex The index of the month as an integer from 0 to
+ *   11, with 0 representing January, 1 representing February, and so on.
+ * @returns {string} The English name of the month.
+ */
+function getMonthName(monthIndex) {
+  return MONTHS[monthIndex]?.name || 'Unknown';
+}
+
+/**
+ * Get the (maximum) number of days in a particular month.
+ * @param {number} monthIndex The index of the month as an integer from 0 to
+ *   11, with 0 representing January, 1 representing February, and so on.
+ * @returns {number} The maximum number of days in the month. For example, the
+ *   value returned for February will be 29, not 28. Returns a value of 0 if
+ *   an invalid index is given.
+ */
+function getDaysInMonth(monthIndex) {
+  return MONTHS[monthIndex]?.maxDays || 0;
+}
+
+/**
  * Remove a value from an array belonging to a Map having array values. This
  * function is similar to
  * [removeFromMapArray]{@link module:utility~removeFromMapArray}, except that
@@ -778,6 +834,9 @@ export {
   formatIsoDateTime,
   parseDate,
   parseIsoDateTime,
+  getWeekdayName,
+  getMonthName,
+  getDaysInMonth,
   removeFromMapArrayBy,
   removeFromMapArray,
 };

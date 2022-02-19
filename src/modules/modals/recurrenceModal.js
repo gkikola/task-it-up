@@ -16,31 +16,11 @@ import {
   createToggleButton,
   formatDate,
   parseDate,
+  getWeekdayName,
+  getMonthName,
+  getDaysInMonth,
 } from '../utility';
 
-const WEEKDAYS = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-];
-const MONTHS = [
-  { name: 'January', maxDays: 31 },
-  { name: 'February', maxDays: 29 },
-  { name: 'March', maxDays: 31 },
-  { name: 'April', maxDays: 30 },
-  { name: 'May', maxDays: 31 },
-  { name: 'June', maxDays: 30 },
-  { name: 'July', maxDays: 31 },
-  { name: 'August', maxDays: 31 },
-  { name: 'September', maxDays: 30 },
-  { name: 'October', maxDays: 31 },
-  { name: 'November', maxDays: 30 },
-  { name: 'December', maxDays: 31 },
-];
 const UNITS = [
   { value: 'day', singular: 'Day', plural: 'Days' },
   { value: 'week', singular: 'Week', plural: 'Weeks' },
@@ -129,11 +109,11 @@ function createWeekContextForm() {
   label.htmlFor = 'recurring-date-week-type-select-days';
   optionContainer.appendChild(label);
 
-  const days = WEEKDAYS.map((day) => (
-    { name: day, value: day.toLowerCase(), short: day.slice(0, 1) }
-  ));
-  days.forEach((day) => {
-    optionContainer.appendChild(createToggleButton(day.short, {
+  _.range(7).map((index) => {
+    const name = getWeekdayName(index);
+    return { value: name.toLowerCase(), label: name.slice(0, 1) };
+  }).forEach((day) => {
+    optionContainer.appendChild(createToggleButton(day.label, {
       id: `recurring-date-weekday-${day.value}`,
       name: 'recurring-date-weekday',
       value: day.value,
@@ -190,10 +170,9 @@ function createMonthContextForm() {
   label.textContent = 'The ';
   optionContainer.appendChild(label);
 
-  selectItems = [];
-  for (let day = 1; day <= 31; day += 1) {
-    selectItems.push({ value: day.toString(), label: ordinal(day) });
-  }
+  selectItems = _.range(1, 32).map((day) => (
+    { value: day.toString(), label: ordinal(day) }
+  ));
   optionContainer.appendChild(createFormControl({
     type: 'select',
     id: 'recurring-date-month-day',
@@ -225,11 +204,9 @@ function createMonthContextForm() {
   label.textContent = 'The ';
   optionContainer.appendChild(label);
 
-  selectItems = [];
-  for (let week = 1; week <= 4; week += 1) {
-    selectItems.push({ value: week.toString(), label: ordinal(week) });
-  }
-  selectItems.push({ value: '5', label: 'last' });
+  selectItems = _.range(1, 6).map((week) => (
+    { value: week.toString(), label: (week < 5) ? ordinal(week) : 'last' }
+  ));
   optionContainer.appendChild(createFormControl({
     type: 'select',
     id: 'recurring-date-month-week-number',
@@ -243,9 +220,10 @@ function createMonthContextForm() {
   label.textContent = ' ';
   optionContainer.appendChild(label);
 
-  selectItems = WEEKDAYS.map((day) => (
-    { value: day.toLowerCase(), label: day }
-  ));
+  selectItems = _.range(7).map((index) => {
+    const day = getWeekdayName(index);
+    return { value: day.toLowerCase(), label: day };
+  });
   optionContainer.appendChild(createFormControl({
     type: 'select',
     id: 'recurring-date-month-week-day',
@@ -308,10 +286,9 @@ function createYearContextForm() {
   label.textContent = 'The ';
   optionContainer.appendChild(label);
 
-  selectItems = [];
-  for (let day = 1; day <= 31; day += 1) {
-    selectItems.push({ value: day.toString(), label: ordinal(day) });
-  }
+  selectItems = _.range(1, 32).map((day) => (
+    { value: day.toString(), label: ordinal(day) }
+  ));
   optionContainer.appendChild(createFormControl({
     type: 'select',
     id: 'recurring-date-year-day',
@@ -325,9 +302,10 @@ function createYearContextForm() {
   label.textContent = ' day of ';
   optionContainer.appendChild(label);
 
-  selectItems = MONTHS.map((month) => (
-    { value: month.name.toLowerCase(), label: month.name }
-  ));
+  selectItems = _.range(12).map((index) => {
+    const name = getMonthName(index);
+    return { value: name.toLowerCase(), label: name };
+  });
   optionContainer.appendChild(createFormControl({
     type: 'select',
     id: 'recurring-date-year-month',
@@ -376,7 +354,7 @@ function initFormValues(instance) {
         if (initial.daysOfWeek) {
           getControl(instance, 'week-type-select-days', context).checked = true;
           initial.daysOfWeek.forEach((day) => {
-            const id = `weekday-${WEEKDAYS[day].toLowerCase()}`;
+            const id = `weekday-${getWeekdayName(day).toLowerCase()}`;
             const button = getControl(instance, id, context);
             if (button) button.classList.add('active');
           });
@@ -395,7 +373,9 @@ function initFormValues(instance) {
           const weekSelect = getControl(instance, 'month-week-number', context);
           const daySelect = getControl(instance, 'month-week-day', context);
           weekSelect.value = initial.weekNumber;
-          daySelect.value = WEEKDAYS[initial.daysOfWeek[0]].toLowerCase();
+          daySelect.value = getWeekdayName(
+            initial.daysOfWeek[0],
+          ).toLowerCase();
         } else {
           getControl(instance, 'month-type-previous', context).checked = true;
         }
@@ -406,7 +386,7 @@ function initFormValues(instance) {
           getControl(instance, 'year-type-day', context).checked = true;
           const monthSelect = getControl(instance, 'year-month', context);
           const daySelect = getControl(instance, 'year-day', context);
-          monthSelect.value = MONTHS[initial.month].name.toLowerCase();
+          monthSelect.value = getMonthName(initial.month).toLowerCase();
           daySelect.value = initial.dayOfMonth;
         } else {
           getControl(instance, 'year-type-previous', context).checked = true;
@@ -450,9 +430,9 @@ function initFormValues(instance) {
   }
 
   const date = privates.baseDate;
-  const dayOfWeek = WEEKDAYS[date.getDay()].toLowerCase();
+  const dayOfWeek = getWeekdayName(date.getDay()).toLowerCase();
   const dayOfMonth = date.getDate();
-  const month = MONTHS[date.getMonth()].name.toLowerCase();
+  const month = getMonthName(date.getMonth()).toLowerCase();
   const weekNumber = Math.floor((dayOfMonth - 1) / 7) + 1;
 
   if (!initial || initial.intervalUnit !== 'week' || !initial.daysOfWeek) {
@@ -645,13 +625,13 @@ function addListeners(instance) {
   const yearMonthSelect = getControl(instance, 'year-month', yearOptions);
   const yearDaySelect = getControl(instance, 'year-day', yearOptions);
   const yearMonthListener = (e) => {
-    const month = MONTHS.findIndex((info) => (
-      info.name.toLowerCase() === e.target.value
+    const month = _.range(12).findIndex((monthIndex) => (
+      getMonthName(monthIndex).toLowerCase() === e.target.value
     ));
     const oldValue = Number(yearDaySelect.value);
     yearDaySelect.innerHTML = '';
 
-    const { maxDays } = MONTHS[month];
+    const maxDays = getDaysInMonth(month);
     _.range(1, maxDays + 1).forEach((day) => {
       const opt = document.createElement('option');
       opt.value = day.toString();
@@ -1012,9 +992,11 @@ class RecurrenceModal {
       options.intervalLength = Number(lengthInput.value);
 
       let context;
-      const getDayIndex = (day) => WEEKDAYS.findIndex((name) => (
-        day === name.toLowerCase()
-      ));
+      const getDayIndex = (day) => (
+        _.range(7).findIndex((dayIndex) => (
+          day === getWeekdayName(dayIndex).toLowerCase()
+        ))
+      );
       switch (unit) {
         case 'week':
           context = privates.containers.weekOptions;
@@ -1047,8 +1029,8 @@ class RecurrenceModal {
           if (getControl(this, 'year-type-day', context).checked) {
             const monthSelect = getControl(this, 'year-month', context);
             const daySelect = getControl(this, 'year-day', context);
-            options.month = MONTHS.findIndex((info) => (
-              info.name.toLowerCase() === monthSelect.value
+            options.month = _.range(12).findIndex((monthIndex) => (
+              getMonthName(monthIndex).toLowerCase() === monthSelect.value
             ));
             options.dayOfMonth = Number(daySelect.value);
           }
