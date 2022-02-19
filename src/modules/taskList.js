@@ -11,6 +11,7 @@ import {
   addToMapArray,
   findInMapArray,
   formatIsoDate,
+  formatIsoDateTime,
   removeFromMapArrayBy,
 } from './utility';
 
@@ -443,14 +444,15 @@ class TaskList {
    */
   toJSON() {
     const tasks = [];
+    const convertDate = (date) => date ? formatIsoDateTime(date) : null;
     privateMembers.get(this).tasks.forEach((task, id) => {
       const copy = _.cloneDeep(task);
       tasks.push({
         name: copy.name,
         id,
-        dueDate: copy.dueDate,
-        creationDate: copy.creationDate,
-        completionDate: copy.completionDate,
+        dueDate: convertDate(copy.dueDate),
+        creationDate: convertDate(copy.creationDate),
+        completionDate: convertDate(copy.completionDate),
         priority: copy.priority,
         description: copy.description,
         recurringDate: copy.recurringDate,

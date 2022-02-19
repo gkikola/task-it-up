@@ -16,7 +16,7 @@ import {
   startOfMonth,
 } from 'date-fns';
 
-import { formatDate } from './utility';
+import { formatDate, formatIsoDateTime } from './utility';
 
 const WEEKDAYS = [
   'Sunday',
@@ -549,6 +549,27 @@ class RecurringDate {
     }
 
     return strValue;
+  }
+
+  /**
+   * Returns an object suitable for serialization.
+   * @returns {Object} An object representing serializable data for the class.
+   */
+  toJSON() {
+    const convertDate = (date) => date ? formatIsoDateTime(date) : null;
+    return {
+      intervalUnit: this.intervalUnit,
+      intervalLength: this.intervalLength,
+      startDate: convertDate(this.startDate),
+      baseOnCompletion: this.baseOnCompletion,
+      weekNumber: this.weekNumber,
+      daysOfWeek: this.daysOfWeek,
+      month: this.month,
+      dayOfMonth: this.dayOfMonth,
+      onWeekend: this.onWeekend,
+      endDate: convertDate(this.endDate),
+      maxCount: this.maxCount,
+    };
   }
 }
 
