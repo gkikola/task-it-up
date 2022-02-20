@@ -176,13 +176,21 @@ class Task {
    * @returns {number} The priority value corresponding to the string.
    */
   static convertStringToPriority(priorityStr) {
-    switch (priorityStr) {
-      case 'very-low': return -2;
-      case 'low': return -1;
-      case 'medium': return 0;
-      case 'high': return 1;
-      case 'very-high': return 2;
-      default: return 0;
+    switch (priorityStr.toLowerCase()) {
+      case 'very-low':
+      case 'very low':
+        return -2;
+      case 'low':
+        return -1;
+      case 'medium':
+        return 0;
+      case 'high':
+        return 1;
+      case 'very-high':
+      case 'very high':
+        return 2;
+      default:
+        return 0;
     }
   }
 }
