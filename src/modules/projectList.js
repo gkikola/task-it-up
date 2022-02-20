@@ -171,7 +171,7 @@ class ProjectList {
   }
 
   /**
-   * Returns an object suitable for serialization.
+   * Convert data to an object suitable for serialization.
    * @returns {Object} An object representing serializable data for the class.
    */
   toJSON() {
