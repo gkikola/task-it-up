@@ -152,7 +152,7 @@ class Task {
 
   /**
    * Convert a task priority number to a string representation. Unlike
-   * [convertPriorityToString]{@link module:task~Task#convertPriorityToString},
+   * [convertPriorityToString]{@link module:task~Task.convertPriorityToString},
    * this method returns a string that is suitable for display to the user.
    * @param {number} priority The priority value to convert.
    * @returns {string} The string representation of the priority value.
