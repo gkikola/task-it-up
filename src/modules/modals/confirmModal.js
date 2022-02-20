@@ -108,7 +108,7 @@ class ConfirmModal {
    */
   constructor(message, options = {}) {
     const privates = {
-      title: options.title || 'Confirm',
+      title: options.title ?? 'Confirm',
       message,
       confirmLabel: options.confirmLabel || 'Yes',
       cancelLabel: options.cancelLabel || 'No',

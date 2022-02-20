@@ -314,16 +314,16 @@ function createDateInputField(options = {}) {
 
   container.appendChild(createFormControl({
     type: 'text',
-    id: options.id || null,
-    name: options.name || null,
-    title: options.title || null,
-    value: options.value || null,
-    placeholder: options.placeholder || null,
+    id: options.id ?? null,
+    name: options.name ?? null,
+    title: options.title ?? null,
+    value: options.value ?? null,
+    placeholder: options.placeholder ?? null,
     classList: options.classList || null,
-    required: options.required || false,
-    pattern: options.pattern || null,
-    minLength: options.minLength || null,
-    maxLength: options.maxLength || null,
+    required: options.required ?? false,
+    pattern: options.pattern ?? null,
+    minLength: options.minLength ?? null,
+    maxLength: options.maxLength ?? null,
   }));
 
   const button = document.createElement('button');
@@ -415,14 +415,15 @@ function createToggleButton(label, options = {}) {
  * @param {Object} [options={}] An object specifying options for the
  *   conversion.
  * @param {string} [options.newlineSequence] The character sequence to use for
- *   newlines. If provided, newline characters within each field will be
- *   replaced with this sequence.
+ *   newlines. If not provided, a carriage return/line feed pair (CRLF) is
+ *   used. All newline characters within each field will be replaced by this
+ *   sequence.
  * @returns {string} The record in CSV format. The returned string is not
  *   terminated by a newline, but may contain quoted newlines within the field
  *   data.
  */
 function arrayToCsvRecord(data, options = {}) {
-  const newlineSequence = options.newlineSequence || '\n';
+  const newlineSequence = options.newlineSequence ?? '\r\n';
 
   const fields = [];
   data.forEach((value) => {
@@ -680,7 +681,7 @@ function getDateFormat(locale, options = {}) {
  * @returns {string} The formatted date string.
  */
 function formatDate(date, format) {
-  return dfFormat(date, format || getDateFormat());
+  return dfFormat(date, format ?? getDateFormat());
 }
 
 /**
@@ -775,7 +776,7 @@ function getMonthName(monthIndex) {
  *   an invalid index is given.
  */
 function getDaysInMonth(monthIndex) {
-  return MONTHS[monthIndex]?.maxDays || 0;
+  return MONTHS[monthIndex]?.maxDays ?? 0;
 }
 
 /**

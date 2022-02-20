@@ -24,7 +24,7 @@ class Project {
      * A description for the project.
      * @type {?string}
      */
-    this.description = options.description || null;
+    this.description = options.description ?? null;
   }
 }
 

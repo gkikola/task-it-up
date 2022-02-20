@@ -174,7 +174,7 @@ class RecurringDate {
      * The length of the repetition interval.
      * @type {number}
      */
-    this.intervalLength = options.intervalLength || 1;
+    this.intervalLength = options.intervalLength ?? 1;
 
     /**
      * Indicates the earliest date that the next occurrence can happen. Any
@@ -189,7 +189,7 @@ class RecurringDate {
      * from the task's due date.
      * @type {boolean}
      */
-    this.baseOnCompletion = options.baseOnCompletion || false;
+    this.baseOnCompletion = options.baseOnCompletion ?? false;
 
     /**
      * The number of the week within a month in which the recurring date should
@@ -200,7 +200,7 @@ class RecurringDate {
      * in a particular month.
      * @type {?number}
      */
-    this.weekNumber = options.weekNumber || null;
+    this.weekNumber = options.weekNumber ?? null;
 
     /**
      * An array holding the days of the week on which the recurring date should
@@ -215,17 +215,14 @@ class RecurringDate {
      * represented as a number between 0 and 11.
      * @type {?number}
      */
-    this.month = null;
-    if (options.month !== undefined && options.month !== null) {
-      this.month = options.month;
-    }
+    this.month = options.month ?? null;
 
     /**
      * The day of the month on which the recurring date should occur,
      * represented as a number between 1 and 31.
      * @type {?number}
      */
-    this.dayOfMonth = options.dayOfMonth || null;
+    this.dayOfMonth = options.dayOfMonth ?? null;
 
     /**
      * Specifies what happens when the next recurrence occurs on a weekend. If
@@ -248,7 +245,7 @@ class RecurringDate {
      * stop, if ever.
      * @type {?number}
      */
-    this.maxCount = options.maxCount || null;
+    this.maxCount = options.maxCount ?? null;
   }
 
   /**

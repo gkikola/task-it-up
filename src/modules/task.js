@@ -71,7 +71,7 @@ class Task {
      * An optional description of the task.
      * @type {?string}
      */
-    this.description = options.description || null;
+    this.description = options.description ?? null;
 
     /**
      * A recurring date for the task, if any.

@@ -53,7 +53,7 @@ class DatePickerModal {
         cancel: options.cancel || null,
       },
       startDate: options.startDate || null,
-      title: options.title || 'Select Date',
+      title: options.title ?? 'Select Date',
       picker: null,
     };
     privateMembers.set(this, privates);

@@ -372,9 +372,9 @@ class TaskList {
       const leftTask = a.task;
       const rightTask = b.task;
       for (let index = 0; index < sortBy.length; index += 1) {
-        const caseSensitive = sortBy[index].caseSensitive || false;
-        const descending = sortBy[index].descending || false;
-        const missingLast = sortBy[index].missingLast || false;
+        const caseSensitive = sortBy[index].caseSensitive ?? false;
+        const descending = sortBy[index].descending ?? false;
+        const missingLast = sortBy[index].missingLast ?? false;
         const LESS = descending ? 1 : -1;
         const MORE = descending ? -1 : 1;
         switch (sortBy[index].field) {
@@ -507,7 +507,7 @@ class TaskList {
       'Recurrence Max Count',
     ];
 
-    const newlineSequence = options.newlineSequence || '\r\n';
+    const newlineSequence = options.newlineSequence ?? '\r\n';
     const csvOptions = { newlineSequence };
     const convertDate = (date) => (date ? formatIsoDateTime(date) : '');
     const lines = [arrayToCsvRecord(header, csvOptions)];

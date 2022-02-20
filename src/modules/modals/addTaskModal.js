@@ -340,7 +340,7 @@ class AddTaskModal {
       projects: projectList,
       taskId: options.taskId || null,
       projectId: options.projectId || null,
-      priority: options.priority || 0,
+      priority: options.priority ?? 0,
       mode: options.taskId ? 'edit' : 'add',
       customRecurrence: null,
       dateFormat: options.dateFormat || Settings.lookupDateFormat(),

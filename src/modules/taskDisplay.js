@@ -345,8 +345,8 @@ class TaskDisplay {
       projectList: privates.projects,
       startDate: options.startDate || null,
       endDate: options.endDate || null,
-      completed: options.completed || false,
-      requireDueDate: options.requireDueDate || false,
+      completed: options.completed ?? false,
+      requireDueDate: options.requireDueDate ?? false,
       project: options.project || null,
     };
 
@@ -355,9 +355,9 @@ class TaskDisplay {
     }
 
     const groupBy = options.groupBy || 'none';
-    const descending = options.sortDescending || false;
-    const caseSensitive = options.caseSensitive || false;
-    const missingLast = options.missingLast || false;
+    const descending = options.sortDescending ?? false;
+    const caseSensitive = options.caseSensitive ?? false;
+    const missingLast = options.missingLast ?? false;
     const pushSortField = (field) => {
       if (!listOptions.sortBy) listOptions.sortBy = [];
       listOptions.sortBy.push({

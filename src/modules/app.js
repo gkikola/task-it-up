@@ -474,7 +474,7 @@ function exportToJson(instance, options = {}) {
 function exportToCsv(instance, options = {}) {
   const { tasks, projects } = privateMembers.get(instance);
   const output = tasks.toCsv({
-    newlineSequence: options.newlineSequence || '\r\n',
+    newlineSequence: options.newlineSequence ?? '\r\n',
     projectList: projects,
   });
 
@@ -524,7 +524,7 @@ function showAddTaskModal(instance, options = {}) {
   const modal = new AddTaskModal(privates.tasks, privates.projects, {
     taskId: options.taskId || null,
     projectId: options.projectId || null,
-    priority: options.priority || 0,
+    priority: options.priority ?? 0,
     dateFormat: privates.settings.dateFormat,
     confirm: () => updateMainPanel(instance, { resetScroll: false }),
     newProject: () => updateProjectFilters(instance),
