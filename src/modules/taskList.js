@@ -7,11 +7,15 @@ import { isBefore as isDateBefore, isSameDay } from 'date-fns';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
+import Task from './task';
 import {
   addToMapArray,
+  arrayToCsvRecord,
   findInMapArray,
   formatIsoDate,
   formatIsoDateTime,
+  getMonthName,
+  getWeekdayName,
   removeFromMapArrayBy,
 } from './utility';
 
@@ -439,7 +443,7 @@ class TaskList {
   }
 
   /**
-   * Returns an object suitable for serialization.
+   * Convert data to an object suitable for serialization.
    * @returns {Object} An object representing serializable data for the class.
    */
   toJSON() {
@@ -460,6 +464,139 @@ class TaskList {
       });
     });
     return tasks;
+  }
+
+  /**
+   * Convert data to a string in CSV (comma-separated values) format.
+   * @param {Object} [options={}] An object holding additional options.
+   * @param {string} [options.newlineSequence] The character sequence to use
+   *   for newlines. If not given, then a carriage return/line feed pair (CRLF)
+   *   is used, as suggested by the
+   *   [RFC 4180]{@link https://datatracker.ietf.org/doc/html/rfc4180}
+   *   specification.
+   * @param {module:projectList~ProjectList} [options.projectList] The project
+   *   container. If not provided, then no project information besides the
+   *   project identifier will be included in the CSV fields.
+   * @returns {string} The task data in CSV format.
+   */
+  toCsv(options = {}) {
+    const projectFields = [];
+    if (options.projectList) projectFields.push('Project Name');
+    projectFields.push('Project UUID');
+    if (options.projectList) projectFields.push('Project Description');
+
+    const header = [
+      'Name',
+      'UUID',
+      'Due Date',
+      'Date Added',
+      'Date Completed',
+      'Priority',
+      'Description',
+      ...projectFields,
+      'Recurrence Interval Unit',
+      'Recurrence Interval Length',
+      'Recurrence Start Date',
+      'Recurrence Based on Completion?',
+      'Recurrence Week Number',
+      'Recurrence Week Days',
+      'Recurrence Month',
+      'Recurrence Day',
+      'Recurrence Weekend Behavior',
+      'Recurrence End Date',
+      'Recurrence Max Count',
+    ];
+
+    const newlineSequence = options.newlineSequence || '\r\n';
+    const csvOptions = { newlineSequence };
+    const convertDate = (date) => (date ? formatIsoDateTime(date) : '');
+    const lines = [arrayToCsvRecord(header, csvOptions)];
+    privateMembers.get(this).tasks.forEach((task, id) => {
+      const fields = [
+        task.name,
+        id,
+        convertDate(task.dueDate),
+        convertDate(task.creationDate),
+        convertDate(task.completionDate),
+        Task.convertPriorityToPrettyString(task.priority),
+        task.description ?? '',
+      ];
+
+      if (options.projectList) {
+        let project = null;
+        if (task.project) {
+          project = options.projectList.getProject(task.project);
+        }
+        fields.push(
+          project?.name ?? '',
+          task.project ?? '',
+          project?.description ?? '',
+        );
+      } else {
+        fields.push(task.project ?? '');
+      }
+
+      const { recurringDate } = task;
+      let intervalUnit = '';
+      switch (recurringDate?.intervalUnit) {
+        case 'day':
+          intervalUnit = 'Day';
+          break;
+        case 'week':
+          intervalUnit = 'Week';
+          break;
+        case 'month':
+          intervalUnit = 'Month';
+          break;
+        case 'year':
+          intervalUnit = 'Year';
+          break;
+        default:
+          break;
+      }
+      let daysOfWeek = '';
+      if (recurringDate?.daysOfWeek) {
+        daysOfWeek = recurringDate.daysOfWeek.map(getWeekdayName).join(', ');
+      }
+      let month = '';
+      if (Number.isInteger(recurringDate?.month)) {
+        month = getMonthName(recurringDate.month);
+      }
+      let onWeekend = '';
+      switch (recurringDate?.onWeekend) {
+        case 'no-change':
+          onWeekend = 'No Change';
+          break;
+        case 'previous-weekday':
+          onWeekend = 'Use Previous Weekday';
+          break;
+        case 'next-weekday':
+          onWeekend = 'Use Next Weekday';
+          break;
+        case 'nearest-weekday':
+          onWeekend = 'Use Nearest Weekday';
+          break;
+        default:
+          break;
+      }
+      fields.push(
+        intervalUnit,
+        recurringDate?.intervalLength.toString() ?? '',
+        convertDate(recurringDate?.startDate),
+        recurringDate?.baseOnCompletion.toString() ?? '',
+        recurringDate?.weekNumber?.toString() ?? '',
+        daysOfWeek,
+        month,
+        recurringDate?.dayOfMonth?.toString() ?? '',
+        onWeekend,
+        convertDate(recurringDate?.endDate),
+        recurringDate?.maxCount?.toString() ?? '',
+      );
+      lines.push(arrayToCsvRecord(fields, csvOptions));
+    });
+    lines.push('');
+
+    return lines.join(newlineSequence);
   }
 }
 

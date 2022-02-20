@@ -472,8 +472,17 @@ function exportToJson(instance, options = {}) {
  *   newlines.
  */
 function exportToCsv(instance, options = {}) {
-  const lines = [];
-  generateFile(lines.join('\n'), 'tasks.csv', 'text/csv');
+  const { tasks, projects } = privateMembers.get(instance);
+  const output = tasks.toCsv({
+    newlineSequence: options.newlineSequence || '\r\n',
+    projectList: projects,
+  });
+
+  generateFile(
+    output,
+    'tasks.csv',
+    'text/csv',
+  );
 }
 
 /**
@@ -1138,7 +1147,7 @@ class App {
   }
 
   /**
-   * Returns an object suitable for serialization.
+   * Convert data to an object suitable for serialization.
    * @returns {Object} An object representing serializable data for the class.
    */
   toJSON() {
