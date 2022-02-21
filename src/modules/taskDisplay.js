@@ -27,7 +27,9 @@ const PROJECT_MENU_ITEMS = [
  * Object holding private members for the
  * [TaskDisplay]{@link module:taskDisplay~TaskDisplay} class.
  * @typedef {Object} module:taskDisplay~TaskDisplay~privates
- * @property {HTMLElement} container The container holding the display panel.
+ * @property {HTMLElement} container The top-level container holding the
+ *   display panel.
+ * @property {HTMLElement} content The container holding the panel content.
  * @property {module:taskList~TaskList} tasks The task container.
  * @property {module:projectList~ProjectList} projects The project container.
  * @property {module:taskDisplay~TaskDisplay~taskCallback} [taskCallback] A
@@ -82,7 +84,7 @@ function isSameGroup(groupBy, task1, task2) {
  *   to apply the function.
  */
 function clear(instance) {
-  privateMembers.get(instance).container.innerHTML = '';
+  privateMembers.get(instance).content.innerHTML = '';
 }
 
 /**
@@ -100,12 +102,12 @@ function createList(instance, label) {
     const heading = document.createElement('h4');
     heading.classList.add('task-list-heading');
     heading.textContent = label;
-    privates.container.appendChild(heading);
+    privates.content.appendChild(heading);
   }
 
   const list = document.createElement('ul');
   list.classList.add('task-list');
-  privates.container.appendChild(list);
+  privates.content.appendChild(list);
   return list;
 }
 
@@ -294,6 +296,9 @@ class TaskDisplay {
    * @property {boolean} [missingLast=false] If set to true, then tasks that
    *   are missing a certain field will be sorted at the end of the list, when
    *   sorting by that field.
+   * @property {boolean} [resetScroll=true] If set to true (the default), the
+   *   panel's scroll position will be reset back to the top. Otherwise the
+   *   scroll position will not be changed.
    */
 
   /**
@@ -313,12 +318,13 @@ class TaskDisplay {
     panel.classList.add('task-panel');
     parent.appendChild(panel);
 
-    const container = document.createElement('div');
-    container.classList.add('task-panel-content');
-    panel.appendChild(container);
+    const content = document.createElement('div');
+    content.classList.add('task-panel-content');
+    panel.appendChild(content);
 
     const privates = {
-      container,
+      container: panel,
+      content,
       tasks: taskList,
       projects: projectList,
       taskCallback: options.taskCallback || null,
@@ -387,7 +393,7 @@ class TaskDisplay {
       const message = document.createElement('div');
       message.classList.add('task-list-empty');
       message.textContent = 'No Tasks Found';
-      privates.container.appendChild(message);
+      privates.content.appendChild(message);
     }
 
     // Set menu items for the 'more' button
@@ -396,6 +402,12 @@ class TaskDisplay {
     } else {
       const menuItems = [...PROJECT_MENU_ITEMS, ...STANDARD_MENU_ITEMS];
       privates.taskMenu.setMenuItems(menuItems);
+    }
+
+    // Reset the scroll position
+    if (options.resetScroll !== false) {
+      privates.container.scrollTop = 0;
+      privates.container.scrollLeft = 0;
     }
   }
 }

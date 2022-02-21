@@ -328,7 +328,10 @@ function updateMainPanel(instance, options = {}) {
 
   let heading = null;
   let subheading = null;
-  const displayOptions = { groupBy: 'none' };
+  const displayOptions = {
+    groupBy: 'none',
+    resetScroll: options.resetScroll ?? true,
+  };
   let filterOptions;
   switch (group) {
     case 'dates': {
@@ -410,12 +413,6 @@ function updateMainPanel(instance, options = {}) {
   privates.taskDisplay.update(displayOptions);
 
   updateMainPanelMenu(instance);
-
-  // Reset the scroll position
-  if (options.resetScroll !== false) {
-    privates.mainPanel.scrollTop = 0;
-    privates.mainPanel.scrollLeft = 0;
-  }
 }
 
 /**
