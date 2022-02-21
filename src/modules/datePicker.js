@@ -13,7 +13,7 @@ import {
   startOfWeek,
 } from 'date-fns';
 
-import { createFormControl, createIconButton } from './utility';
+import { createFormControl, createIconButton } from './utility/dom';
 
 const MONTHS = [
   'January',

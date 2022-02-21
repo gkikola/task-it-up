@@ -5,7 +5,7 @@
 
 import Settings from '../settings';
 import { isLocalStorageSupported } from '../storage';
-import { createFormControl } from '../utility';
+import { createFormControl } from '../utility/dom';
 
 /**
  * Object holding private members for the

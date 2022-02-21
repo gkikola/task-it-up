@@ -7,7 +7,7 @@ import _ from 'lodash';
 import EventEmitter from 'events';
 
 import Collapsible from './collapsible';
-import { createIconButton } from './utility';
+import { createIconButton } from './utility/dom';
 
 const ICON_EXPANDED = 'expand_more';
 const ICON_COLLAPSED = 'chevron_right';

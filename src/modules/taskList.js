@@ -10,14 +10,16 @@ import { v4 as uuid } from 'uuid';
 import Task from './task';
 import {
   addToMapArray,
-  arrayToCsvRecord,
   findInMapArray,
+  removeFromMapArrayBy,
+} from './utility/dataStructures';
+import {
   formatIsoDate,
   formatIsoDateTime,
   getMonthName,
   getWeekdayName,
-  removeFromMapArrayBy,
-} from './utility';
+} from './utility/dates';
+import { arrayToCsvRecord } from './utility/fileFormats';
 
 /**
  * Object holding private members for the

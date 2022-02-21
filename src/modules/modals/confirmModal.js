@@ -3,7 +3,7 @@
  * @module confirmModal
  */
 
-import { createFormControl } from '../utility';
+import { createFormControl } from '../utility/dom';
 
 /**
  * Object holding the private members for the

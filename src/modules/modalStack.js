@@ -3,7 +3,7 @@
  * @module modalStack
  */
 
-import { createIconButton } from './utility';
+import { createIconButton } from './utility/dom';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',

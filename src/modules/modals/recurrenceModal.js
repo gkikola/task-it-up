@@ -11,15 +11,17 @@ import DatePickerModal from './datePickerModal';
 import RecurringDate from '../recurringDate';
 import Settings from '../settings';
 import {
-  createDateInputField,
-  createFormControl,
-  createToggleButton,
   formatDate,
   parseDate,
   getWeekdayName,
   getMonthName,
   getDaysInMonth,
-} from '../utility';
+} from '../utility/dates';
+import {
+  createDateInputField,
+  createFormControl,
+  createToggleButton,
+} from '../utility/dom';
 
 const UNITS = [
   { value: 'day', singular: 'Day', plural: 'Days' },

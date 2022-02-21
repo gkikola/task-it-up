@@ -9,12 +9,8 @@ import RecurrenceModal from './recurrenceModal';
 import RecurringDate from '../recurringDate';
 import Settings from '../settings';
 import Task from '../task';
-import {
-  createDateInputField,
-  createFormControl,
-  formatDate,
-  parseDate,
-} from '../utility';
+import { formatDate, parseDate } from '../utility/dates';
+import { createDateInputField, createFormControl } from '../utility/dom';
 
 /**
  * Object holding private members for the

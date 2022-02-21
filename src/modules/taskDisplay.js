@@ -8,10 +8,8 @@ import { isSameDay } from 'date-fns';
 import PopupMenu from './popupMenu';
 import Settings from './settings';
 import Task from './task';
-import {
-  createIconButton,
-  formatDate,
-} from './utility';
+import { formatDate } from './utility/dates';
+import { createIconButton } from './utility/dom';
 
 const CHECKED_ICON = 'check_circle_outline';
 const UNCHECKED_ICON = 'radio_button_unchecked';

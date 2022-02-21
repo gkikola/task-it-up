@@ -3,7 +3,7 @@
  * @module settings
  */
 
-import { getDateFormat } from './utility';
+import { getDateFormat } from './utility/dates';
 
 /**
  * Holds user app settings.

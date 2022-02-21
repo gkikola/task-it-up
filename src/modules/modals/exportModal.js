@@ -3,7 +3,7 @@
  * @module exportModal
  */
 
-import { createFormControl } from '../utility';
+import { createFormControl } from '../utility/dom';
 
 /**
  * Object holding private members for the

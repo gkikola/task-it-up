@@ -21,7 +21,7 @@ import {
   formatIsoDateTime,
   getWeekdayName,
   getMonthName,
-} from './utility';
+} from './utility/dates';
 
 /**
  * Starting from the given date, find the next date landing on one of the given

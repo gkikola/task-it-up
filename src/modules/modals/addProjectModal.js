@@ -5,7 +5,7 @@
  */
 
 import Project from '../project';
-import { createFormControl } from '../utility';
+import { createFormControl } from '../utility/dom';
 
 /**
  * Object holding private members for the

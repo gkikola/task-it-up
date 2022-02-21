@@ -27,7 +27,8 @@ import Task from './task';
 import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
 import { generateFile } from './storage';
-import { createIconButton, formatDate } from './utility';
+import { formatDate } from './utility/dates';
+import { createIconButton } from './utility/dom';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
