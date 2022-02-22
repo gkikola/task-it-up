@@ -40,6 +40,10 @@
  *   input field.
  * @property {number} [maxLength] Sets the maximum acceptable length for an
  *   input field.
+ * @property {string|string[]} [accept] Sets the acceptable file types for a
+ *   file input field. Can be a string containing a comma-separated list of
+ *   file extensions and/or media types, or an array of strings each specifying
+ *   one file extension or media type.
  * @property {Object} [label] An object specifying information about the label
  *   for the input element.
  * @property {string} [label.value] The text content of the label that should
@@ -154,6 +158,10 @@ function createFormControl(options = {}) {
   }
   if (type !== 'select' && options.maxLength) {
     input.maxLength = options.maxLength;
+  }
+  if (type === 'file' && options.accept) {
+    if (Array.isArray(options.accept)) input.accept = options.accept.join(',');
+    else input.accept = options.accept;
   }
 
   const checkable = type === 'checkbox' || type === 'radio';
