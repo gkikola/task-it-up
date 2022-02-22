@@ -52,7 +52,14 @@ function doImport(instance, modalStack, file) {
   readFile(file, (content) => {
     if (content) {
       const callback = privateMembers.get(instance).callbacks.importData;
-      if (callback) callback(content);
+      if (callback) {
+        const fileInfo = {
+          name: file.name,
+          size: file.size,
+          type: file.type || null,
+        };
+        callback(content, fileInfo);
+      }
       modalStack.closeModal();
     }
   });
@@ -145,7 +152,12 @@ class DataModal {
    * A callback function that will be invoked when the user chooses to import
    * data from a file and the file is read successfully.
    * @callback module:dataModal~DataModal~importData
-   * @param {string} fileContent The contents of the file.
+   * @param {string} content The contents of the file.
+   * @param {Object} [info] An object specifying additional file information.
+   * @param {string} [info.name] The name of the file.
+   * @param {number} [info.size] The size of the file in bytes.
+   * @param {string} [info.type] The media type of the file, or null if the
+   *   browser could not determine a media type.
    */
 
   /**
