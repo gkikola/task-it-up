@@ -6,8 +6,8 @@
 import ConfirmModal from './confirmModal';
 import ExportModal from './exportModal';
 
-import { readFile } from '../storage';
 import { createFormControl } from '../utility/dom';
+import { readFile } from '../utility/storage';
 
 /**
  * Object holding the private members for the
