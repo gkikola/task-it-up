@@ -5,7 +5,9 @@
 
 import ConfirmModal from './confirmModal';
 import ExportModal from './exportModal';
-import ImportModal from './importModal';
+
+import { readFile } from '../storage';
+import { createFormControl } from '../utility/dom';
 
 /**
  * Object holding the private members for the
@@ -22,11 +24,12 @@ import ImportModal from './importModal';
  *   invoked if the user chooses to delete all data.
  * @property {Function} [callbacks.close] A callback function that will be
  *   invoked when the user closes the modal.
- * @property {Object} buttons An object holding the form buttons in the modal
+ * @property {Object} controls An object holding the form controls in the modal
  *   content.
- * @property {HTMLElement} buttons.importButton The import button.
- * @property {HTMLElement} buttons.exportButton The export button.
- * @property {HTMLElement} buttons.deleteButton The delete button.
+ * @property {HTMLElement} controls.fileSelector The file input control.
+ * @property {HTMLElement} controls.importButton The import button.
+ * @property {HTMLElement} controls.exportButton The export button.
+ * @property {HTMLElement} controls.deleteButton The delete button.
  */
 
 /**
@@ -41,12 +44,18 @@ const privateMembers = new WeakMap();
  * Perform a data import that was requested by the user.
  * @param {module:dataModal~DataModal} instance The class instance on which to
  *   apply the function.
- * @param {string} fileType A string specifying the file format to use when
- *   interpreting the data: 'json', 'csv', or 'auto'.
  * @param {module:modalStack~ModalStack} modalStack The modal stack in which
  *   the modal is being inserted.
+ * @param {Blob} file The file that the user selected for import.
  */
-function doImport(instance, fileType, modalStack) {
+function doImport(instance, modalStack, file) {
+  readFile(file, (content) => {
+    if (content) {
+      const callback = privateMembers.get(instance).callbacks.importData;
+      if (callback) callback(content);
+      modalStack.closeModal();
+    }
+  });
 }
 
 /**
@@ -75,6 +84,11 @@ function doExport(instance, modalStack, fileType, fileOptions) {
  *   the modal is being inserted.
  */
 function doDelete(instance, modalStack) {
+  const callback = privateMembers.get(instance).callbacks.deleteAll;
+  if (callback) callback();
+
+  // Close the data modal (using setTimeout to wait for confirm modal to close)
+  setTimeout(() => modalStack.closeModal());
 }
 
 /**
@@ -85,16 +99,13 @@ function doDelete(instance, modalStack) {
  *   the modal is being inserted.
  */
 function addListeners(instance, modalStack) {
-  const { buttons } = privateMembers.get(instance);
+  const { controls } = privateMembers.get(instance);
 
-  buttons.importButton.addEventListener('click', () => {
-    const modal = new ImportModal({
-      confirm: (fileType) => doImport(instance, fileType, modalStack),
-    });
-    modalStack.showModal(modal);
+  controls.importButton.addEventListener('click', () => {
+    controls.fileSelector.click();
   });
 
-  buttons.exportButton.addEventListener('click', () => {
+  controls.exportButton.addEventListener('click', () => {
     const modal = new ExportModal({
       confirm: (fileType, options) => {
         doExport(instance, modalStack, fileType, options);
@@ -103,7 +114,7 @@ function addListeners(instance, modalStack) {
     modalStack.showModal(modal);
   });
 
-  buttons.deleteButton.addEventListener('click', () => {
+  controls.deleteButton.addEventListener('click', () => {
     const modal = new ConfirmModal(
       'Are you sure you want to delete all tasks and projects?',
       {
@@ -118,6 +129,11 @@ function addListeners(instance, modalStack) {
     );
     modalStack.showModal(modal);
   });
+
+  controls.fileSelector.addEventListener('change', (e) => {
+    const { files } = e.target;
+    if (files.length > 0) doImport(instance, modalStack, files[0]);
+  });
 }
 
 /**
@@ -129,9 +145,6 @@ class DataModal {
    * A callback function that will be invoked when the user chooses to import
    * data from a file and the file is read successfully.
    * @callback module:dataModal~DataModal~importData
-   * @param {string} fileType A string specifying the type of file format. This
-   *   can be 'json', 'csv', or 'auto'. If 'auto' is given, then an attempt
-   *   should be made to detect the format automatically based on the contents.
    * @param {string} fileContent The contents of the file.
    */
 
@@ -175,7 +188,8 @@ class DataModal {
         deleteAll: options.deleteAll || null,
         close: options.close || null,
       },
-      buttons: {
+      controls: {
+        fileSelector: null,
         importButton: null,
         exportButton: null,
         deleteButton: null,
@@ -229,18 +243,31 @@ class DataModal {
       return button;
     };
 
-    const { buttons } = privateMembers.get(this);
+    const { controls } = privateMembers.get(this);
     let container = addContainer();
     addHeading('Import/Export', container);
     const buttonContainer = document.createElement('div');
     buttonContainer.classList.add('form-button-container');
     container.appendChild(buttonContainer);
-    buttons.importButton = addButton('Import from File...', buttonContainer);
-    buttons.exportButton = addButton('Export to File...', buttonContainer);
+    controls.importButton = addButton('Import from File...', buttonContainer);
+    controls.exportButton = addButton('Export to File...', buttonContainer);
 
     container = addContainer();
     addHeading('Delete Data', container);
-    buttons.deleteButton = addButton('Erase All Data...', container);
+    controls.deleteButton = addButton('Erase All Data...', container);
+
+    controls.fileSelector = createFormControl({
+      type: 'file',
+      id: 'data-import-file-select',
+      name: 'data-import-file-select',
+      classList: ['form-input-hidden'],
+      accept: [
+        '.json',
+        '.csv',
+        'application/json',
+        'text/csv',
+      ],
+    });
 
     addListeners(this, modalStack);
   }
