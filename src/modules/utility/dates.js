@@ -254,7 +254,7 @@ function formatDate(date, format) {
 /**
  * Format a date into a string representation in ISO 8601 format. The returned
  * date string will not include a time component. To include the time and time
- * zone, use [formatIsoDateTime]{@link module:utility~formatIsoDateTime}
+ * zone, use [formatIsoDateTime]{@link module:dates~formatIsoDateTime}
  * instead.
  * @param {Date} date The date to be formatted.
  * @returns {string} The formatted date string.

@@ -5,7 +5,7 @@
 
 /**
  * Specifies options for creating input controls in a form.
- * @typedef {Object} module:utility~formControlOptions
+ * @typedef {Object} module:dom~formControlOptions
  * @property {string} [type=text] The type of input. For most text or numeric
  *   forms of input, this value is used as the 'type' attribute on an 'input'
  *   element. Setting this to 'select' indicates that a 'select' element should
@@ -76,7 +76,7 @@
 
 /**
  * Create an input control in a form, optionally including a label.
- * @param {module:utility~formControlOptions} [options={}] An object specifying
+ * @param {module:dom~formControlOptions} [options={}] An object specifying
  *   options for the input element.
  * @returns {HTMLElement} The container holding the input element and its
  *   label. If no label and no container id were specified, then the form
@@ -191,7 +191,7 @@ function createFormControl(options = {}) {
 
 /**
  * Specifies options for creating a date input field in a form.
- * @typedef {Object} module:utility~dateInputOptions
+ * @typedef {Object} module:dom~dateInputOptions
  * @property {string} [id] The identifier for the text input element.
  * @property {string} [name] The name of the text input element.
  * @property {string} [title] The title of the text input element, usually
@@ -241,7 +241,7 @@ function createFormControl(options = {}) {
  * Create an input field for entering dates. This will create a text input
  * control together with a button that can invoke a callback allowing for the
  * caller to open a date picker.
- * @param {module:utility~dateInputOptions} [options={}] An object specifying
+ * @param {module:dom~dateInputOptions} [options={}] An object specifying
  *   options for the input field.
  * @returns {HTMLElement} The container holding the input elements and label.
  */
