@@ -19,7 +19,7 @@ import {
   getMonthName,
   getWeekdayName,
 } from './utility/dates';
-import { arrayToCsvRecord } from './utility/fileFormats';
+import { arrayToCsvRecord } from './utility/storage';
 
 /**
  * Object holding private members for the
