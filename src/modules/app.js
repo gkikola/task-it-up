@@ -28,7 +28,7 @@ import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
 import { formatDate } from './utility/dates';
 import { createIconButton } from './utility/dom';
-import { generateFile } from './utility/storage';
+import { generateFile, getFileExtension } from './utility/storage';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -484,6 +484,56 @@ function exportToCsv(instance, options = {}) {
 }
 
 /**
+ * Import app data from a string in JSON format.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance in
+ *   which to import the data.
+ * @param {string} data The app data in JSON format.
+ * @throws {SyntaxError} If the data is not valid JSON.
+ */
+function importFromJSON(instance, data) {
+}
+
+/**
+ * Import app data from a CSV string.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance in
+ *   which to import the data.
+ * @param {string} data The app data in CSV format.
+ * @throws {SyntaxError} If the data is not in valid CSV format.
+ */
+function importFromCSV(instance, data) {
+}
+
+/**
+ * Import app data from a file. This function will attempt to determine whether
+ * the file is in JSON or CSV format, first using the file extension and,
+ * failing that, by examining the contents.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance in
+ *   which to import the data.
+ * @param {string} content The contents of the file being imported.
+ * @param {string} [name] The name of the file being imported.
+ * @throws {SyntaxError} If the data is not in a valid format.
+ */
+function importFromFile(instance, content, name) {
+  const fileExt = name ? getFileExtension(name).toLowerCase() : '';
+  switch (fileExt) {
+    case '.json':
+      importFromJSON(instance, content);
+      break;
+    case '.csv':
+      importFromCSV(instance, content);
+      break;
+    default:
+      try {
+        importFromJSON(instance, content);
+      } catch (e) {
+        if (e instanceof SyntaxError) importFromCSV(instance, content);
+        else throw e;
+      }
+      break;
+  }
+}
+
+/**
  * Display a modal confirmation dialog.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -586,6 +636,7 @@ function showSettingsModal(instance) {
 function showDataModal(instance) {
   const privates = privateMembers.get(instance);
   const modal = new DataModal({
+    importData: (content, { name }) => importFromFile(instance, content, name),
     exportData: (fileType, fileOptions) => {
       if (fileType === 'csv') exportToCsv(instance, fileOptions);
       else exportToJson(instance, fileOptions);
