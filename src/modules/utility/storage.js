@@ -174,10 +174,27 @@ function arrayToCsvRecord(data, options = {}) {
   return fields.join(',');
 }
 
+/**
+ * Extract the extension from a file name. The extension, for the purposes of
+ * this function, is considered to be the portion of the filename starting from
+ * (and including) the last period in the name and extending to the end of the
+ * name. If there is no period in the name, or if the only period is located at
+ * the very start of the name (as seen with dotfiles on Unix systems, for
+ * example), then the file is considered to have no extension.
+ * @param {string} filename The name of the file.
+ * @returns {string} The file's extension, including the period. If the file
+ *   has no extension, an empty string is returned.
+ */
+function getFileExtension(filename) {
+  const index = filename.lastIndexOf('.');
+  return (index > 0) ? filename.substring(index) : '';
+}
+
 export {
   arrayToCsvRecord,
   clearData,
   generateFile,
+  getFileExtension,
   isLocalStorageSupported,
   readFile,
   removeData,
