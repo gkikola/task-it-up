@@ -488,9 +488,37 @@ function exportToCsv(instance, options = {}) {
  * @param {module:app~App} instance The [App]{@link module:app~App} instance in
  *   which to import the data.
  * @param {string} data The app data in JSON format.
- * @throws {SyntaxError} If the data is not valid JSON.
+ * @returns {module:app~App~importStatus} An object holding information about
+ *   the status of the import.
  */
 function importFromJSON(instance, data) {
+  const tasks = { added: 0, updated: 0, failed: 0, total: 0 };
+  const projects = { ...tasks };
+  const errors = [];
+
+  try {
+    const dataObj = JSON.parse(data);
+
+    return {
+      successful: true,
+      format: 'json',
+      tasks,
+      projects,
+      errors,
+    };
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      return {
+        successful: false,
+        format: 'json',
+        tasks,
+        projects,
+        errors: [e.message],
+      };
+    } else {
+      throw e;
+    }
+  }
 }
 
 /**
@@ -498,9 +526,21 @@ function importFromJSON(instance, data) {
  * @param {module:app~App} instance The [App]{@link module:app~App} instance in
  *   which to import the data.
  * @param {string} data The app data in CSV format.
- * @throws {SyntaxError} If the data is not in valid CSV format.
+ * @returns {module:app~App~importStatus} An object holding information about
+ *   the status of the import.
  */
 function importFromCSV(instance, data) {
+  const tasks = { added: 0, updated: 0, failed: 0, total: 0 };
+  const projects = { ...tasks };
+  const errors = [];
+
+  return {
+    successful: true,
+    format: 'csv',
+    tasks,
+    projects,
+    errors,
+  };
 }
 
 /**
@@ -511,25 +551,31 @@ function importFromCSV(instance, data) {
  *   which to import the data.
  * @param {string} content The contents of the file being imported.
  * @param {string} [name] The name of the file being imported.
- * @throws {SyntaxError} If the data is not in a valid format.
+ * @returns {module:app~App~importStatus} An object holding information about
+ *   the status of the import.
  */
 function importFromFile(instance, content, name) {
   const fileExt = name ? getFileExtension(name).toLowerCase() : '';
   switch (fileExt) {
-    case '.json':
-      importFromJSON(instance, content);
-      break;
-    case '.csv':
-      importFromCSV(instance, content);
-      break;
-    default:
-      try {
-        importFromJSON(instance, content);
-      } catch (e) {
-        if (e instanceof SyntaxError) importFromCSV(instance, content);
-        else throw e;
+    case '.json': return importFromJSON(instance, content);
+    case '.csv': return importFromCSV(instance, content);
+    default: {
+      let result = importFromJSON(instance, content);
+      if (!result.successful) {
+        result = importFromCSV(instance, content);
+        if (!result.successful) {
+          const counts = { added: 0, updated: 0, failed: 0, total: 0 };
+          return {
+            successful: false,
+            format: 'unknown',
+            tasks: { ...counts },
+            projects: { ...counts },
+            errors: ['Unable to determine file format. Imported data must be in either JSON or CSV format.'],
+          };
+        }
       }
-      break;
+      return result;
+    }
   }
 }
 
@@ -1098,6 +1144,39 @@ function createPageElements(instance, parent) {
  * event-driven logic.
  */
 class App {
+  /**
+   * An object holding information about the status of a data import, including
+   * whether or not the import was successful and any errors that were
+   * encountered.
+   * @typedef {Object} module:app~App~importStatus
+   * @property {boolean} successful Will be true if data was imported, or false
+   *   if data could not be imported due to a fatal error.
+   * @property {string} format The format of the data string that was imported.
+   *   Will be 'json', 'csv', or 'unknown'. A value of 'unknown' indicates that
+   *   the format could not be automatically determined.
+   * @property {Object} tasks An object holding information about the number of
+   *   tasks that were imported.
+   * @property {number} tasks.added The number of new tasks that were added to
+   *   the task list.
+   * @property {number} tasks.updated The number of existing tasks in the task
+   *   list that were updated.
+   * @property {number} tasks.failed The number of tasks that failed to import.
+   * @property {number} tasks.total The total number of tasks that were
+   *   processed.
+   * @property {Object} projects An object holding information about the number
+   *   of projects that were imported.
+   * @property {number} projects.added The number of new projects that were
+   *   added to the project list.
+   * @property {number} projects.updated The number of existing projects in the
+   *   project list that were updated.
+   * @property {number} projects.failed The number of projects that failed to
+   *   import.
+   * @property {number} projects.total The total number of projects that were
+   *   processed.
+   * @property {string[]} errors An array of error messages describing any
+   *   errors that occurred during the import.
+   */
+
   /**
    * Append the DOM elements for the app to the given parent node.
    * @param {HTMLElement} parent The DOM node where the app elements should be
