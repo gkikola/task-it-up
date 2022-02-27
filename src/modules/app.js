@@ -8,6 +8,7 @@ import {
   endOfDay,
   startOfDay,
 } from 'date-fns';
+import semver from 'semver';
 
 import '../styles/reset.css';
 import '../styles/main.css';
@@ -492,18 +493,24 @@ function exportToCsv(instance, options = {}) {
  *   the status of the import.
  */
 function importFromJSON(instance, data) {
-  const tasks = { added: 0, updated: 0, failed: 0, total: 0 };
-  const projects = { ...tasks };
+  const taskCounts = { added: 0, updated: 0, failed: 0, total: 0 };
+  const projectCounts = { ...taskCounts };
   const errors = [];
 
   try {
-    const dataObj = JSON.parse(data);
+    const { app, settings, tasks, projects } = JSON.parse(data);
+
+    if (app?.name !== APP_NAME || !semver.valid(app?.version)) {
+      errors.push('Warning: Imported data does not follow the expected schema. The data may have been created by a different application, or may have been altered.');
+    } else if (semver.gt(app.version, APP_VERSION)) {
+      errors.push('Warning: Imported data seems to have been created by a newer version of the application. Some information might not be imported or might be imported incorrectly.');
+    }
 
     return {
       successful: true,
       format: 'json',
-      tasks,
-      projects,
+      tasks: taskCounts,
+      projects: projectCounts,
       errors,
     };
   } catch (e) {
@@ -511,9 +518,9 @@ function importFromJSON(instance, data) {
       return {
         successful: false,
         format: 'json',
-        tasks,
-        projects,
-        errors: [e.message],
+        tasks: taskCounts,
+        projects: projectCounts,
+        errors: [`Fatal Error: ${e.message}`],
       };
     } else {
       throw e;
@@ -570,7 +577,7 @@ function importFromFile(instance, content, name) {
             format: 'unknown',
             tasks: { ...counts },
             projects: { ...counts },
-            errors: ['Unable to determine file format. Imported data must be in either JSON or CSV format.'],
+            errors: ['Fatal Error: Unable to determine file format. Imported data must be in either JSON or CSV format.'],
           };
         }
       }
@@ -682,7 +689,9 @@ function showSettingsModal(instance) {
 function showDataModal(instance) {
   const privates = privateMembers.get(instance);
   const modal = new DataModal({
-    importData: (content, { name }) => importFromFile(instance, content, name),
+    importData: (content, { name }) => {
+      console.log(importFromFile(instance, content, name));
+    },
     exportData: (fileType, fileOptions) => {
       if (fileType === 'csv') exportToCsv(instance, fileOptions);
       else exportToJson(instance, fileOptions);
