@@ -4,7 +4,13 @@
  */
 
 import _ from 'lodash';
-import { v4 as uuid } from 'uuid';
+import {
+  v4 as generateUuid,
+  validate as validateUuid,
+  version as uuidVersion,
+} from 'uuid';
+
+import Project from './project';
 
 /**
  * Object holding private members for the
@@ -48,40 +54,28 @@ class ProjectList {
    */
 
   /**
+   * An object holding information about the status of a data import.
+   * @typedef {Object} module:projectList~ProjectList~importStatus
+   * @property {Object} projects An object holding information about the number
+   *   of projects that were imported.
+   * @property {number} projects.added The number of new projects that were
+   *   added to the project list.
+   * @property {number} projects.updated The number of existing projects in the
+   *   project list that were updated.
+   * @property {number} projects.failed The number of projects that failed to
+   *   import.
+   * @property {number} projects.total The total number of projects that were
+   *   processed.
+   * @property {string[]} errors An array of error messages describing any
+   *   errors that occurred during the import.
+   */
+
+  /**
    * Create a project list.
    */
   constructor() {
     const privates = { projects: [] };
     privateMembers.set(this, privates);
-  }
-
-  /**
-   * Add a project to the list. In order to prevent unintentional external
-   * modification of the project, a deep copy is made, and the original object
-   * is not kept.
-   * @param {module:project~Project} project The project to add.
-   * @returns {string} The identifier of the newly-added project.
-   */
-  addProject(project) {
-    const privates = privateMembers.get(this);
-
-    // Generate UUID (loop in case of collision)
-    let id;
-    do {
-      id = uuid();
-    } while (this.hasProject(id));
-
-    const value = { id, project: _.cloneDeep(project) };
-
-    // Maintain sort order on insertion
-    const index = _.sortedIndexBy(
-      privates.projects,
-      value,
-      (elem) => elem.project.name.toLowerCase(),
-    );
-
-    privates.projects.splice(index, 0, value);
-    return id;
   }
 
   /**
@@ -128,6 +122,55 @@ class ProjectList {
       privates.projects.splice(insertAt, 0, wrapper);
     }
     return true;
+  }
+
+  /**
+   * Add or update a project. If a project with the given identifier exists,
+   * then it is replaced with the given project. Otherwise, the project is
+   * added to the list as a new project. If the given identifier is not a valid
+   * UUID, then the method returns false and nothing happens.
+   * @param {string} id The unique identifier of the project.
+   * @param {module:project~Project} project The project that should be added
+   *   or with which an existing project should be replaced.
+   * @returns {boolean} True if the project was successfully added or updated,
+   *   or false if the given identifier is not a valid UUID.
+   */
+  addOrUpdateProject(id, project) {
+    if (!validateUuid(id) || uuidVersion(id) !== 4) return false;
+
+    if (!this.updateProject(id, project)) {
+      const privates = privateMembers.get(this);
+      const value = { id, project: _.cloneDeep(project) };
+
+      // Maintain sort order on insertion
+      const index = _.sortedIndexBy(
+        privates.projects,
+        value,
+        (elem) => elem.project.name.toLowerCase(),
+      );
+
+      privates.projects.splice(index, 0, value);
+    }
+
+    return true;
+  }
+
+  /**
+   * Add a project to the list. In order to prevent unintentional external
+   * modification of the project, a deep copy is made, and the original object
+   * is not kept.
+   * @param {module:project~Project} project The project to add.
+   * @returns {string} The identifier of the newly-added project.
+   */
+  addProject(project) {
+    // Generate UUID (loop in case of collision)
+    let id;
+    do {
+      id = generateUuid();
+    } while (this.hasProject(id));
+
+    this.addOrUpdateProject(id, project);
+    return id;
   }
 
   /**
@@ -184,6 +227,70 @@ class ProjectList {
       });
     });
     return projects;
+  }
+
+  /**
+   * Import projects from a JSON object.
+   * @param {Object} data The serialized JSON object to import.
+   * @returns {module:projectList~ProjectList~importStatus} An object holding
+   *   information about the status of the import.
+   */
+  importFromJson(data) {
+    const counts = {
+      added: 0,
+      updated: 0,
+      failed: 0,
+      total: 0,
+    };
+    const errors = [];
+
+    if (!Array.isArray(data)) {
+      errors.push('Error: Expected "projects" property to be an array.');
+      return { projects: counts, errors };
+    }
+
+    data.forEach(({ name, id, description }) => {
+      if (name == null) {
+        errors.push('Error: Project must have a name.');
+        counts.failed += 1;
+      } else if (typeof name !== 'string') {
+        errors.push(`Error: Expected type "string" for project name (received "${typeof name}").`);
+        counts.failed += 1;
+      } else if (name.length === 0) {
+        errors.push('Error: Project name must not be empty.');
+        counts.failed += 1;
+      } else {
+        const projectOptions = {};
+        if (description == null || typeof description === 'string') {
+          projectOptions.description = description;
+        } else {
+          errors.push(`Warning: Project "${name}": Expected type "string" for project description (received "${typeof description}").`);
+        }
+
+        let newId = null;
+        if (id != null) {
+          const newIdMsg = 'A new identifier will be generated.';
+          if (typeof id !== 'string') {
+            errors.push(`Warning: Project "${name}": Expected type "string" for project identifier (received "${typeof id}"). ${newIdMsg}`);
+          } else if (!validateUuid(id) || uuidVersion(id) !== 4) {
+            errors.push(`Warning: Project "${name}": Expected project identifier to be a valid version 4 UUID. ${newIdMsg}`);
+          } else {
+            newId = id;
+          }
+        }
+
+        if (newId && this.hasProject(id)) counts.updated += 1;
+        else counts.added += 1;
+
+        const project = new Project(name, projectOptions);
+        if (newId) this.addOrUpdateProject(newId, project);
+        else this.addProject(project);
+      }
+    });
+
+    counts.total = counts.added + counts.updated + counts.failed;
+
+    return { projects: counts, errors };
   }
 }
 
