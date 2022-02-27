@@ -39,6 +39,13 @@ class Settings {
    */
 
   /**
+   * An object holding information about the status of a data import.
+   * @typedef {Object} module:settings~Settings~importStatus
+   * @property {string[]} errors An array of error messages describing any
+   *   errors that occurred during the import.
+   */
+
+  /**
    * Create an object holding the default settings.
    */
   constructor() {
@@ -163,6 +170,143 @@ class Settings {
         };
       }
     }
+  }
+
+  /**
+   * Import settings from a JSON object.
+   * @param {Object} data The serialized JSON object to import.
+   * @returns {module:settings~Settings~importStatus} An object holding
+   *   information about the status of the import.
+   */
+  importFromJson(data) {
+    const errors = [];
+
+    const badTypeMsg = (setting, type, expectedType) => `Error: Expected type "${expectedType}" for setting "${setting}" (received "${type}").`;
+    const badValueMsg = (setting, value) => `Error: Unrecognized value "${value}" for setting "${setting}".`;
+    const tooLowMsg = (setting, value, min) => `Error: Value for setting "${setting}" cannot be below "${min}" (received "${value}")`;
+    const tooHighMsg = (setting, value, max) => `Error: Value for setting "${setting}" cannot be above "${max}" (received "${value}")`;
+
+    // Check if value matches constraints and add appropriate error message.
+    const validate = (
+      setting,
+      value,
+      {
+        expectedType,
+        expectedValues,
+        min,
+        max,
+      },
+    ) => {
+      if (value == null) return false;
+
+      /* eslint-disable-next-line valid-typeof --
+       * Violations of this rule are usually typing mistakes, but the
+       * comparison below is intended.
+       */
+      if (expectedType && typeof value !== expectedType) {
+        errors.push(badTypeMsg(setting, typeof value, expectedType));
+        return false;
+      }
+      if (min != null && value < min) {
+        errors.push(tooLowMsg(setting, value, min));
+        return false;
+      }
+      if (max != null && value > max) {
+        errors.push(tooHighMsg(setting, value, max));
+        return false;
+      }
+      if (expectedValues != null
+        && !expectedValues.includes(value.toLowerCase())) {
+        errors.push(badValueMsg(setting, value));
+        return false;
+      }
+      return true;
+    };
+
+    if (validate(
+      'storageMethod',
+      data.storageMethod,
+      { expectedType: 'string', expectedValues: ['none', 'local'] },
+    )) this.storageMethod = data.storageMethod;
+
+    if (data.dateFormat != null) {
+      if (validate(
+        'dateFormat.type',
+        data.dateFormat.type,
+        {
+          expectedType: 'string',
+          expectedValues: [
+            'local',
+            'iso',
+            'month-day-year',
+            'day-month-year',
+            'year-month-day',
+          ],
+        },
+      )) this.setDateFormat(data.dateFormat.type);
+    }
+
+    if (validate(
+      'deleteAfter',
+      data.deleteAfter,
+      { expectedType: 'number', min: 0 },
+    )) this.deleteAfter = data.deleteAfter;
+
+    if (data.filters != null) {
+      const processFilter = (name) => {
+        const filter = data.filters[name];
+        if (filter != null) {
+          if (validate(
+            `filters.${name}.groupBy`,
+            filter.groupBy,
+            {
+              expectedType: 'string',
+              expectedValues: [
+                'default',
+                'due-date',
+                'priority',
+                'project',
+                'none',
+              ],
+            },
+          )) this.filters[name].groupBy = filter.groupBy;
+
+          if (validate(
+            `filters.${name}.sortBy`,
+            filter.sortBy,
+            {
+              expectedType: 'string',
+              expectedValues: [
+                'name',
+                'due-date',
+                'create-date',
+                'priority',
+                'project',
+              ],
+            },
+          )) this.filters[name].sortBy = filter.sortBy;
+
+          if (validate(
+            `filters.${name}.sortDescending`,
+            filter.sortDescending,
+            { expectedType: 'boolean' },
+          )) this.filters[name].sortDescending = filter.sortDescending;
+
+          if (validate(
+            `filters.${name}.showCompleted`,
+            filter.showCompleted,
+            { expectedType: 'boolean' },
+          )) this.filters[name].showCompleted = filter.showCompleted;
+        }
+      };
+
+      processFilter('default');
+      processFilter('dates');
+      processFilter('projects');
+      processFilter('priorities');
+    }
+
+    return { errors };
   }
 }
 
