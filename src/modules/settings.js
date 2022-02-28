@@ -183,8 +183,8 @@ class Settings {
 
     const badTypeMsg = (setting, type, expectedType) => `Error: Expected type "${expectedType}" for setting "${setting}" (received "${type}").`;
     const badValueMsg = (setting, value) => `Error: Unrecognized value "${value}" for setting "${setting}".`;
-    const tooLowMsg = (setting, value, min) => `Error: Value for setting "${setting}" cannot be below "${min}" (received "${value}")`;
-    const tooHighMsg = (setting, value, max) => `Error: Value for setting "${setting}" cannot be above "${max}" (received "${value}")`;
+    const tooLowMsg = (setting, value, min) => `Error: Value for setting "${setting}" cannot be below "${min}" (received "${value}").`;
+    const tooHighMsg = (setting, value, max) => `Error: Value for setting "${setting}" cannot be above "${max}" (received "${value}").`;
 
     // Check if value matches constraints and add appropriate error message.
     const validate = (
