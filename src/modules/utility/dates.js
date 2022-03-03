@@ -6,6 +6,7 @@
 import {
   format as dfFormat,
   formatISO,
+  isValid,
   parse as dfParse,
   parseISO,
 } from 'date-fns';
@@ -296,7 +297,7 @@ function parseDate(dateString, format) {
   const today = new Date();
   for (let i = 0; i < patterns.length; i += 1) {
     const result = dfParse(dateString, patterns[i], today);
-    if (Number.isFinite(result.getTime())) return result;
+    if (isValid(result)) return result;
   }
 
   return null;
@@ -311,7 +312,7 @@ function parseDate(dateString, format) {
 function parseIsoDateTime(dateString) {
   const result = parseISO(dateString);
 
-  return Number.isFinite(result.getTime()) ? result : null;
+  return isValid(result) ? result : null;
 }
 
 /**
