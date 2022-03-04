@@ -216,7 +216,7 @@ class Settings {
         return false;
       }
       if (expectedValues != null
-        && !expectedValues.includes(value.toLowerCase())) {
+        && !expectedValues.includes(value)) {
         errors.push(badValueMsg(setting, value));
         return false;
       }
