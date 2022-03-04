@@ -279,7 +279,7 @@ class ProjectList {
           }
         }
 
-        if (newId && this.hasProject(id)) counts.updated += 1;
+        if (newId && this.hasProject(newId)) counts.updated += 1;
         else counts.added += 1;
 
         const project = new Project(name, projectOptions);
