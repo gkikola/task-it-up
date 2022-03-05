@@ -492,18 +492,46 @@ function exportToCsv(instance, options = {}) {
  * @returns {module:app~App~importStatus} An object holding information about
  *   the status of the import.
  */
-function importFromJSON(instance, data) {
-  const taskCounts = { added: 0, updated: 0, failed: 0, total: 0 };
+function importFromJson(instance, data) {
+  const privates = privateMembers.get(instance);
+  const taskCounts = {
+    added: 0,
+    updated: 0,
+    failed: 0,
+    total: 0,
+  };
   const projectCounts = { ...taskCounts };
   const errors = [];
 
   try {
-    const { app, settings, tasks, projects } = JSON.parse(data);
+    const {
+      app,
+      settings,
+      tasks,
+      projects,
+    } = JSON.parse(data);
 
     if (app?.name !== APP_NAME || !semver.valid(app?.version)) {
       errors.push('Warning: Imported data does not follow the expected schema. The data may have been created by a different application, or may have been altered.');
     } else if (semver.gt(app.version, APP_VERSION)) {
       errors.push('Warning: Imported data seems to have been created by a newer version of the application. Some information might not be imported or might be imported incorrectly.');
+    }
+
+    if (settings != null) {
+      const result = privates.settings.importFromJson(settings);
+      errors.push(...result.errors);
+    }
+
+    if (projects != null) {
+      const result = privates.projects.importFromJson(projects);
+      Object.assign(projectCounts, result.projects);
+      errors.push(...result.errors);
+    }
+
+    if (tasks != null) {
+      const result = privates.tasks.importFromJson(tasks);
+      Object.assign(taskCounts, result.tasks);
+      errors.push(...result.errors);
     }
 
     return {
@@ -522,9 +550,8 @@ function importFromJSON(instance, data) {
         projects: projectCounts,
         errors: [`Fatal Error: ${e.message}`],
       };
-    } else {
-      throw e;
     }
+    throw e;
   }
 }
 
@@ -536,8 +563,13 @@ function importFromJSON(instance, data) {
  * @returns {module:app~App~importStatus} An object holding information about
  *   the status of the import.
  */
-function importFromCSV(instance, data) {
-  const tasks = { added: 0, updated: 0, failed: 0, total: 0 };
+function importFromCsv(instance, data) {
+  const tasks = {
+    added: 0,
+    updated: 0,
+    failed: 0,
+    total: 0,
+  };
   const projects = { ...tasks };
   const errors = [];
 
@@ -564,14 +596,19 @@ function importFromCSV(instance, data) {
 function importFromFile(instance, content, name) {
   const fileExt = name ? getFileExtension(name).toLowerCase() : '';
   switch (fileExt) {
-    case '.json': return importFromJSON(instance, content);
-    case '.csv': return importFromCSV(instance, content);
+    case '.json': return importFromJson(instance, content);
+    case '.csv': return importFromCsv(instance, content);
     default: {
-      let result = importFromJSON(instance, content);
+      let result = importFromJson(instance, content);
       if (!result.successful) {
-        result = importFromCSV(instance, content);
+        result = importFromCsv(instance, content);
         if (!result.successful) {
-          const counts = { added: 0, updated: 0, failed: 0, total: 0 };
+          const counts = {
+            added: 0,
+            updated: 0,
+            failed: 0,
+            total: 0,
+          };
           return {
             successful: false,
             format: 'unknown',
@@ -690,7 +727,7 @@ function showDataModal(instance) {
   const privates = privateMembers.get(instance);
   const modal = new DataModal({
     importData: (content, { name }) => {
-      console.log(importFromFile(instance, content, name));
+      importFromFile(instance, content, name);
     },
     exportData: (fileType, fileOptions) => {
       if (fileType === 'csv') exportToCsv(instance, fileOptions);
