@@ -183,6 +183,17 @@ a:hover {
   font-size: 24px;
 }
 
+.data-import-results {
+  font-family: var(--label-font);
+  font-size: 14px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.data-import-error-list {
+  list-style: disc inside;
+}
+
 @media (max-width: 400px) {
   .title-container .title {
     display: none;

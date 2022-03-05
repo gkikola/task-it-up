@@ -17,6 +17,7 @@ import AddTaskModal from './modals/addTaskModal';
 import ConfirmModal from './modals/confirmModal';
 import DataModal from './modals/dataModal';
 import FilterMenu from './filterMenu';
+import InfoModal from './modals/infoModal';
 import ModalStack from './modalStack';
 import PopupMenu from './popupMenu';
 import Project from './project';
@@ -732,6 +733,32 @@ function showDataModal(instance) {
       if (result.tasks.total > 0) {
         updateMainPanel(instance, { resetScroll: false });
       }
+      const container = document.createElement('div');
+      const statusMsg = document.createElement('div');
+      statusMsg.classList.add('data-import-results');
+      container.appendChild(statusMsg);
+      if (result.successful) {
+        statusMsg.textContent = [
+          'Data import succeeded.',
+          `Processed ${result.tasks.total} ${result.tasks.total !== 1 ? 'tasks' : 'task'}: ${result.tasks.added} added, ${result.tasks.updated} updated, ${result.tasks.failed} failed.`,
+          `Processed ${result.projects.total} ${result.projects.total !== 1 ? 'projects' : 'project'}: ${result.projects.added} added, ${result.projects.updated} updated, ${result.projects.failed} failed.`,
+        ].join('\n');
+      } else {
+        statusMsg.textContent = 'Data import failed.';
+      }
+      if (result.errors.length > 0) {
+        const errorList = document.createElement('ul');
+        errorList.classList.add('data-import-error-list');
+        result.errors.forEach((error) => {
+          const listItem = document.createElement('li');
+          listItem.classList.add('data-import-results');
+          listItem.textContent = error;
+          errorList.appendChild(listItem);
+        });
+        container.appendChild(errorList);
+      }
+      const infoModal = new InfoModal(container, { title: 'Import Status' });
+      privates.modalStack.showModal(infoModal);
     },
     exportData: (fileType, fileOptions) => {
       if (fileType === 'csv') exportToCsv(instance, fileOptions);
