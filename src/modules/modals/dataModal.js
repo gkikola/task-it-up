@@ -51,6 +51,7 @@ const privateMembers = new WeakMap();
 function doImport(instance, modalStack, file) {
   readFile(file, (content) => {
     if (content) {
+      modalStack.closeModal();
       const callback = privateMembers.get(instance).callbacks.importData;
       if (callback) {
         const fileInfo = {
@@ -60,7 +61,6 @@ function doImport(instance, modalStack, file) {
         };
         callback(content, fileInfo);
       }
-      modalStack.closeModal();
     }
   });
 }
@@ -76,11 +76,12 @@ function doImport(instance, modalStack, file) {
  * @param {Object} fileOptions An object specifying additional file options.
  */
 function doExport(instance, modalStack, fileType, fileOptions) {
-  const callback = privateMembers.get(instance).callbacks.exportData;
-  if (callback) callback(fileType, fileOptions);
-
-  // Close the data modal (using setTimeout to wait for export modal to finish)
-  setTimeout(() => modalStack.closeModal());
+  // Use setTimeout to wait for export modal to finish
+  setTimeout(() => {
+    modalStack.closeModal();
+    const callback = privateMembers.get(instance).callbacks.exportData;
+    if (callback) callback(fileType, fileOptions);
+  });
 }
 
 /**
