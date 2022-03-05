@@ -5,7 +5,11 @@
 
 import { isBefore as isDateBefore, isSameDay } from 'date-fns';
 import _ from 'lodash';
-import { v4 as uuid } from 'uuid';
+import {
+  v4 as generateUuid,
+  validate as validateUuid,
+  version as uuidVersion,
+} from 'uuid';
 
 import Task from './task';
 import {
@@ -87,51 +91,6 @@ class TaskList {
   }
 
   /**
-   * Adds a task to the task list and returns its unique identifier. In order
-   * to prevent unintentional external modification of the task, a deep copy is
-   * made, and the original object is not kept.
-   * @param {module:task~Task} task The task to be added.
-   * @returns {string} The identifier of the newly-added task.
-   */
-  addTask(task) {
-    const privates = privateMembers.get(this);
-
-    // Generate UUID (loop just in case there's a collision)
-    let id;
-    do {
-      id = uuid();
-    } while (privates.tasks.has(id));
-
-    // Add task to task map
-    const copy = _.cloneDeep(task);
-    privates.tasks.set(id, copy);
-
-    // Add task to lookup maps
-    const wrapper = { id, task: copy };
-    let dateStr = 'none';
-    if (task.dueDate) dateStr = formatIsoDate(task.dueDate);
-    const projectStr = task.project || 'none';
-    const { priority } = task;
-    addToMapArray(
-      privates.tasksByDueDate,
-      dateStr,
-      { ...wrapper },
-    );
-    addToMapArray(
-      privates.tasksByProject,
-      projectStr,
-      { ...wrapper },
-    );
-    addToMapArray(
-      privates.tasksByPriority,
-      priority,
-      { ...wrapper },
-    );
-
-    return id;
-  }
-
-  /**
    * Get a task in the task list. This method only returns a copy of the task,
    * not an actual reference to the task itself. To modify a task in the list,
    * use the [updateTask]{@link module:taskList~TaskList#updateTask} method.
@@ -186,6 +145,73 @@ class TaskList {
     updateIndex(privates.tasksByPriority, oldKey, newKey);
 
     return true;
+  }
+
+  /**
+   * Add or update a task. If a task with the given identifier exists, then it
+   * is replaced with the given task. Otherwise, the task is added to the list
+   * as a new task. If the given identifier is not a valid UUID, then the
+   * method returns false and nothing happens.
+   * @param {string} id The unique identifier of the task.
+   * @param {module:task~Task} task The task that should be added or with which
+   *   an existing task should be replaced.
+   * @returns {boolean} True if the task was successfully added or updated, or
+   *   false if the given identifier is not a valid UUID.
+   */
+  addOrUpdateTask(id, task) {
+    if (!validateUuid(id) || uuidVersion(id) !== 4) return false;
+
+    if (!this.updateTask(id, task)) {
+      const privates = privateMembers.get(this);
+
+      // Add task to task map
+      const copy = _.cloneDeep(task);
+      privates.tasks.set(id, copy);
+
+      // Add task to lookup maps
+      const wrapper = { id, task: copy };
+      let dateStr = 'none';
+      if (task.dueDate) dateStr = formatIsoDate(task.dueDate);
+      const projectStr = task.project || 'none';
+      const { priority } = task;
+      addToMapArray(
+        privates.tasksByDueDate,
+        dateStr,
+        { ...wrapper },
+      );
+      addToMapArray(
+        privates.tasksByProject,
+        projectStr,
+        { ...wrapper },
+      );
+      addToMapArray(
+        privates.tasksByPriority,
+        priority,
+        { ...wrapper },
+      );
+    }
+
+    return true;
+  }
+
+  /**
+   * Adds a task to the task list and returns its unique identifier. In order
+   * to prevent unintentional external modification of the task, a deep copy is
+   * made, and the original object is not kept.
+   * @param {module:task~Task} task The task to be added.
+   * @returns {string} The identifier of the newly-added task.
+   */
+  addTask(task) {
+    const privates = privateMembers.get(this);
+
+    // Generate UUID (loop just in case there's a collision)
+    let id;
+    do {
+      id = generateUuid();
+    } while (privates.tasks.has(id));
+
+    this.addOrUpdateTask(id, task);
+    return id;
   }
 
   /**
