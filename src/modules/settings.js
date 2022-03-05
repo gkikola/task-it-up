@@ -3,6 +3,7 @@
  * @module settings
  */
 
+import { getJsonType } from './utility/data';
 import { getDateFormat } from './utility/dates';
 
 /**
@@ -199,12 +200,8 @@ class Settings {
     ) => {
       if (value == null) return false;
 
-      /* eslint-disable-next-line valid-typeof --
-       * Violations of this rule are usually typing mistakes, but the
-       * comparison below is intended.
-       */
-      if (expectedType && typeof value !== expectedType) {
-        errors.push(badTypeMsg(setting, typeof value, expectedType));
+      if (expectedType && getJsonType(value) !== expectedType) {
+        errors.push(badTypeMsg(setting, getJsonType(value), expectedType));
         return false;
       }
       if (min != null && value < min) {

@@ -11,6 +11,7 @@ import {
 } from 'uuid';
 
 import Project from './project';
+import { getJsonType } from './utility/data';
 
 /**
  * Object holding private members for the
@@ -254,7 +255,7 @@ class ProjectList {
         errors.push('Error: Project must have a name.');
         counts.failed += 1;
       } else if (typeof name !== 'string') {
-        errors.push(`Error: Expected type "string" for project name (received "${typeof name}").`);
+        errors.push(`Error: Expected type "string" for project name (received "${getJsonType(name)}").`);
         counts.failed += 1;
       } else if (name.length === 0) {
         errors.push('Error: Project name must not be empty.');
@@ -264,14 +265,14 @@ class ProjectList {
         if (description == null || typeof description === 'string') {
           projectOptions.description = description;
         } else {
-          errors.push(`Warning: Project "${name}": Expected type "string" for project description (received "${typeof description}").`);
+          errors.push(`Warning: Project "${name}": Expected type "string" for project description (received "${getJsonType(description)}").`);
         }
 
         let newId = null;
         if (id != null) {
           const newIdMsg = 'A new identifier will be generated.';
           if (typeof id !== 'string') {
-            errors.push(`Warning: Project "${name}": Expected type "string" for project identifier (received "${typeof id}"). ${newIdMsg}`);
+            errors.push(`Warning: Project "${name}": Expected type "string" for project identifier (received "${getJsonType(id)}"). ${newIdMsg}`);
           } else if (!validateUuid(id) || uuidVersion(id) !== 4) {
             errors.push(`Warning: Project "${name}": Expected project identifier to be a valid version 4 UUID. ${newIdMsg}`);
           } else {

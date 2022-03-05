@@ -83,9 +83,31 @@ function removeFromMapArray(map, key, value) {
   return removeFromMapArrayBy(map, key, (elem) => elem === value);
 }
 
+/**
+ * Get the type of a JSON value: 'object', 'array', 'string', 'number',
+ * 'boolean', or 'null'. Types that are not supported in JSON, such as
+ * functions or undefined, will return 'null'.
+ * @param {*} value The value whose type is to be checked.
+ * @returns {string} A string representation of the value's type.
+ */
+function getJsonType(value) {
+  if (value == null) return 'null';
+  switch (typeof value) {
+    case 'object':
+      return Array.isArray(value) ? 'array' : 'object';
+    case 'string':
+    case 'number':
+    case 'boolean':
+      return typeof value;
+    default:
+      return 'null';
+  }
+}
+
 export {
   addToMapArray,
   findInMapArray,
+  getJsonType,
   removeFromMapArray,
   removeFromMapArrayBy,
 };
