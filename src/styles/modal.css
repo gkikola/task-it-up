@@ -99,3 +99,13 @@
   color: white;
   background-color: #2323d3;
 }
+
+.info-modal-content-paragraph {
+  font-family: var(--label-font);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.info-modal-content-paragraph + .info-modal-content-paragraph {
+  margin-top: 12px;
+}
