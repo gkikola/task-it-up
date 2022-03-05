@@ -215,6 +215,16 @@ class TaskList {
   }
 
   /**
+   * Determines whether a task with the given identifier exists within the task
+   * list.
+   * @param {string} id The unique identifier of the task to look for.
+   * @returns {boolean} True if the task exists, and false otherwise.
+   */
+  hasTask(id) {
+    return privateMembers.get(this).tasks.has(id);
+  }
+
+  /**
    * Remove a task from the task list.
    * @param {string} id The unique identifier of the task to remove.
    * @returns {boolean} Returns true if the task was found and removed
