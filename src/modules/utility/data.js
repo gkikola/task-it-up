@@ -1,6 +1,6 @@
 /**
- * Defines functions for manipulating data structures.
- * @module dataStructures
+ * Defines functions for manipulating data.
+ * @module data
  */
 
 /**
@@ -44,9 +44,9 @@ function findInMapArray(map, key, predicate) {
 /**
  * Remove a value from an array belonging to a Map having array values. This
  * function is similar to
- * [removeFromMapArray]{@link module:dataStructures~removeFromMapArray}, except
- * that it takes a predicate function instead of a value. The first value in
- * the array for which the predicate returns true is removed.
+ * [removeFromMapArray]{@link module:data~removeFromMapArray}, except that it
+ * takes a predicate function instead of a value. The first value in the array
+ * for which the predicate returns true is removed.
  * @param {Map} map The map of arrays.
  * @param {*} key The key corresponding to the array from which the value is to
  *   be removed.

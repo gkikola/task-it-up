@@ -12,7 +12,7 @@ import {
   addToMapArray,
   findInMapArray,
   removeFromMapArrayBy,
-} from './utility/dataStructures';
+} from './utility/data';
 import {
   formatIsoDate,
   formatIsoDateTime,
