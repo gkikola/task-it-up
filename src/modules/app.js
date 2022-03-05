@@ -727,7 +727,11 @@ function showDataModal(instance) {
   const privates = privateMembers.get(instance);
   const modal = new DataModal({
     importData: (content, { name }) => {
-      importFromFile(instance, content, name);
+      const result = importFromFile(instance, content, name);
+      if (result.projects.total > 0) updateProjectFilters(instance);
+      if (result.tasks.total > 0) {
+        updateMainPanel(instance, { resetScroll: false });
+      }
     },
     exportData: (fileType, fileOptions) => {
       if (fileType === 'csv') exportToCsv(instance, fileOptions);
