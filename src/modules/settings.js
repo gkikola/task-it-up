@@ -3,7 +3,7 @@
  * @module settings
  */
 
-import { getJsonType } from './utility/data';
+import { getJsonType, validateValue } from './utility/data';
 import { getDateFormat } from './utility/dates';
 
 /**
@@ -182,118 +182,101 @@ class Settings {
   importFromJson(data) {
     const errors = [];
 
-    const badTypeMsg = (setting, type, expectedType) => `Error: Expected type "${expectedType}" for setting "${setting}" (received "${type}").`;
-    const badValueMsg = (setting, value) => `Error: Unrecognized value "${value}" for setting "${setting}".`;
-    const tooLowMsg = (setting, value, min) => `Error: Value for setting "${setting}" cannot be below "${min}" (received "${value}").`;
-    const tooHighMsg = (setting, value, max) => `Error: Value for setting "${setting}" cannot be above "${max}" (received "${value}").`;
-
-    // Check if value matches constraints and add appropriate error message.
-    const validate = (
-      setting,
-      value,
-      {
-        expectedType,
-        expectedValues,
-        min,
-        max,
-      },
-    ) => {
-      if (value == null) return false;
-
-      if (expectedType && getJsonType(value) !== expectedType) {
-        errors.push(badTypeMsg(setting, getJsonType(value), expectedType));
-        return false;
+    const handleError = (errorType, value, options) => {
+      if (value == null) return;
+      switch (errorType) {
+        case 'bad-type':
+          errors.push(`Error: Expected type "${options.expectedType}" for setting "${options.valueName}" (received "${getJsonType(value)}").`);
+          break;
+        case 'unknown-value':
+          errors.push(`Error: Unrecognized value "${value}" for setting "${options.valueName}".`);
+          break;
+        case 'not-integer':
+          errors.push(`Error: Value for setting "${options.valueName}" must be an integer (received "${value}").`);
+          break;
+        case 'too-low':
+          errors.push(`Error: Value for setting "${options.valueName}" cannot be below "${options.min}" (received "${value}").`);
+          break;
+        case 'too-high':
+          errors.push(`Error: Value for setting "${options.valueName}" cannot be above "${options.max}" (received "${value}").`);
+          break;
+        default:
+          errors.push(`Error: Encountered unrecognized error "${errorType}" for setting "${options.valueName}".`);
+          break;
       }
-      if (min != null && value < min) {
-        errors.push(tooLowMsg(setting, value, min));
-        return false;
-      }
-      if (max != null && value > max) {
-        errors.push(tooHighMsg(setting, value, max));
-        return false;
-      }
-      if (expectedValues != null
-        && !expectedValues.includes(value)) {
-        errors.push(badValueMsg(setting, value));
-        return false;
-      }
-      return true;
     };
 
-    if (validate(
-      'storageMethod',
-      data.storageMethod,
-      { expectedType: 'string', expectedValues: ['none', 'local'] },
-    )) this.storageMethod = data.storageMethod;
+    if (validateValue(data.storageMethod, {
+      valueName: 'storageMethod',
+      expectedType: 'string',
+      expectedValues: ['none', 'local'],
+      errorCallback: handleError,
+    })) this.storageMethod = data.storageMethod;
 
     if (data.dateFormat != null) {
-      if (validate(
-        'dateFormat.type',
-        data.dateFormat.type,
-        {
-          expectedType: 'string',
-          expectedValues: [
-            'local',
-            'iso',
-            'month-day-year',
-            'day-month-year',
-            'year-month-day',
-          ],
-        },
-      )) this.setDateFormat(data.dateFormat.type);
+      if (validateValue(data.dateFormat.type, {
+        valueName: 'dateFormat.type',
+        expectedType: 'string',
+        expectedValues: [
+          'local',
+          'iso',
+          'month-day-year',
+          'day-month-year',
+          'year-month-day',
+        ],
+        errorCallback: handleError,
+      })) this.setDateFormat(data.dateFormat.type);
     }
 
-    if (validate(
-      'deleteAfter',
-      data.deleteAfter,
-      { expectedType: 'number', min: 0 },
-    )) this.deleteAfter = data.deleteAfter;
+    if (validateValue(data.deleteAfter, {
+      valueName: 'deleteAfter',
+      expectedType: 'number',
+      requireInteger: true,
+      min: 0,
+      errorCallback: handleError,
+    })) this.deleteAfter = data.deleteAfter;
 
     if (data.filters != null) {
       const processFilter = (name) => {
         const filter = data.filters[name];
         if (filter != null) {
-          if (validate(
-            `filters.${name}.groupBy`,
-            filter.groupBy,
-            {
-              expectedType: 'string',
-              expectedValues: [
-                'default',
-                'due-date',
-                'priority',
-                'project',
-                'none',
-              ],
-            },
-          )) this.filters[name].groupBy = filter.groupBy;
+          if (validateValue(filter.groupBy, {
+            valueName: `filters.${name}.groupBy`,
+            expectedType: 'string',
+            expectedValues: [
+              'default',
+              'due-date',
+              'priority',
+              'project',
+              'none',
+            ],
+            errorCallback: handleError,
+          })) this.filters[name].groupBy = filter.groupBy;
 
-          if (validate(
-            `filters.${name}.sortBy`,
-            filter.sortBy,
-            {
-              expectedType: 'string',
-              expectedValues: [
-                'name',
-                'due-date',
-                'create-date',
-                'priority',
-                'project',
-              ],
-            },
-          )) this.filters[name].sortBy = filter.sortBy;
+          if (validateValue(filter.sortBy, {
+            valueName: `filters.${name}.sortBy`,
+            expectedType: 'string',
+            expectedValues: [
+              'name',
+              'due-date',
+              'create-date',
+              'priority',
+              'project',
+            ],
+            errorCallback: handleError,
+          })) this.filters[name].sortBy = filter.sortBy;
 
-          if (validate(
-            `filters.${name}.sortDescending`,
-            filter.sortDescending,
-            { expectedType: 'boolean' },
-          )) this.filters[name].sortDescending = filter.sortDescending;
+          if (validateValue(filter.sortDescending, {
+            valueName: `filters.${name}.sortDescending`,
+            expectedType: 'boolean',
+            errorCallback: handleError,
+          })) this.filters[name].sortDescending = filter.sortDescending;
 
-          if (validate(
-            `filters.${name}.showCompleted`,
-            filter.showCompleted,
-            { expectedType: 'boolean' },
-          )) this.filters[name].showCompleted = filter.showCompleted;
+          if (validateValue(filter.showCompleted, {
+            valueName: `filters.${name}.showCompleted`,
+            expectedType: 'boolean',
+            errorCallback: handleError,
+          })) this.filters[name].showCompleted = filter.showCompleted;
         }
       };
 

@@ -4,14 +4,10 @@
  */
 
 import _ from 'lodash';
-import {
-  v4 as generateUuid,
-  validate as validateUuid,
-  version as uuidVersion,
-} from 'uuid';
+import { v4 as generateUuid } from 'uuid';
 
 import Project from './project';
-import { getJsonType } from './utility/data';
+import { getJsonType, isUuidValid, validateValue } from './utility/data';
 
 /**
  * Object holding private members for the
@@ -137,7 +133,7 @@ class ProjectList {
    *   or false if the given identifier is not a valid UUID.
    */
   addOrUpdateProject(id, project) {
-    if (!validateUuid(id) || uuidVersion(id) !== 4) return false;
+    if (!isUuidValid(id)) return false;
 
     if (!this.updateProject(id, project)) {
       const privates = privateMembers.get(this);
@@ -251,6 +247,25 @@ class ProjectList {
     }
 
     data.forEach(({ name, id, description }) => {
+      const handleError = (errorType, value, opts) => {
+        if (value == null) return;
+        const msgPrefix = `Warning: Project "${name}"`;
+        let msg;
+        switch (errorType) {
+          case 'bad-type':
+            msg = `Expected type "${opts.expectedType}" for property "${opts.valueName}" (received "${getJsonType(value)}").`;
+            break;
+          case 'bad-id':
+            msg = `Expected a version 4 UUID for property "${opts.valueName}" (received "${value}").`;
+            break;
+          default:
+            msg = `Encountered unrecognized error "${errorType}" for property "${opts.valueName}".`;
+            break;
+        }
+
+        errors.push(`${msgPrefix}: ${msg}`);
+      };
+
       if (name == null) {
         errors.push('Error: Project must have a name.');
         counts.failed += 1;
@@ -262,23 +277,20 @@ class ProjectList {
         counts.failed += 1;
       } else {
         const projectOptions = {};
-        if (description == null || typeof description === 'string') {
-          projectOptions.description = description;
-        } else {
-          errors.push(`Warning: Project "${name}": Expected type "string" for project description (received "${getJsonType(description)}").`);
-        }
+
+        if (validateValue(description, {
+          valueName: 'description',
+          expectedType: 'string',
+          errorCallback: handleError,
+        })) projectOptions.description = description;
 
         let newId = null;
-        if (id != null) {
-          const newIdMsg = 'A new identifier will be generated.';
-          if (typeof id !== 'string') {
-            errors.push(`Warning: Project "${name}": Expected type "string" for project identifier (received "${getJsonType(id)}"). ${newIdMsg}`);
-          } else if (!validateUuid(id) || uuidVersion(id) !== 4) {
-            errors.push(`Warning: Project "${name}": Expected project identifier to be a valid version 4 UUID. ${newIdMsg}`);
-          } else {
-            newId = id;
-          }
-        }
+        if (validateValue(id, {
+          valueName: 'id',
+          expectedType: 'string',
+          requireUuid: true,
+          errorCallback: handleError,
+        })) newId = id;
 
         if (newId && this.hasProject(newId)) counts.updated += 1;
         else counts.added += 1;

@@ -5,11 +5,7 @@
 
 import { isBefore as isDateBefore, isSameDay } from 'date-fns';
 import _ from 'lodash';
-import {
-  v4 as generateUuid,
-  validate as validateUuid,
-  version as uuidVersion,
-} from 'uuid';
+import { v4 as generateUuid } from 'uuid';
 
 import RecurringDate from './recurringDate';
 import Task from './task';
@@ -17,14 +13,15 @@ import {
   addToMapArray,
   findInMapArray,
   getJsonType,
+  isUuidValid,
   removeFromMapArrayBy,
+  validateValue,
 } from './utility/data';
 import {
   formatIsoDate,
   formatIsoDateTime,
   getMonthName,
   getWeekdayName,
-  parseIsoDateTime,
 } from './utility/dates';
 import { arrayToCsvRecord } from './utility/storage';
 
@@ -189,7 +186,7 @@ class TaskList {
    *   false if the given identifier is not a valid UUID.
    */
   addOrUpdateTask(id, task) {
-    if (!validateUuid(id) || uuidVersion(id) !== 4) return false;
+    if (!isUuidValid(id)) return false;
 
     if (!this.updateTask(id, task)) {
       const privates = privateMembers.get(this);
@@ -693,6 +690,51 @@ class TaskList {
     }
 
     data.forEach((task) => {
+      const handleError = (errorType, value, opts) => {
+        if (value == null) return;
+        const msgPrefix = `Warning: Task "${task.name}"`;
+        let msg;
+        switch (errorType) {
+          case 'bad-type':
+            if (opts.allowConversion && typeof value === 'string') {
+              msg = `Expected type "${opts.expectedType}" for property "${opts.valueName}" (conversion from type "string" failed).`;
+            } else {
+              msg = `Expected type "${opts.expectedType}" for property "${opts.valueName}" (received "${getJsonType(value)}").`;
+            }
+            break;
+          case 'unknown-value':
+            msg = `Unrecognized value "${value}" for property "${opts.valueName}".`;
+            break;
+          case 'not-integer':
+            msg = `Value for property "${opts.valueName}" must be an integer (received "${value}").`;
+            break;
+          case 'too-low':
+            msg = `Value for property "${opts.valueName}" cannot be below "${opts.min}" (received "${value}").`;
+            break;
+          case 'too-high':
+            msg = `Value for property "${opts.valueName}" cannot be above "${opts.max}" (received "${value}").`;
+            break;
+          case 'bad-date':
+            msg = `Expected a date in ISO format for property "${opts.valueName}" (received "${value}").`;
+            break;
+          case 'bad-id':
+            msg = `Expected a version 4 UUID for property "${opts.valueName}" (received "${value}").`;
+            break;
+          case 'failed-predicate':
+            if (opts.valueName === 'project') {
+              msg = `Unrecognized project identifier "${value}" for property "${opts.valueName}".`;
+            } else {
+              msg = `Failed custom validation for property "${opts.valueName}.`;
+            }
+            break;
+          default:
+            msg = `Encountered unrecognized error "${errorType}" for property "${opts.valueName}".`;
+            break;
+        }
+
+        errors.push(`${msgPrefix}: ${msg}`);
+      };
+
       if (task.name == null) {
         errors.push('Error: Task must have a name.');
         counts.failed += 1;
@@ -703,126 +745,53 @@ class TaskList {
         errors.push('Error: Task name must not be empty.');
         counts.failed += 1;
       } else {
-        const msgPrefix = `Warning: Task "${task.name}"`;
-        const badTypeMsg = (property, type, expectedType) => `${msgPrefix}: Expected type "${expectedType}" for property "${property}" (received "${type}").`;
-        const badDateMsg = (property, value) => `${msgPrefix}: Expected a date in ISO format for property "${property}" (received "${value}").`;
-        const badIdMsg = (property, value) => `${msgPrefix}: Expected a version 4 UUID for property "${property}" (received "${value}").`;
-        const badValueMsg = (property, value) => `${msgPrefix}: Unrecognized value "${value}" for property "${property}".`;
-        const badProjectMsg = (projectId) => `${msgPrefix}: Project identifier "${projectId}" was not found.`;
-        const tooLowMsg = (property, value, min) => `${msgPrefix}: Value for property "${property}" cannot be below "${min}" (received "${value}").`;
-        const tooHighMsg = (property, value, max) => `${msgPrefix}: Value for property "${property}" cannot be above "${max}" (received "${value}").`;
-
-        // Validate value and add appropriate error message.
-        const validate = (
-          property,
-          value,
-          {
-            expectedType,
-            expectedValues,
-            min,
-            max,
-          },
-        ) => {
-          if (value == null) return false;
-
-          if (expectedType && getJsonType(value) !== expectedType) {
-            errors.push(
-              badTypeMsg(property, getJsonType(value), expectedType),
-            );
-            return false;
-          }
-          if (min != null && value < min) {
-            errors.push(tooLowMsg(property, value, min));
-            return false;
-          }
-          if (max != null && value > max) {
-            errors.push(tooHighMsg(property, value, max));
-            return false;
-          }
-          if (expectedValues != null
-            && !expectedValues.includes(value)) {
-            errors.push(badValueMsg(property, value));
-            return false;
-          }
-
-          return true;
-        };
-
-        const convertDate = (property, value) => {
-          const date = parseIsoDateTime(value);
-          if (!date) {
-            errors.push(badDateMsg(property, value));
-            return null;
-          }
-          return date;
-        };
-
-        const validateId = (id) => validateUuid(id) && uuidVersion(id) === 4;
-
         const taskOptions = {};
 
         let newId = null;
-        if (validate(
-          'id',
-          task.id,
-          {
-            expectedType: 'string',
-          },
-        )) {
-          if (validateId(task.id)) {
-            newId = task.id;
-          } else {
-            errors.push(badIdMsg('id', task.id));
-          }
-        }
+        if (validateValue(task.id, {
+          valueName: 'id',
+          expectedType: 'string',
+          requireUuid: true,
+          errorCallback: handleError,
+        })) newId = task.id;
 
-        if (validate(
-          'dueDate',
-          task.dueDate,
-          {
-            expectedType: 'string',
+        validateValue(task.dueDate, {
+          valueName: 'dueDate',
+          expectedType: 'date',
+          allowConversion: true,
+          successCallback: (value) => {
+            taskOptions.dueDate = value;
           },
-        )) {
-          taskOptions.dueDate = convertDate(
-            'dueDate',
-            task.dueDate,
-          );
-        }
+          errorCallback: handleError,
+        });
 
-        if (validate(
-          'creationDate',
-          task.creationDate,
-          {
-            expectedType: 'string',
+        validateValue(task.creationDate, {
+          valueName: 'creationDate',
+          expectedType: 'date',
+          allowConversion: true,
+          successCallback: (value) => {
+            taskOptions.creationDate = value;
           },
-        )) {
-          taskOptions.creationDate = convertDate(
-            'creationDate',
-            task.creationDate,
-          );
-        }
+          errorCallback: handleError,
+        });
 
-        if (validate(
-          'completionDate',
-          task.completionDate,
-          {
-            expectedType: 'string',
+        validateValue(task.completionDate, {
+          valueName: 'completionDate',
+          expectedType: 'date',
+          allowConversion: true,
+          successCallback: (value) => {
+            taskOptions.completionDate = value;
           },
-        )) {
-          taskOptions.completionDate = convertDate(
-            'completionDate',
-            task.completionDate,
-          );
-        }
+          errorCallback: handleError,
+        });
 
         if (task.priority != null) {
-          const priorityType = getJsonType(task.priority);
-          if (priorityType !== 'number' && priorityType !== 'string') {
-            errors.push(badTypeMsg('priority', priorityType, 'number|string'));
-          } else if (priorityType === 'number' || validate(
-            'priority',
-            task.priority,
-            {
+          const setPriority = (value) => {
+            taskOptions.priority = value;
+          };
+          if (typeof task.priority === 'string') {
+            validateValue(task.priority, {
+              valueName: 'priority',
               expectedValues: [
                 'very-low',
                 'low',
@@ -830,159 +799,143 @@ class TaskList {
                 'high',
                 'very-high',
               ],
-            },
-          )) {
-            taskOptions.priority = task.priority;
+              successCallback: setPriority,
+              errorCallback: handleError,
+            });
+          } else {
+            validateValue(task.priority, {
+              valueName: 'priority',
+              expectedType: 'number',
+              requireInteger: true,
+              successCallback: setPriority,
+              errorCallback: handleError,
+            });
           }
         }
 
-        if (validate(
-          'description',
-          task.description,
-          {
-            expectedType: 'string',
-          },
-        )) taskOptions.description = task.description;
+        if (validateValue(task.description, {
+          valueName: 'description',
+          expectedType: 'string',
+          errorCallback: handleError,
+        })) taskOptions.description = task.description;
 
-        if (validate(
-          'recurringDate',
-          task.recurringDate,
-          {
-            expectedType: 'object',
-          },
-        ) && validate(
-          'recurringDate.intervalUnit',
-          task.recurringDate.intervalUnit,
-          {
-            expectedType: 'string',
-            expectedValues: [
-              'day',
-              'week',
-              'month',
-              'year',
-            ],
-          },
-        )) {
+        if (validateValue(task.recurringDate, {
+          valueName: 'recurringDate',
+          expectedType: 'object',
+          errorCallback: handleError,
+        }) && validateValue(task.recurringDate.intervalUnit, {
+          valueName: 'recurringDate.intervalUnit',
+          expectedType: 'string',
+          expectedValues: [
+            'day',
+            'week',
+            'month',
+            'year',
+          ],
+          errorCallback: handleError,
+        })) {
           const { recurringDate } = task;
           const recOptions = {};
 
-          if (validate(
-            'recurringDate.intervalLength',
-            recurringDate.intervalLength,
-            {
-              expectedType: 'number',
-              min: 1,
-            },
-          )) recOptions.intervalLength = recurringDate.intervalLength;
+          if (validateValue(recurringDate.intervalLength, {
+            valueName: 'recurringDate.intervalLength',
+            expectedType: 'number',
+            requireInteger: true,
+            min: 1,
+            errorCallback: handleError,
+          })) recOptions.intervalLength = recurringDate.intervalLength;
 
-          if (validate(
-            'recurringDate.startDate',
-            recurringDate.startDate,
-            {
-              expectedType: 'string',
+          validateValue(recurringDate.startDate, {
+            valueName: 'recurringDate.startDate',
+            expectedType: 'date',
+            allowConversion: true,
+            successCallback: (value) => {
+              recOptions.startDate = value;
             },
-          )) {
-            recOptions.startDate = convertDate(
-              'recurringDate.startDate',
-              recurringDate.startDate,
-            );
-          }
+            errorCallback: handleError,
+          });
 
-          if (validate(
-            'recurringDate.baseOnCompletion',
-            recurringDate.baseOnCompletion,
-            {
-              expectedType: 'boolean',
-            },
-          )) recOptions.baseOnCompletion = recurringDate.baseOnCompletion;
+          if (validateValue(recurringDate.baseOnCompletion, {
+            valueName: 'recurringDate.baseOnCompletion',
+            expectedType: 'boolean',
+            errorCallback: handleError,
+          })) recOptions.baseOnCompletion = recurringDate.baseOnCompletion;
 
-          if (validate(
-            'recurringDate.weekNumber',
-            recurringDate.weekNumber,
-            {
-              expectedType: 'number',
-              min: 1,
-              max: 5,
-            },
-          )) recOptions.weekNumber = recurringDate.weekNumber;
+          if (validateValue(recurringDate.weekNumber, {
+            valueName: 'recurringDate.weekNumber',
+            expectedType: 'number',
+            requireInteger: true,
+            min: 1,
+            max: 5,
+            errorCallback: handleError,
+          })) recOptions.weekNumber = recurringDate.weekNumber;
 
-          if (validate(
-            'recurringDate.daysOfWeek',
-            recurringDate.daysOfWeek,
-            {
-              expectedType: 'array',
-            },
-          )) {
+          if (validateValue(recurringDate.daysOfWeek, {
+            valueName: 'recurringDate.daysOfWeek',
+            expectedType: 'array',
+            errorCallback: handleError,
+          })) {
             const daysOfWeek = [];
             recurringDate.daysOfWeek.forEach((value, index) => {
-              if (validate(
-                `recurringDate.daysOfWeek[${index}]`,
-                value,
-                {
-                  expectedType: 'number',
-                  min: 0,
-                  max: 6,
-                },
-              )) daysOfWeek.push(value);
+              if (validateValue(value, {
+                valueName: `recurringDate.daysOfWeek[${index}]`,
+                expectedType: 'number',
+                requireInteger: true,
+                min: 0,
+                max: 6,
+                errorCallback: handleError,
+              })) daysOfWeek.push(value);
             });
             recOptions.daysOfWeek = daysOfWeek;
           }
 
-          if (validate(
-            'recurringDate.month',
-            recurringDate.month,
-            {
-              expectedType: 'number',
-              min: 0,
-              max: 11,
-            },
-          )) recOptions.month = recurringDate.month;
+          if (validateValue(recurringDate.month, {
+            valueName: 'recurringDate.month',
+            expectedType: 'number',
+            requireInteger: true,
+            min: 0,
+            max: 11,
+            errorCallback: handleError,
+          })) recOptions.month = recurringDate.month;
 
-          if (validate(
-            'recurringDate.dayOfMonth',
-            recurringDate.dayOfMonth,
-            {
-              expectedType: 'number',
-              min: 1,
-              max: 31,
-            },
-          )) recOptions.dayOfMonth = recurringDate.dayOfMonth;
+          if (validateValue(recurringDate.dayOfMonth, {
+            valueName: 'recurringDate.dayOfMonth',
+            expectedType: 'number',
+            requireInteger: true,
+            min: 1,
+            max: 31,
+            errorCallback: handleError,
+          })) recOptions.dayOfMonth = recurringDate.dayOfMonth;
 
-          if (validate(
-            'recurringDate.onWeekend',
-            recurringDate.onWeekend,
-            {
-              expectedType: 'string',
-              expectedValues: [
-                'no-change',
-                'previous-weekday',
-                'next-weekday',
-                'nearest-weekday',
-              ],
-            },
-          )) recOptions.onWeekend = recurringDate.onWeekend;
+          if (validateValue(recurringDate.onWeekend, {
+            valueName: 'recurringDate.onWeekend',
+            expectedType: 'string',
+            expectedValues: [
+              'no-change',
+              'previous-weekday',
+              'next-weekday',
+              'nearest-weekday',
+            ],
+            errorCallback: handleError,
+          })) recOptions.onWeekend = recurringDate.onWeekend;
 
-          if (validate(
-            'recurringDate.endDate',
-            recurringDate.endDate,
-            {
-              expectedType: 'string',
+          validateValue(recurringDate.endDate, {
+            valueName: 'recurringDate.endDate',
+            expectedType: 'date',
+            allowConversion: true,
+            successCallback: (value) => {
+              recOptions.endDate = value;
             },
-          )) {
-            recOptions.endDate = convertDate(
-              'recurringDate.endDate',
-              recurringDate.endDate,
-            );
-          }
+            errorCallback: handleError,
+          });
 
-          if (validate(
-            'recurringDate.maxCount',
-            recurringDate.maxCount,
-            {
-              expectedType: 'number',
-              min: 0,
-            },
-          )) recOptions.maxCount = recurringDate.maxCount;
+          if (validateValue(recurringDate.maxCount, {
+            valueName: 'recurringDate.maxCount',
+            expectedType: 'number',
+            requireInteger: true,
+            min: 0,
+            errorCallback: handleError,
+          })) recOptions.maxCount = recurringDate.maxCount;
 
           const recurrence = new RecurringDate(
             task.recurringDate.intervalUnit,
@@ -991,22 +944,16 @@ class TaskList {
           taskOptions.recurringDate = recurrence;
         }
 
-        if (validate(
-          'project',
-          task.project,
-          {
-            expectedType: 'string',
+        if (validateValue(task.project, {
+          valueName: 'project',
+          expectedType: 'string',
+          requireUuid: true,
+          customPredicate: (value) => {
+            const { projectList } = options;
+            return !projectList || projectList.hasProject(value);
           },
-        )) {
-          const { projectList } = options;
-          if (!validateId(task.project)) {
-            errors.push(badIdMsg('project', task.project));
-          } else if (projectList && !projectList.hasProject(task.project)) {
-            errors.push(badProjectMsg(task.project));
-          } else {
-            taskOptions.project = task.project;
-          }
-        }
+          errorCallback: handleError,
+        })) taskOptions.project = task.project;
 
         if (newId && this.hasTask(newId)) counts.updated += 1;
         else counts.added += 1;
