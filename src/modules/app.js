@@ -530,7 +530,9 @@ function importFromJson(instance, data) {
     }
 
     if (tasks != null) {
-      const result = privates.tasks.importFromJson(tasks);
+      const result = privates.tasks.importFromJson(tasks, {
+        projectList: privates.projects,
+      });
       Object.assign(taskCounts, result.tasks);
       errors.push(...result.errors);
     }
