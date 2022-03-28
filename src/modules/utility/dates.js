@@ -316,6 +316,16 @@ function parseIsoDateTime(dateString) {
 }
 
 /**
+ * Determine whether a Date object holds a valid date.
+ * @param {Date} date The date to check.
+ * @returns {boolean} True if the date is valid (it is a Date object holding a
+ *   valid date), and false otherwise.
+ */
+function isDateValid(date) {
+  return (date instanceof Date) && isValid(date);
+}
+
+/**
  * Get the name of a day of the week.
  * @param {number} dayIndex The index of the weekday as an integer from 0 to 6,
  *   with 0 representing Sunday, 1 representing Monday, and so on.
@@ -355,6 +365,7 @@ export {
   getDaysInMonth,
   getMonthName,
   getWeekdayName,
+  isDateValid,
   parseDate,
   parseIsoDateTime,
 };
