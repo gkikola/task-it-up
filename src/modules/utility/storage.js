@@ -175,6 +175,83 @@ function arrayToCsvRecord(data, options = {}) {
 }
 
 /**
+ * Convert data in comma-separated value (CSV) format into an array of arrays
+ * of strings. Each data record is stored as an array of strings within the
+ * outer array, with each string corresponding to a field in the record. Any
+ * newline sequences (CRLF, LF, or CR) are converted to linefeed (LF)
+ * characters.
+ * @param {string} data The data in CSV format.
+ * @returns {string[][]} An array of string arrays. Each inner array contains
+ *   the fields for one record.
+ */
+function parseCsv(data) {
+  const result = [];
+
+  let currentRow = [];
+  let currentField = '';
+
+  const commitField = () => {
+    currentRow.push(currentField);
+    currentField = '';
+  };
+  const commitRow = () => {
+    result.push(currentRow);
+    currentRow = [];
+  };
+
+  let quoted = false;
+  for (let pos = 0; pos < data.length; pos += 1) {
+    switch (data[pos]) {
+      case '"':
+        if (!quoted) {
+          quoted = true;
+        } else if (pos + 1 < data.length && data[pos + 1] === '"') {
+          // This is a double double quote, so convert it and move to next char
+          currentField += '"';
+          pos += 1;
+        } else {
+          // Not a double double quote, so the quoting ends here
+          quoted = false;
+        }
+        break;
+      case '\r':
+      case '\n':
+        // Handle CRLF sequence
+        if (data[pos] === '\r'
+          && pos + 1 < data.length && data[pos + 1] === '\n') {
+          pos += 1;
+        }
+
+        if (quoted) {
+          currentField += '\n';
+        } else {
+          commitField();
+          commitRow();
+        }
+        break;
+      case ',':
+        if (quoted) currentField += ',';
+        else commitField();
+        break;
+      default:
+        currentField += data[pos];
+        break;
+    }
+  }
+
+  // Commit last entry if last character was not a newline
+  if (data.length > 0) {
+    const lastChar = data[data.length - 1];
+    if (lastChar !== '\r' && lastChar !== '\n') {
+      commitField();
+      commitRow();
+    }
+  }
+
+  return result;
+}
+
+/**
  * Extract the extension from a file name. The extension, for the purposes of
  * this function, is considered to be the portion of the filename starting from
  * (and including) the last period in the name and extending to the end of the
@@ -196,6 +273,7 @@ export {
   generateFile,
   getFileExtension,
   isLocalStorageSupported,
+  parseCsv,
   readFile,
   removeData,
   retrieveData,
