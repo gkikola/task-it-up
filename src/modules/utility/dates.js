@@ -336,6 +336,20 @@ function getWeekdayName(dayIndex) {
 }
 
 /**
+ * Get the index of the day of a week, with Sunday corresponding to 0.
+ * @param {string} day The name of the weekday.
+ * @returns {?number} The index of the weekday as an integer from 0 to 6, with
+ *   0 representing Sunday, 1 representing Monday, and so on. If the weekday is
+ *   not recognized, null is returned.
+ */
+function getWeekdayIndex(day) {
+  const dayLower = day.toLowerCase();
+  const index = WEEKDAYS.findIndex((elem) => elem.toLowerCase() === dayLower);
+  if (index < 0) return null;
+  return index;
+}
+
+/**
  * Get the name of a month.
  * @param {number} monthIndex The index of the month as an integer from 0 to
  *   11, with 0 representing January, 1 representing February, and so on.
@@ -343,6 +357,22 @@ function getWeekdayName(dayIndex) {
  */
 function getMonthName(monthIndex) {
   return MONTHS[monthIndex]?.name || 'Unknown';
+}
+
+/**
+ * Get the index of a month of the year, with January corresponding to 0.
+ * @param {string} month The name of the month.
+ * @returns {?number} The index of the month as an integer from 0 to 11, with 0
+ *   representing January, 1 representing February, and so on. If the month is
+ *   not recognized, null is returned.
+ */
+function getMonthIndex(month) {
+  const monthLower = month.toLowerCase();
+  const index = MONTHS.findIndex((elem) => (
+    elem.name.toLowerCase() === monthLower
+  ));
+  if (index < 0) return null;
+  return index;
 }
 
 /**
@@ -363,7 +393,9 @@ export {
   formatIsoDateTime,
   getDateFormat,
   getDaysInMonth,
+  getMonthIndex,
   getMonthName,
+  getWeekdayIndex,
   getWeekdayName,
   isDateValid,
   parseDate,
