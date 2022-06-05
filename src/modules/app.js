@@ -30,7 +30,11 @@ import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
 import { formatDate } from './utility/dates';
 import { createIconButton } from './utility/dom';
-import { generateFile, getFileExtension } from './utility/storage';
+import {
+  generateFile,
+  getFileExtension,
+  parseCsv,
+} from './utility/storage';
 
 const APP_NAME = 'Task It Up';
 const APP_AUTHOR = 'Greg Kikola';
@@ -567,20 +571,35 @@ function importFromJson(instance, data) {
  *   the status of the import.
  */
 function importFromCsv(instance, data) {
-  const tasks = {
+  const privates = privateMembers.get(instance);
+  const taskCounts = {
     added: 0,
     updated: 0,
     failed: 0,
     total: 0,
   };
-  const projects = { ...tasks };
+  const projectCounts = { ...taskCounts };
   const errors = [];
+
+  const parsedData = parseCsv(data);
+  let result;
+
+  result = privates.projects.importFromCsv(parsedData);
+  Object.assign(projectCounts, result.projects);
+  errors.push(...result.errors);
+
+  result = privates.tasks.importFromCsv(
+    parsedData,
+    { projectList: privates.projects },
+  );
+  Object.assign(taskCounts, result.tasks);
+  errors.push(...result.errors);
 
   return {
     successful: true,
     format: 'csv',
-    tasks,
-    projects,
+    tasks: taskCounts,
+    projects: projectCounts,
     errors,
   };
 }

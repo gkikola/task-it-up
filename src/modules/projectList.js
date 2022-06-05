@@ -305,6 +305,63 @@ class ProjectList {
 
     return { projects: counts, errors };
   }
+
+  /**
+   * Import projects from parsed CSV data.
+   * @param {string[][]} data An array of string arrays. Each member of the
+   *   outer array represents a single project, and each member of each inner
+   *   array is a data field for that particular project. The first member of
+   *   the outer array should be a header holding field names. Duplicate
+   *   projects are ignored, as are unrelated fields.
+   * @returns {module:taskList~TaskList~importStatus} An object holding
+   *   information about the status of the import.
+   */
+  importFromCsv(data) {
+    const columns = [];
+    if (data.length > 0) {
+      const header = data[0];
+      header.forEach((field, index) => {
+        switch (field.toLowerCase()) {
+          case 'project name':
+          case 'project-name':
+            columns.push({ name: 'name', index });
+            break;
+          case 'project uuid':
+          case 'project-uuid':
+            columns.push({ name: 'id', index });
+            break;
+          case 'project description':
+          case 'project-description':
+            columns.push({ name: 'description', index });
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
+    const entries = [];
+    if (columns.length > 0) {
+      data.forEach((csvRecord, csvIndex) => {
+        if (csvIndex === 0) return;
+
+        const entry = {};
+        columns.forEach(({ name, index }) => {
+          if (csvRecord.length > index && csvRecord[index].length > 0) {
+            entry[name] = csvRecord[index];
+          }
+        });
+        if (!_.isEmpty(entry)) entries.push(entry);
+      });
+    }
+
+    const isEntryEqual = (left, right) => {
+      if (left.id != null || right.id != null) return left.id === right.id;
+      return left.name === right.name
+        && left.description === right.description;
+    };
+    return this.importFromJson(_.uniqWith(entries, isEntryEqual));
+  }
 }
 
 export default ProjectList;

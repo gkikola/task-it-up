@@ -20,7 +20,9 @@ import {
 import {
   formatIsoDate,
   formatIsoDateTime,
+  getMonthIndex,
   getMonthName,
+  getWeekdayIndex,
   getWeekdayName,
 } from './utility/dates';
 import { arrayToCsvRecord } from './utility/storage';
@@ -967,6 +969,144 @@ class TaskList {
     counts.total = counts.added + counts.updated + counts.failed;
 
     return { tasks: counts, errors };
+  }
+
+  /**
+   * Import tasks from parsed CSV data.
+   * @param {string[][]} data An array of string arrays. Each member of the
+   *   outer array represents a single task, and each member of each inner
+   *   array is a data field for that particular task. The first member of the
+   *   outer array should be a header holding field names.
+   * @param {Object} [options={}] An object holding additional options for the
+   *   import.
+   * @param {module:projectList~ProjectList} [options.projectList] The project
+   *   container. If not provided, then full validation will not be performed
+   *   on project identifiers.
+   * @returns {module:taskList~TaskList~importStatus} An object holding
+   *   information about the status of the import.
+   */
+  importFromCsv(data, options = {}) {
+    const header = (data.length > 0) ? data[0] : [];
+    const entries = [];
+
+    data.forEach((csvRecord, csvIndex) => {
+      if (csvIndex === 0) return;
+
+      const entry = {};
+      const recurringDate = {};
+      csvRecord.forEach((value, index) => {
+        if (index >= header.length || value.length === 0) return;
+
+        switch (header[index].toLowerCase()) {
+          case 'name':
+            entry.name = value;
+            break;
+          case 'uuid':
+            entry.id = value;
+            break;
+          case 'due date':
+          case 'due-date':
+            entry.dueDate = value;
+            break;
+          case 'date added':
+          case 'date-added':
+            entry.creationDate = value;
+            break;
+          case 'date completed':
+          case 'date-completed':
+            entry.completionDate = value;
+            break;
+          case 'priority':
+            entry.priority = Task.convertStringToPriority(value);
+            break;
+          case 'description':
+            entry.description = value;
+            break;
+          case 'project uuid':
+          case 'project-uuid':
+            entry.project = value;
+            break;
+          case 'recurrence interval unit':
+          case 'recurrence-interval-unit':
+            recurringDate.intervalUnit = value.toLowerCase();
+            break;
+          case 'recurrence interval length':
+          case 'recurrence-interval-length':
+            recurringDate.intervalLength = Number(value);
+            break;
+          case 'recurrence start date':
+          case 'recurrence-start-date':
+            recurringDate.startDate = value;
+            break;
+          case 'recurrence based on completion?':
+          case 'recurrence based on completion':
+          case 'recurrence-based-on-completion':
+            recurringDate.baseOnCompletion = value.toLowerCase() === 'true';
+            break;
+          case 'recurrence week number':
+          case 'recurrence-week-number':
+            recurringDate.weekNumber = Number(value);
+            break;
+          case 'recurrence week days':
+          case 'recurrence-week-days':
+            recurringDate.daysOfWeek = value.split(',').map((day) => (
+              getWeekdayIndex(day.trim())
+            )).filter((day) => day != null);
+            break;
+          case 'recurrence month':
+          case 'recurrence-month':
+            recurringDate.month = getMonthIndex(value);
+            break;
+          case 'recurrence day':
+          case 'recurrence-day':
+            recurringDate.dayOfMonth = Number(value);
+            break;
+          case 'recurrence weekend behavior':
+          case 'recurrence-weekend-behavior': {
+            let behavior = null;
+            switch (value.toLowerCase()) {
+              case 'no change':
+              case 'no-change':
+                behavior = 'no-change';
+                break;
+              case 'use previous weekday':
+              case 'previous weekday':
+              case 'previous-weekday':
+                behavior = 'previous-weekday';
+                break;
+              case 'use next weekday':
+              case 'next weekday':
+              case 'next-weekday':
+                behavior = 'next-weekday';
+                break;
+              case 'use nearest weekday':
+              case 'nearest weekday':
+              case 'nearest-weekday':
+                behavior = 'nearest-weekday';
+                break;
+              default:
+                break;
+            }
+            recurringDate.onWeekend = behavior;
+            break;
+          }
+          case 'recurrence end date':
+          case 'recurrence-end-date':
+            recurringDate.endDate = value;
+            break;
+          case 'recurrence max count':
+          case 'recurrence-max-count':
+            recurringDate.maxCount = Number(value);
+            break;
+          default:
+            break;
+        }
+      });
+      if (!_.isEmpty(recurringDate)) entry.recurringDate = recurringDate;
+      if (!_.isEmpty(entry)) entries.push(entry);
+    });
+
+    return this.importFromJson(entries, options);
   }
 }
 
