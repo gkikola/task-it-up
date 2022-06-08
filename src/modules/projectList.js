@@ -185,6 +185,13 @@ class ProjectList {
   }
 
   /**
+   * Delete all projects from the project list.
+   */
+  deleteAll() {
+    privateMembers.get(this).projects.length = 0;
+  }
+
+  /**
    * Determines whether a project with the given identifier exists within the
    * project list.
    * @param {string} id The unique identifier of the project to look for.

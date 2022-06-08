@@ -284,6 +284,17 @@ class TaskList {
   }
 
   /**
+   * Delete all tasks in the task list.
+   */
+  deleteAll() {
+    const privates = privateMembers.get(this);
+    privates.tasks.clear();
+    privates.tasksByDueDate.clear();
+    privates.tasksByProject.clear();
+    privates.tasksByPriority.clear();
+  }
+
+  /**
    * For each task belonging to a given project, remove the task from that
    * project. Afterward, there will be no tasks assigned to the project.
    * @param {string} projectId The unique identifier of the project to clear.
