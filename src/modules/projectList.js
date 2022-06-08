@@ -176,7 +176,7 @@ class ProjectList {
    * @returns {boolean} Returns true if the project was successfully removed,
    *   or false if an invalid identifier was given.
    */
-  removeProject(id) {
+  deleteProject(id) {
     const index = findIndex(this, id);
     if (index < 0) return false;
 

@@ -828,7 +828,7 @@ function handleMainPanelMenuSelection(instance, itemId) {
         `Are you sure you want to delete the project '${project.name}'?`,
         () => {
           privates.tasks.clearProject(filter);
-          privates.projects.removeProject(filter);
+          privates.projects.deleteProject(filter);
           updateProjectFilters(instance);
           privates.filterMenu.selectFilter('projects', 'none');
         },
