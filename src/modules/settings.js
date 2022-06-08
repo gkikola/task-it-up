@@ -55,14 +55,13 @@ class Settings {
      * storage in the browser).
      * @type {string}
      */
-    this.storageMethod = 'local';
+    this.storageMethod = null;
 
     /**
      * The format to use for calendar dates.
      * @type {module:settings~Settings~dateFormat}
      */
     this.dateFormat = {};
-    this.setDateFormat('local');
 
     /**
      * Determines how many days after a task is completed before the task will
@@ -70,7 +69,7 @@ class Settings {
      * deleted automatically.
      * @type {?number}
      */
-    this.deleteAfter = 14;
+    this.deleteAfter = null;
 
     /**
      * Holds options for displaying the different types of task filters.
@@ -85,18 +84,28 @@ class Settings {
      *   for displaying filters in the 'priorities' group.
      */
     this.filters = {
-      default: null,
-      dates: null,
-      projects: null,
-      priorities: null,
+      default: {},
+      dates: {},
+      projects: {},
+      priorities: {},
     };
+
+    this.resetToDefault();
+  }
+
+  /**
+   * Reset all settings to their default values.
+   */
+  resetToDefault() {
+    this.storageMethod = 'local';
+    this.setDateFormat('local');
+    this.deleteAfter = 14;
     Object.keys(this.filters).forEach((property) => {
-      this.filters[property] = {
-        groupBy: 'default',
-        sortBy: 'create-date',
-        sortDescending: false,
-        showCompleted: false,
-      };
+      const filterObj = this.filters[property];
+      filterObj.groupBy = 'default';
+      filterObj.sortBy = 'create-date';
+      filterObj.sortDescending = false;
+      filterObj.showCompleted = false;
     });
   }
 
