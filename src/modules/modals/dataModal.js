@@ -124,7 +124,7 @@ function addListeners(instance, modalStack) {
 
   controls.deleteButton.addEventListener('click', () => {
     const modal = new ConfirmModal(
-      'Are you sure you want to delete all tasks and projects?',
+      'Are you sure you want to delete all user data? This will erase all tasks and projects, and will also reset app settings.',
       {
         initFocus: 'confirm-box',
         confirmBox: {
