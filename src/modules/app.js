@@ -441,6 +441,8 @@ function updateProjectFilters(instance) {
     const { filter } = selection;
     if (privates.filterMenu.hasFilter('projects', filter)) {
       privates.filterMenu.selectFilter('projects', filter);
+    } else {
+      privates.filterMenu.selectFilter('projects', 'none');
     }
   }
 }
@@ -646,6 +648,20 @@ function importFromFile(instance, content, name) {
 }
 
 /**
+ * Delete all user data.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function deleteAllData(instance) {
+  const privates = privateMembers.get(instance);
+  privates.settings.resetToDefault();
+  privates.tasks.deleteAll();
+  privates.projects.deleteAll();
+  updateProjectFilters(instance);
+  updateMainPanel(instance);
+}
+
+/**
  * Display a modal confirmation dialog.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -785,6 +801,7 @@ function showDataModal(instance) {
       if (fileType === 'csv') exportToCsv(instance, fileOptions);
       else exportToJson(instance, fileOptions);
     },
+    deleteAll: () => deleteAllData(instance),
   });
   privates.modalStack.showModal(modal);
 }
@@ -830,7 +847,6 @@ function handleMainPanelMenuSelection(instance, itemId) {
           privates.tasks.clearProject(filter);
           privates.projects.deleteProject(filter);
           updateProjectFilters(instance);
-          privates.filterMenu.selectFilter('projects', 'none');
         },
       );
       needUpdate = false;
