@@ -7,7 +7,12 @@ module.exports = {
     'plugin:compat/recommended'
   ],
   globals: {
+    PACKAGE_NAME: 'readonly',
     PACKAGE_VERSION: 'readonly',
+    PACKAGE_AUTHOR: 'readonly',
+    PACKAGE_AUTHOR_NAME: 'readonly',
+    PACKAGE_AUTHOR_EMAIL: 'readonly',
+    PACKAGE_AUTHOR_WEBSITE: 'readonly',
   },
   parserOptions: {
     ecmaVersion: 'latest',

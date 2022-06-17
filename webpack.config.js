@@ -4,10 +4,23 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
+const package = require('./package.json');
+
 module.exports = (env, argv) => {
   const mode = (argv.mode === 'development') ? 'development' : 'production';
   const styleLoader = mode === 'development'
     ? 'style-loader' : MiniCssExtractPlugin.loader;
+
+  // Set up compile-time defines
+  const authorInfo = package.author.match(/^(.*?)( <(.*)>)?( \((.*)\))?$/);
+  const definePluginOpts = {
+    PACKAGE_NAME: JSON.stringify(package.name),
+    PACKAGE_VERSION: JSON.stringify(package.version),
+    PACKAGE_AUTHOR: JSON.stringify(package.author),
+    PACKAGE_AUTHOR_NAME: JSON.stringify(authorInfo[1]),
+    PACKAGE_AUTHOR_EMAIL: JSON.stringify(authorInfo[3] ?? null),
+    PACKAGE_AUTHOR_WEBSITE: JSON.stringify(authorInfo[5] ?? null),
+  };
 
   // Base configuration
   const config = {
@@ -19,9 +32,7 @@ module.exports = (env, argv) => {
         title: 'Task It Up',
       }),
       new MiniCssExtractPlugin(),
-      new webpack.DefinePlugin({
-        PACKAGE_VERSION: JSON.stringify(require('./package.json').version),
-      }),
+      new webpack.DefinePlugin(definePluginOpts),
     ],
     output: {
       filename: 'main.js',

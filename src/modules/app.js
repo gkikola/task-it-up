@@ -37,8 +37,8 @@ import {
 } from './utility/storage';
 
 const APP_NAME = 'Task It Up';
-const APP_AUTHOR = 'Greg Kikola';
-const APP_AUTHOR_WEBSITE = 'https://www.gregkikola.com/';
+const APP_AUTHOR = PACKAGE_AUTHOR_NAME;
+const APP_AUTHOR_WEBSITE = PACKAGE_AUTHOR_WEBSITE;
 const APP_COPYRIGHT_YEARS = '2021-2022';
 const APP_VERSION = PACKAGE_VERSION;
 
