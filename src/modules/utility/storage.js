@@ -36,17 +36,22 @@ function isLocalStorageSupported() {
  * Store data in the browser's local storage, if available. This function will
  * associate the given key with the given value in storage. The value is first
  * converted to JSON format before being stored.
+ * @param {?string} prefix A prefix to use for the key name to avoid clashes
+ *   with other web apps hosted on the same origin. If given, the actual key
+ *   used will have the form 'prefix.key'.
  * @param {string} key The key to create or update.
  * @param {*} value The value to be associated with the key.
  * @returns {boolean} True if the data was successfully stored, and false
  *   otherwise. Possible reasons for returning false include local storage
  *   being unsupported or disabled, or storage limits being exceeded.
  */
-function storeData(key, value) {
+function storeData(prefix, key, value) {
   if (!isLocalStorageSupported()) return false;
 
+  const fullKey = prefix ? `${prefix}.${key}` : key;
+
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    window.localStorage.setItem(fullKey, JSON.stringify(value));
     return true;
   } catch {
     return false;
@@ -59,14 +64,18 @@ function storeData(key, value) {
  * from JSON format and the resulting value or object is used as the return
  * value. If the key does not exist or if local storage is not available, null
  * is returned.
+ * @param {?string} prefix The prefix for the key name whose value is to be
+ *   retrieved.
  * @param {string} key The key whose value is to be retrieved.
  * @returns {*} The data associated with the key, or null if not found.
  */
-function retrieveData(key) {
+function retrieveData(prefix, key) {
   if (!isLocalStorageSupported()) return null;
 
+  const fullKey = prefix ? `${prefix}.${key}` : key;
+
   try {
-    return JSON.parse(window.localStorage.getItem(key));
+    return JSON.parse(window.localStorage.getItem(fullKey));
   } catch {
     return null;
   }
@@ -75,15 +84,36 @@ function retrieveData(key) {
 /**
  * Remove data from the browser's local storage. If it exists, the given key
  * and its associated data will be removed from storage.
+ * @param {?string} prefix The prefix for the key to be removed.
  * @param {string} key The key to be removed.
  * @returns {boolean} True if the key was found and removed. If the key was not
  *   found or if local storage is unavailable, returns false.
  */
-function removeData(key) {
+function removeData(prefix, key) {
   if (!isLocalStorageSupported()) return false;
 
-  window.localStorage.removeItem(key);
+  window.localStorage.removeItem(prefix ? `${prefix}.${key}` : key);
   return true;
+}
+
+/**
+ * Clear all data from the browser's local storage. If local storage is
+ * unsupported or disabled, nothing happens.
+ * @param {?string} prefix The prefix for the keys to be removed. If not given,
+ *   then everything stored in local storage will be removed.
+ */
+function clearData(prefix) {
+  if (isLocalStorageSupported()) {
+    const storage = window.localStorage;
+    if (prefix) {
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key.startsWith(prefix)) storage.removeItem(key);
+      }
+    } else {
+      storage.clear();
+    }
+  }
 }
 
 /**
@@ -259,6 +289,7 @@ function getFileExtension(filename) {
 
 export {
   arrayToCsvRecord,
+  clearData,
   generateFile,
   getFileExtension,
   isLocalStorageSupported,
