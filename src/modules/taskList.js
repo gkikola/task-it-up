@@ -19,7 +19,6 @@ import {
 } from './utility/data';
 import {
   formatIsoDate,
-  formatIsoDateTime,
   getMonthIndex,
   getMonthName,
   getWeekdayIndex,
@@ -526,20 +525,10 @@ class TaskList {
    */
   toJSON() {
     const tasks = [];
-    const convertDate = (date) => (date ? formatIsoDateTime(date) : null);
     privateMembers.get(this).tasks.forEach((task, id) => {
       const copy = _.cloneDeep(task);
-      tasks.push({
-        name: copy.name,
-        id,
-        dueDate: convertDate(copy.dueDate),
-        creationDate: convertDate(copy.creationDate),
-        completionDate: convertDate(copy.completionDate),
-        priority: copy.priority,
-        description: copy.description,
-        recurringDate: copy.recurringDate,
-        project: copy.project,
-      });
+      copy.id = id;
+      tasks.push(copy);
     });
     return tasks;
   }
@@ -587,7 +576,7 @@ class TaskList {
 
     const newlineSequence = options.newlineSequence ?? '\r\n';
     const csvOptions = { newlineSequence };
-    const convertDate = (date) => (date ? formatIsoDateTime(date) : '');
+    const convertDate = (date) => date?.toJSON() ?? '';
     const lines = [arrayToCsvRecord(header, csvOptions)];
     privateMembers.get(this).tasks.forEach((task, id) => {
       const fields = [
