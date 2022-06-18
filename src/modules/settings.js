@@ -3,8 +3,32 @@
  * @module settings
  */
 
+import _ from 'lodash';
+
 import { getJsonType, validateValue } from './utility/data';
 import { getDateFormat } from './utility/dates';
+
+/**
+ * Object holding private members for the
+ * [Settings]{@link module:settings~Settings} class.
+ * @typedef {Object} module:settings~Settings~privates
+ * @property {string} storageMethod The method for storing data: 'none' (no
+ *   storage) or 'local' (local storage in the browser).
+ * @property {module:settings~Settings~dateFormat} dateFormat The format to use
+ *   for calendar dates.
+ * @property {?number} deleteAfter Determines how many days after a task is
+ *   completed before the task will be automatically deleted. If set to null,
+ *   completed tasks will never be deleted automatically.
+ * @property {Map} filterGroups A map associating the name of a filter group to
+ *   a [filterOptions]{@link module:settings~Settings~filterOptions} object.
+ */
+
+/**
+ * Holds private data for the [Settings]{@link module:settings~Settings} class.
+ * @type {WeakMap}
+ * @see module:settings~Settings~privates
+ */
+const privateMembers = new WeakMap();
 
 /**
  * Holds user app settings.
@@ -50,47 +74,94 @@ class Settings {
    * Create an object holding the default settings.
    */
   constructor() {
-    /**
-     * The method for storing data: 'none' (no storage) or 'local' (local
-     * storage in the browser).
-     * @type {string}
-     */
-    this.storageMethod = null;
-
-    /**
-     * The format to use for calendar dates.
-     * @type {module:settings~Settings~dateFormat}
-     */
-    this.dateFormat = {};
-
-    /**
-     * Determines how many days after a task is completed before the task will
-     * be automatically deleted. If set to null, completed tasks will never be
-     * deleted automatically.
-     * @type {?number}
-     */
-    this.deleteAfter = null;
-
-    /**
-     * Holds options for displaying the different types of task filters.
-     * @type {Object}
-     * @property {module:settings~Settings~filterOptions} default Options for
-     *   displaying filters in the 'default' group.
-     * @property {module:settings~Settings~filterOptions} dates Options for
-     *   displaying filters in the 'dates' group.
-     * @property {module:settings~Settings~filterOptions} projects Options for
-     *   displaying filters in the 'projects' group.
-     * @property {module:settings~Settings~filterOptions} priorities Options
-     *   for displaying filters in the 'priorities' group.
-     */
-    this.filters = {
-      default: {},
-      dates: {},
-      projects: {},
-      priorities: {},
+    const privates = {
+      storageMethod: null,
+      dateFormat: {},
+      deleteAfter: null,
+      filterGroups: new Map(),
     };
+    privateMembers.set(this, privates);
 
     this.resetToDefault();
+  }
+
+  /**
+   * The method for storing data: 'none' (no storage) or 'local' (local storage
+   * in the browser).
+   * @type {string}
+   */
+  get storageMethod() {
+    return privateMembers.get(this).storageMethod;
+  }
+
+  set storageMethod(method) {
+    if (method !== 'none' && method !== 'local') {
+      throw new RangeError(`Unrecognized storage method: "${method}"`);
+    }
+    privateMembers.get(this).storageMethod = method;
+  }
+
+  /**
+   * An object holding information about the format to use for calendar dates.
+   * @type {module:settings~Settings~dateFormat}
+   * @readonly
+   */
+  get dateFormat() {
+    return _.cloneDeep(privateMembers.get(this).dateFormat);
+  }
+
+  /**
+   * Determines how many days after a task is completed before the task will be
+   * automatically deleted. If set to null, completed tasks will never be
+   * deleted automatically.
+   * @type {?number}
+   */
+  get deleteAfter() {
+    return privateMembers.get(this).deleteAfter;
+  }
+
+  set deleteAfter(days) {
+    privateMembers.get(this).deleteAfter = days;
+  }
+
+  /**
+   * Get an object holding options for displaying task filters belonging to a
+   * particular filter group.
+   * @param {string} filterGroup The filter group whose options are to be
+   *   retrieved.
+   * @returns {?module:settings~Settings~filterOptions} An object holding the
+   *   filter options, or null if the filter group was not found.
+   */
+  getFilterOptions(filterGroup) {
+    const opts = privateMembers.get(this).filterGroups.get(filterGroup);
+    return opts ? _.cloneDeep(opts) : null;
+  }
+
+  /**
+   * Set options for displaying task filters belonging to a particular filter
+   * group.
+   * @param {string} filterGroup The filter group whose options are to be
+   *   changed.
+   * @param {module:settings~Settings~filterOptions} [options={}] An object
+   *   specifying the filter options to set. Any unspecified options will
+   *   retain their prior values, or will be set to default values if they were
+   *   not previously set.
+   */
+  setFilterOptions(filterGroup, options = {}) {
+    const { filterGroups } = privateMembers.get(this);
+
+    const oldOptions = filterGroups.get(filterGroup);
+
+    const newOptions = {
+      groupBy: options.groupBy ?? oldOptions?.groupBy ?? 'default',
+      sortBy: options.sortBy ?? oldOptions?.sortBy ?? 'create-date',
+      sortDescending: options.sortDescending ?? oldOptions?.sortDescending
+        ?? false,
+      showCompleted: options.showCompleted ?? oldOptions?.showCompleted
+        ?? false,
+    };
+
+    filterGroups.set(filterGroup, newOptions);
   }
 
   /**
@@ -100,12 +171,8 @@ class Settings {
     this.storageMethod = 'local';
     this.setDateFormat('local');
     this.deleteAfter = 14;
-    Object.keys(this.filters).forEach((property) => {
-      const filterObj = this.filters[property];
-      filterObj.groupBy = 'default';
-      filterObj.sortBy = 'create-date';
-      filterObj.sortDescending = false;
-      filterObj.showCompleted = false;
+    ['default', 'dates', 'projects', 'priorities'].forEach((group) => {
+      this.setFilterOptions(group);
     });
   }
 
@@ -115,7 +182,7 @@ class Settings {
    *   'month-day-year', 'day-month-year', or 'year-month-day'.
    */
   setDateFormat(type = 'local') {
-    Object.assign(this.dateFormat, Settings.lookupDateFormat(type));
+    privateMembers.get(this).dateFormat = Settings.lookupDateFormat(type);
   }
 
   /**
@@ -183,6 +250,25 @@ class Settings {
   }
 
   /**
+   * Convert data to an object suitable for serialization.
+   * @returns {Object} An object representing serializable data for the class.
+   */
+  toJSON() {
+    const result = {
+      storageMethod: this.storageMethod,
+      dateFormat: this.dateFormat,
+      deleteAfter: this.deleteAfter,
+      filterGroups: {},
+    };
+
+    privateMembers.get(this).filterGroups.forEach((options, group) => {
+      result.filterGroups[group] = _.cloneDeep(options);
+    });
+
+    return result;
+  }
+
+  /**
    * Import settings from a JSON object.
    * @param {Object} data The serialized JSON object to import.
    * @returns {module:settings~Settings~importStatus} An object holding
@@ -245,12 +331,14 @@ class Settings {
       errorCallback: handleError,
     })) this.deleteAfter = data.deleteAfter;
 
-    if (data.filters != null) {
-      const processFilter = (name) => {
-        const filter = data.filters[name];
-        if (filter != null) {
-          if (validateValue(filter.groupBy, {
-            valueName: `filters.${name}.groupBy`,
+    if (data.filterGroups != null) {
+      const processGroup = (name) => {
+        const filterOptions = data.filterGroups[name];
+        if (filterOptions != null) {
+          const newOptions = {};
+
+          if (validateValue(filterOptions.groupBy, {
+            valueName: `filterGroups.${name}.groupBy`,
             expectedType: 'string',
             expectedValues: [
               'default',
@@ -260,10 +348,10 @@ class Settings {
               'none',
             ],
             errorCallback: handleError,
-          })) this.filters[name].groupBy = filter.groupBy;
+          })) newOptions.groupBy = filterOptions.groupBy;
 
-          if (validateValue(filter.sortBy, {
-            valueName: `filters.${name}.sortBy`,
+          if (validateValue(filterOptions.sortBy, {
+            valueName: `filterGroups.${name}.sortBy`,
             expectedType: 'string',
             expectedValues: [
               'name',
@@ -273,26 +361,28 @@ class Settings {
               'project',
             ],
             errorCallback: handleError,
-          })) this.filters[name].sortBy = filter.sortBy;
+          })) newOptions.sortBy = filterOptions.sortBy;
 
-          if (validateValue(filter.sortDescending, {
-            valueName: `filters.${name}.sortDescending`,
+          if (validateValue(filterOptions.sortDescending, {
+            valueName: `filterGroups.${name}.sortDescending`,
             expectedType: 'boolean',
             errorCallback: handleError,
-          })) this.filters[name].sortDescending = filter.sortDescending;
+          })) newOptions.sortDescending = filterOptions.sortDescending;
 
-          if (validateValue(filter.showCompleted, {
-            valueName: `filters.${name}.showCompleted`,
+          if (validateValue(filterOptions.showCompleted, {
+            valueName: `filterGroups.${name}.showCompleted`,
             expectedType: 'boolean',
             errorCallback: handleError,
-          })) this.filters[name].showCompleted = filter.showCompleted;
+          })) newOptions.showCompleted = filterOptions.showCompleted;
+
+          this.setFilterOptions(name, newOptions);
         }
       };
 
-      processFilter('default');
-      processFilter('dates');
-      processFilter('projects');
-      processFilter('priorities');
+      processGroup('default');
+      processGroup('dates');
+      processGroup('projects');
+      processGroup('priorities');
     }
 
     return { errors };

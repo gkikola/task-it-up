@@ -187,7 +187,7 @@ function toggleSidePanel(instance) {
 function updateMainPanelMenu(instance) {
   const privates = privateMembers.get(instance);
   const { group, filter } = privates.currentFilter;
-  const filterOptions = privates.settings.filters[group];
+  const filterOptions = privates.settings.getFilterOptions(group);
 
   const GROUP_ICON = 'category';
   const SORT_ICON = 'sort';
@@ -341,7 +341,7 @@ function updateMainPanel(instance, options = {}) {
   let filterOptions;
   switch (group) {
     case 'dates': {
-      filterOptions = privates.settings.filters.dates;
+      filterOptions = privates.settings.getFilterOptions('dates');
       const today = startOfDay(new Date());
       const todayEnd = endOfDay(today);
 
@@ -382,7 +382,7 @@ function updateMainPanel(instance, options = {}) {
       break;
     }
     case 'projects':
-      filterOptions = privates.settings.filters.projects;
+      filterOptions = privates.settings.getFilterOptions('projects');
       displayOptions.project = filter;
       if (filter === 'none') {
         heading = 'Uncategorized';
@@ -393,7 +393,7 @@ function updateMainPanel(instance, options = {}) {
       }
       break;
     case 'priorities': {
-      filterOptions = privates.settings.filters.priorities;
+      filterOptions = privates.settings.getFilterOptions('priorities');
       const priority = Task.convertStringToPriority(filter);
       displayOptions.priority = priority;
       heading = `${Task.convertPriorityToPrettyString(priority)} Priority`;
@@ -401,7 +401,7 @@ function updateMainPanel(instance, options = {}) {
     }
     case 'default':
     default:
-      filterOptions = privates.settings.filters.default;
+      filterOptions = privates.settings.getFilterOptions('default');
       heading = 'All Tasks';
       break;
   }
@@ -815,9 +815,10 @@ function showDataModal(instance) {
 function handleMainPanelMenuSelection(instance, itemId) {
   const privates = privateMembers.get(instance);
   const { group, filter } = privates.currentFilter;
-  const filterOptions = privates.settings.filters[group];
+  const filterOptions = privates.settings.getFilterOptions(group);
 
-  let needUpdate = true;
+  let needPanelUpdate = true;
+  let needFilterOptionUpdate = true;
   switch (itemId) {
     case 'add-task': {
       const modalOptions = {};
@@ -827,15 +828,18 @@ function handleMainPanelMenuSelection(instance, itemId) {
         modalOptions.priority = Task.convertStringToPriority(filter);
       }
       showAddTaskModal(instance, modalOptions);
-      needUpdate = false;
+      needPanelUpdate = false;
+      needFilterOptionUpdate = false;
       break;
     }
     case 'add-project':
       showAddProjectModal(instance);
-      needUpdate = false;
+      needPanelUpdate = false;
+      needFilterOptionUpdate = false;
       break;
     case 'edit-project':
       showAddProjectModal(instance, { projectId: filter });
+      needFilterOptionUpdate = false;
       break;
     case 'delete-project': {
       const project = privates.projects.getProject(filter);
@@ -849,7 +853,8 @@ function handleMainPanelMenuSelection(instance, itemId) {
           updateProjectFilters(instance);
         },
       );
-      needUpdate = false;
+      needPanelUpdate = false;
+      needFilterOptionUpdate = false;
       break;
     }
     case 'show-completed':
@@ -895,7 +900,10 @@ function handleMainPanelMenuSelection(instance, itemId) {
       break;
   }
 
-  if (needUpdate) updateMainPanel(instance, { resetScroll: false });
+  if (needFilterOptionUpdate) {
+    privates.settings.setFilterOptions(group, filterOptions);
+  }
+  if (needPanelUpdate) updateMainPanel(instance, { resetScroll: false });
 }
 
 /**
@@ -1384,6 +1392,9 @@ class App {
 
     /* Add random task and project data for testing */
     addRandomData(this, 50, 10);
+
+    // TODO: Load from local storage
+
     updateProjectFilters(this);
     privates.filterMenu.selectFilter('default', 'all');
   }
