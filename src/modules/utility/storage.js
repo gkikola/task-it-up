@@ -87,16 +87,6 @@ function removeData(key) {
 }
 
 /**
- * Clear all data from the browser's local storage. If local storage is
- * unsupported or disabled, nothing happens.
- */
-function clearData() {
-  if (isLocalStorageSupported()) {
-    window.localStorage.clear();
-  }
-}
-
-/**
  * Generate a text file, and present it to the user as a download.
  * @param {string} content The text data to store in the file.
  * @param {string} filename The default file name.
@@ -269,7 +259,6 @@ function getFileExtension(filename) {
 
 export {
   arrayToCsvRecord,
-  clearData,
   generateFile,
   getFileExtension,
   isLocalStorageSupported,
