@@ -142,9 +142,9 @@ function createFormControl(options = {}) {
       }
 
       if (options.pattern) input.pattern = options.pattern;
-      if (options.min) input.min = options.min;
-      if (options.max) input.max = options.max;
-      if (options.step) input.step = options.step;
+      if (options.min != null) input.min = options.min;
+      if (options.max != null) input.max = options.max;
+      if (options.step != null) input.step = options.step;
       break;
   }
 
@@ -153,10 +153,10 @@ function createFormControl(options = {}) {
   if (options.title) input.title = options.title;
   if (options.classList) input.classList.add(...options.classList);
   if (options.required) input.required = true;
-  if (type !== 'select' && options.minLength) {
+  if (type !== 'select' && options.minLength != null) {
     input.minLength = options.minLength;
   }
-  if (type !== 'select' && options.maxLength) {
+  if (type !== 'select' && options.maxLength != null) {
     input.maxLength = options.maxLength;
   }
   if (type === 'file' && options.accept) {
