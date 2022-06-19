@@ -97,6 +97,42 @@ function removeData(prefix, key) {
 }
 
 /**
+ * Execute the provided function on each item in the browser's local storage
+ * area, or on each item having a given prefix.
+ * @param {?string} prefix The prefix for the keys to iterate over. If not
+ *   given, then all items will be iterated over.
+ * @param {Function} callback A callback function that will be called for each
+ *   matching storage item. The function will be passed the key (by default
+ *   without the prefix), the value (unless using the noValue option), and the
+ *   index.
+ * @param {Object} [options={}] An object holding additional options for the
+ *   callback function.
+ * @param {boolean} [options.includePrefix] If set to true, then the callback
+ *   function will receive the full key, with the prefix included.
+ * @param {boolean} [options.noValue] If set to true, then only the key and
+ *   index for the data item will be passed to the callback function. By not
+ *   retrieving and deserializing every value, this can save time if the caller
+ *   does not need every value.
+ */
+function forEachDataItem(prefix, callback, options = {}) {
+  if (isLocalStorageSupported()) {
+    const storage = window.localStorage;
+
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i);
+      if (!prefix || key.startsWith(`${prefix}.`)) {
+        const localKey = (prefix && !options.includePrefix)
+          ? key.substring(prefix.length + 1) : key;
+        const value = options.noValue ? null : retrieveData(null, key);
+
+        if (value) callback(localKey, value, i);
+        else callback(localKey, i);
+      }
+    }
+  }
+}
+
+/**
  * Clear all data from the browser's local storage. If local storage is
  * unsupported or disabled, nothing happens.
  * @param {?string} prefix The prefix for the keys to be removed. If not given,
@@ -106,10 +142,11 @@ function clearData(prefix) {
   if (isLocalStorageSupported()) {
     const storage = window.localStorage;
     if (prefix) {
-      for (let i = 0; i < storage.length; i++) {
-        const key = storage.key(i);
-        if (key.startsWith(prefix)) storage.removeItem(key);
-      }
+      forEachDataItem(
+        prefix,
+        (key) => storage.removeItem(key),
+        { includePrefix: true, noValue: true },
+      );
     } else {
       storage.clear();
     }
@@ -290,6 +327,7 @@ function getFileExtension(filename) {
 export {
   arrayToCsvRecord,
   clearData,
+  forEachDataItem,
   generateFile,
   getFileExtension,
   isLocalStorageSupported,
