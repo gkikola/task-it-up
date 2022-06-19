@@ -142,11 +142,13 @@ function clearData(prefix) {
   if (isLocalStorageSupported()) {
     const storage = window.localStorage;
     if (prefix) {
+      const keys = [];
       forEachDataItem(
         prefix,
-        (key) => storage.removeItem(key),
+        (key) => keys.push(key),
         { includePrefix: true, noValue: true },
       );
+      keys.forEach((key) => removeData(null, key));
     } else {
       storage.clear();
     }
