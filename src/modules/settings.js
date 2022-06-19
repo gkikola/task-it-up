@@ -3,6 +3,7 @@
  * @module settings
  */
 
+import EventEmitter from 'events';
 import _ from 'lodash';
 
 import { getJsonType, validateValue } from './utility/data';
@@ -21,6 +22,8 @@ import { getDateFormat } from './utility/dates';
  *   completed tasks will never be deleted automatically.
  * @property {Map} filterGroups A map associating the name of a filter group to
  *   a [filterOptions]{@link module:settings~Settings~filterOptions} object.
+ * @property {EventEmitter} eventEmitter Holds the event emitter which
+ *   dispatches events to attached event listeners.
  */
 
 /**
@@ -64,6 +67,18 @@ class Settings {
    */
 
   /**
+   * Event that is fired when a setting is modified.
+   * @event module:settings~Settings~updateSetting
+   * @type {Object}
+   * @property {string} type The event type: 'update-setting'.
+   * @property {string} name The name of the setting. This is the same as the
+   *   name of the corresponding instance property, except for filter group
+   *   settings, which have the form 'filterGroups.group-name', where
+   *   'group-name' is the name of the filter group.
+   * @property {*} value The new value of the setting.
+   */
+
+  /**
    * An object holding information about the status of a data import.
    * @typedef {Object} module:settings~Settings~importStatus
    * @property {string[]} errors An array of error messages describing any
@@ -79,10 +94,111 @@ class Settings {
       dateFormat: {},
       deleteAfter: null,
       filterGroups: new Map(),
+      eventEmitter: new EventEmitter(),
     };
     privateMembers.set(this, privates);
 
     this.resetToDefault();
+  }
+
+  /**
+   * Get the value of a setting. Although each setting can be retrieved
+   * directly using other class methods and properties, this method can make
+   * storage and serialization easier.
+   * @param {string} name The name of the setting. This is the same as the name
+   *   of the corresponding instance property, except for filter group
+   *   settings, which have the form 'filterGroups.group-name', where
+   *   'group-name' is the name of the filter group.
+   * @returns {*} The value of the setting. For filter group settings, this is
+   *   a [filterOptions]{@link module:settings~Settings~filterOptions} object.
+   *   For date format settings, this is a
+   *   [dateFormat]{@link module:settings~Settings~dateFormat} object.
+   */
+  getSetting(name) {
+    switch (name) {
+      case 'storageMethod':
+        return this.storageMethod;
+      case 'dateFormat':
+        return this.dateFormat;
+      case 'deleteAfter':
+        return this.deleteAfter;
+      default:
+        if (name.startsWith('filterGroups.')) {
+          const group = name.substring('filterGroups.'.length);
+          return this.getFilterOptions(group);
+        }
+        return null;
+    }
+  }
+
+  /**
+   * Set the value of a setting. Although each setting can be set directly
+   * using other class methods and properties, this method can make storage and
+   * deserialization easier.
+   * @param {string} name The name of the setting. This is the same as the name
+   *   of the corresponding instance property, except for filter group
+   *   settings, which have the form 'filterGroups.group-name', where
+   *   'group-name' is the name of the filter group.
+   * @param {*} value The value of the setting. For filter group settings, this
+   *   should be a
+   *   [filterOptions]{@link module:settings~Settings~filterOptions} object.
+   *   For date format settings, this can be either a
+   *   [dateFormat]{@link module:settings~Settings~dateFormat} object or a
+   *   string specifying the name of the format to use.
+   * @fires module:settings~Settings~updateSetting
+   */
+  setSetting(name, value) {
+    let validSetting = true;
+    switch (name) {
+      case 'storageMethod':
+        this.storageMethod = value;
+        break;
+      case 'dateFormat':
+        this.setDateFormat(value);
+        break;
+      case 'deleteAfter':
+        this.deleteAfter = value;
+        break;
+      default:
+        if (name.startsWith('filterGroups.')) {
+          const group = name.substring('filterGroups.'.length);
+          this.setFilterOptions(group, value);
+        } else {
+          validSetting = false;
+        }
+        break;
+    }
+
+    if (validSetting) {
+      privateMembers.get(this).eventEmitter.emit('update-setting', {
+        type: 'update-setting',
+        name,
+        value: _.cloneDeep(value),
+      });
+    }
+  }
+
+  /**
+   * Execute the provided function for each available setting.
+   * @param {Function} callback The function to execute for each setting. The
+   *   function will be passed the name of each setting along with its value.
+   */
+  forEach(callback) {
+    const privates = privateMembers.get(this);
+    const settingList = [
+      'storageMethod',
+      'dateFormat',
+      'deleteAfter',
+    ];
+
+    const groupKeys = [...privates.filterGroups.keys()].map(
+      (key) => `filterGroups.${key}`,
+    );
+    settingList.push(...groupKeys);
+
+    settingList.forEach((setting) => {
+      callback(setting, this.getSetting(setting));
+    });
   }
 
   /**
@@ -98,7 +214,15 @@ class Settings {
     if (method !== 'none' && method !== 'local') {
       throw new RangeError(`Unrecognized storage method: "${method}"`);
     }
-    privateMembers.get(this).storageMethod = method;
+
+    const privates = privateMembers.get(this);
+    privates.storageMethod = method;
+
+    privates.eventEmitter.emit('update-setting', {
+      type: 'update-setting',
+      name: 'storageMethod',
+      value: method,
+    });
   }
 
   /**
@@ -121,7 +245,14 @@ class Settings {
   }
 
   set deleteAfter(days) {
-    privateMembers.get(this).deleteAfter = days;
+    const privates = privateMembers.get(this);
+    privates.deleteAfter = days;
+
+    privates.eventEmitter.emit('update-setting', {
+      type: 'update-setting',
+      name: 'deleteAfter',
+      value: days,
+    });
   }
 
   /**
@@ -146,9 +277,11 @@ class Settings {
    *   specifying the filter options to set. Any unspecified options will
    *   retain their prior values, or will be set to default values if they were
    *   not previously set.
+   * @fires module:settings~Settings~updateSetting
    */
   setFilterOptions(filterGroup, options = {}) {
-    const { filterGroups } = privateMembers.get(this);
+    const privates = privateMembers.get(this);
+    const { filterGroups } = privates;
 
     const oldOptions = filterGroups.get(filterGroup);
 
@@ -162,10 +295,17 @@ class Settings {
     };
 
     filterGroups.set(filterGroup, newOptions);
+
+    privates.eventEmitter.emit('update-setting', {
+      type: 'update-setting',
+      name: `filterGroups.${filterGroup}`,
+      value: _.cloneDeep(newOptions),
+    });
   }
 
   /**
    * Reset all settings to their default values.
+   * @fires module:settings~Settings~updateSetting
    */
   resetToDefault() {
     this.storageMethod = 'local';
@@ -185,11 +325,27 @@ class Settings {
 
   /**
    * Set the pattern used for formatting and parsing dates.
-   * @param {string} [type=local] The type of date format: 'local', 'iso',
-   *   'month-day-year', 'day-month-year', or 'year-month-day'.
+   * @param {string|module:settings~Settings~dateFormat} [format=local] The
+   *   type of date format to use. This can either be a string specifying the
+   *   format type ('local', 'iso', 'month-day-year', 'day-month-year', or
+   *   'year-month-day'), or it can be a full
+   *   [dateFormat]{@link module:settings~Settings~dateFormat} object.
+   * @fires module:settings~Settings~updateSetting
    */
-  setDateFormat(type = 'local') {
-    privateMembers.get(this).dateFormat = Settings.lookupDateFormat(type);
+  setDateFormat(format = 'local') {
+    const privates = privateMembers.get(this);
+
+    if (typeof format === 'string') {
+      privates.dateFormat = Settings.lookupDateFormat(format);
+    } else {
+      privates.dateFormat = _.cloneDeep(format);
+    }
+
+    privates.eventEmitter.emit('update-setting', {
+      type: 'update-setting',
+      name: 'dateFormat',
+      value: this.dateFormat,
+    });
   }
 
   /**
@@ -257,6 +413,16 @@ class Settings {
   }
 
   /**
+   * Add an event listener to settings instance.
+   * @param {string} type The type of event to listen for.
+   * @param {Function} listener A callback function to be invoked when the
+   *   event is triggered.
+   */
+  addEventListener(type, listener) {
+    privateMembers.get(this).eventEmitter.on(type, listener);
+  }
+
+  /**
    * Convert data to an object suitable for serialization.
    * @returns {Object} An object representing serializable data for the class.
    */
@@ -280,6 +446,7 @@ class Settings {
    * @param {Object} data The serialized JSON object to import.
    * @returns {module:settings~Settings~importStatus} An object holding
    *   information about the status of the import.
+   * @fires module:settings~Settings~updateSetting
    */
   importFromJson(data) {
     const errors = [];
