@@ -3,6 +3,7 @@
  * @module projectList
  */
 
+import EventEmitter from 'events';
 import _ from 'lodash';
 import { v4 as generateUuid } from 'uuid';
 
@@ -16,6 +17,8 @@ import { getJsonType, isUuidValid, validateValue } from './utility/data';
  * @property {module:projectList~ProjectList~projectWrapper[]} projects An
  *   array of projects. Each element in the array is a wrapper that holds the
  *   project along with its unique identifier.
+ * @property {module:projectList~ProjectList~eventEmitter} Holds the event
+ *   emitter which dispatches events to attached listeners.
  */
 
 /**
@@ -51,6 +54,34 @@ class ProjectList {
    */
 
   /**
+   * Event that is fired when a project is added to the project list.
+   * @event module:projectList~ProjectList~addProject
+   * @type {Object}
+   * @property {string} type The event type: 'add-project'.
+   * @property {string} id The unique identifier of the newly-added project.
+   * @property {module:project~Project} project A copy of the newly-added
+   *   project.
+   */
+
+  /**
+   * Event that is fired when a project in the list is modified.
+   * @event module:projectList~ProjectList~updateProject
+   * @type {Object}
+   * @property {string} type The event type: 'update-project'.
+   * @property {string} id The unique identifier for the updated project.
+   * @property {module:project~Project} project A copy of the updated project.
+   */
+
+  /**
+   * Event that is fired when a project in the list is deleted.
+   * @event module:projectList~ProjectList~deleteProject
+   * @type {Object}
+   * @property {string} type The event type: 'delete-project'.
+   * @property {string} id The unique identifier for the deleted project.
+   * @property {module:project~Project} project A copy of the deleted project.
+   */
+
+  /**
    * An object holding information about the status of a data import.
    * @typedef {Object} module:projectList~ProjectList~importStatus
    * @property {Object} projects An object holding information about the number
@@ -71,7 +102,10 @@ class ProjectList {
    * Create a project list.
    */
   constructor() {
-    const privates = { projects: [] };
+    const privates = {
+      projects: [],
+      eventEmitter: new EventEmitter(),
+    };
     privateMembers.set(this, privates);
   }
 
@@ -99,6 +133,7 @@ class ProjectList {
    *   the given identifier.
    * @returns {boolean} Returns true if the project was replaced successfully,
    *   or false if the given identifier is invalid.
+   * @fires module:projectList~ProjectList~updateProject
    */
   updateProject(id, project) {
     const index = findIndex(this, id);
@@ -118,6 +153,13 @@ class ProjectList {
       );
       privates.projects.splice(insertAt, 0, wrapper);
     }
+
+    privates.eventEmitter.emit('update-project', {
+      type: 'update-project',
+      id,
+      project: _.cloneDeep(project),
+    });
+
     return true;
   }
 
@@ -131,6 +173,8 @@ class ProjectList {
    *   or with which an existing project should be replaced.
    * @returns {boolean} True if the project was successfully added or updated,
    *   or false if the given identifier is not a valid UUID.
+   * @fires module:projectList~ProjectList~addProject
+   * @fires module:projectList~ProjectList~updateProject
    */
   addOrUpdateProject(id, project) {
     if (!isUuidValid(id)) return false;
@@ -147,6 +191,12 @@ class ProjectList {
       );
 
       privates.projects.splice(index, 0, value);
+
+      privates.eventEmitter.emit('add-project', {
+        type: 'add-project',
+        id,
+        project: _.cloneDeep(project),
+      });
     }
 
     return true;
@@ -158,6 +208,7 @@ class ProjectList {
    * is not kept.
    * @param {module:project~Project} project The project to add.
    * @returns {string} The identifier of the newly-added project.
+   * @fires module:projectList~ProjectList~addProject
    */
   addProject(project) {
     // Generate UUID (loop in case of collision)
@@ -175,20 +226,43 @@ class ProjectList {
    * @param {string} id The identifier of the project to remove.
    * @returns {boolean} Returns true if the project was successfully removed,
    *   or false if an invalid identifier was given.
+   * @fires module:projectList~ProjectList~deleteProject
    */
   deleteProject(id) {
     const index = findIndex(this, id);
     if (index < 0) return false;
 
-    privateMembers.get(this).projects.splice(index, 1);
+    const privates = privateMembers.get(this);
+
+    const { project } = privates.projects[index];
+    privates.projects.splice(index, 1);
+
+    privates.eventEmitter.emit('delete-project', {
+      type: 'delete-project',
+      id,
+      project,
+    });
+
     return true;
   }
 
   /**
    * Delete all projects from the project list.
+   * @fires module:projectList~ProjectList~deleteProject
    */
   deleteAll() {
-    privateMembers.get(this).projects.length = 0;
+    const privates = privateMembers.get(this);
+    const projects = [...privates.projects];
+
+    privates.projects.length = 0;
+
+    projects.forEach(({ id, project }) => {
+      privates.eventEmitter.emit('delete-project', {
+        type: 'delete-project',
+        id,
+        project,
+      });
+    });
   }
 
   /**
@@ -202,7 +276,9 @@ class ProjectList {
   }
 
   /**
-   * Execute the provided function on each project in the list.
+   * Execute the provided function on each project in the list. Note that the
+   * project instance passed to the callback function is only a copy of the
+   * project in the list.
    * @param {Function} callback The function to execute on each project. The
    *   function will be passed a
    *   [wrapper]{@link module:projectList~ProjectList~projectWrapper}
@@ -215,6 +291,16 @@ class ProjectList {
       const copy = _.cloneDeep(project);
       callback(copy, index);
     });
+  }
+
+  /**
+   * Add an event listener to the project list.
+   * @param {string} type The type of event to listen for.
+   * @param {Function} listener A callback function to be invoked when the
+   *   event is triggered.
+   */
+  addEventListener(type, listener) {
+    privateMembers.get(this).eventEmitter.on(type, listener);
   }
 
   /**
@@ -238,6 +324,8 @@ class ProjectList {
    * @param {Object} data The serialized JSON object to import.
    * @returns {module:projectList~ProjectList~importStatus} An object holding
    *   information about the status of the import.
+   * @fires module:projectList~ProjectList~addProject
+   * @fires module:projectList~ProjectList~updateProject
    */
   importFromJson(data) {
     const counts = {
@@ -322,6 +410,8 @@ class ProjectList {
    *   projects are ignored, as are unrelated fields.
    * @returns {module:taskList~TaskList~importStatus} An object holding
    *   information about the status of the import.
+   * @fires module:projectList~ProjectList~addProject
+   * @fires module:projectList~ProjectList~updateProject
    */
   importFromCsv(data) {
     const columns = [];
