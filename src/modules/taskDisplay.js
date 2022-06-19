@@ -264,9 +264,6 @@ class TaskDisplay {
    * @property {module:taskDisplay~TaskDisplay~taskCallback} [taskCallback] A
    *   callback function that will be invoked when the user performs an action
    *   on a task.
-   * @property {module:settings~Settings~dateFormat} [dateFormat] An object
-   *   holding information about the calendar date format to use when
-   *   displaying dates.
    */
 
   /**
@@ -299,6 +296,9 @@ class TaskDisplay {
    * @property {boolean} [resetScroll=true] If set to true (the default), the
    *   panel's scroll position will be reset back to the top. Otherwise the
    *   scroll position will not be changed.
+   * @property {module:settings~Settings~dateFormat} [dateFormat] An object
+   *   holding information about the calendar date format to use when
+   *   displaying dates.
    */
 
   /**
@@ -328,7 +328,7 @@ class TaskDisplay {
       tasks: taskList,
       projects: projectList,
       taskCallback: options.taskCallback || null,
-      dateFormat: options.dateFormat || Settings.lookupDateFormat(),
+      dateFormat: Settings.lookupDateFormat('iso'),
       taskMenu: null,
     };
     privateMembers.set(this, privates);
@@ -343,6 +343,8 @@ class TaskDisplay {
    */
   update(options = {}) {
     const privates = privateMembers.get(this);
+
+    privates.dateFormat = options.dateFormat ?? Settings.lookupDateFormat();
     clear(this);
 
     const listOptions = {

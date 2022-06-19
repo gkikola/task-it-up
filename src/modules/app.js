@@ -337,6 +337,7 @@ function updateMainPanel(instance, options = {}) {
   const displayOptions = {
     groupBy: 'none',
     resetScroll: options.resetScroll ?? true,
+    dateFormat: privates.settings.dateFormat,
   };
   let filterOptions;
   switch (group) {
@@ -1200,7 +1201,6 @@ function createMainPanel(instance, parent) {
     taskCallback: (type, id, task) => {
       handleTaskUpdate(instance, type, id, task);
     },
-    dateFormat: privates.settings.dateFormat,
   };
   privates.taskDisplay = new TaskDisplay(
     privates.mainPanel,
