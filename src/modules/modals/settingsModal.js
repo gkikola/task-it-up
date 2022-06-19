@@ -3,6 +3,8 @@
  * @module settingsModal
  */
 
+import ConfirmModal from './confirmModal';
+
 import Settings from '../settings';
 import { createFormControl } from '../utility/dom';
 import { isLocalStorageSupported } from '../utility/storage';
@@ -13,6 +15,10 @@ import { isLocalStorageSupported } from '../utility/storage';
  * @typedef {Object} module:settingsModal~SettingsModal~privates
  * @property {module:settings~Settings} settings The app settings being
  *   modified.
+ * @property {module:modalStack~ModalStack} modalStack The modal stack in which
+ *   the modal was inserted.
+ * @property {boolean} confirmNoStorage If true, then the user should be asked
+ *   for confirmation when disabling local storage.
  * @property {Object} callbacks An object holding callback functions.
  * @property {Function} [callbacks.confirm] A callback function that will be
  *   invoked when the user successfully confirms the modal.
@@ -48,14 +54,17 @@ const privateMembers = new WeakMap();
  *   which to apply the function.
  */
 function initFormValues(instance) {
-  const { controls, settings } = privateMembers.get(instance);
+  const privates = privateMembers.get(instance);
+  const { controls, settings } = privates;
 
   switch (settings.storageMethod) {
     case 'none':
+      privates.confirmNoStorage = false;
       controls.saveNever.checked = true;
       break;
     case 'local':
     default:
+      privates.confirmNoStorage = true;
       controls.saveLocal.checked = true;
       break;
   }
@@ -124,6 +133,8 @@ class SettingsModal {
   constructor(settings, options = {}) {
     const privates = {
       settings,
+      modalStack: null,
+      confirmNoStorage: true,
       callbacks: {
         confirm: options.confirm || null,
         cancel: options.cancel || null,
@@ -148,7 +159,7 @@ class SettingsModal {
     return 'Edit Settings';
   }
 
-  addContent(parent) {
+  addContent(parent, modalStack) {
     let container = document.createElement('div');
     container.classList.add('form-input-container');
 
@@ -263,7 +274,10 @@ class SettingsModal {
     container.appendChild(optionContainer);
     parent.appendChild(container);
 
-    const { controls } = privateMembers.get(this);
+    const privates = privateMembers.get(this);
+    privates.modalStack = modalStack;
+
+    const { controls } = privates;
     controls.saveLocal = parent.querySelector('#settings-save-local');
     controls.saveNever = parent.querySelector('#settings-save-never');
     controls.dateFormat = parent.querySelector('#settings-date-format');
@@ -301,10 +315,33 @@ class SettingsModal {
   }
 
   validate() {
-    const { controls } = privateMembers.get(this);
+    const privates = privateMembers.get(this);
+    const { controls, modalStack } = privates;
 
     if (controls.deleteOld.checked) {
       if (!controls.deleteAfter.reportValidity()) return false;
+    }
+
+    // Ask for confirmation when disabling local storage
+    if (privates.confirmNoStorage
+      && !controls.saveNever.disabled && controls.saveNever.checked) {
+      const modal = new ConfirmModal(
+        'Are you sure you want to disable local storage? Your data will not be saved in the browser and will be lost after you leave this page.',
+        {
+          confirm: () => {
+            privates.confirmNoStorage = false;
+
+            // Close settings modal
+            // Using setTimeout will let us wait for the confirm modal to close
+            setTimeout(() => modalStack.confirmModal());
+          },
+          cancel: () => {
+            controls.saveLocal.checked = true;
+          }
+        },
+      );
+      modalStack.showModal(modal);
+      return false;
     }
 
     return true;
