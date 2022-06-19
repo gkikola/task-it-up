@@ -31,9 +31,14 @@ import TaskList from './taskList';
 import { formatDate } from './utility/dates';
 import { createIconButton } from './utility/dom';
 import {
+  clearData,
+  forEachDataItem,
   generateFile,
   getFileExtension,
   parseCsv,
+  removeData,
+  retrieveData,
+  storeData,
 } from './utility/storage';
 
 const APP_NAME = 'Task It Up';
@@ -41,6 +46,7 @@ const APP_AUTHOR = PACKAGE_AUTHOR_NAME;
 const APP_AUTHOR_WEBSITE = PACKAGE_AUTHOR_WEBSITE;
 const APP_COPYRIGHT_YEARS = '2021-2022';
 const APP_VERSION = PACKAGE_VERSION;
+const APP_STORAGE_PREFIX = PACKAGE_NAME;
 
 const NARROW_LAYOUT_CUTOFF = 700;
 
@@ -1033,6 +1039,150 @@ function handleUserMenuSelection(instance, itemId) {
 }
 
 /**
+ * Make sure app information and settings are stored in local storage if
+ * needed.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function initializeStorage(instance) {
+  storeData(APP_STORAGE_PREFIX, 'app.version', APP_VERSION);
+
+  const storageMethod = retrieveData(
+    APP_STORAGE_PREFIX,
+    'setting.storageMethod',
+  );
+  if (storageMethod && storageMethod !== 'local') return;
+
+  // Store any settings that are not already in local storage
+  privateMembers.get(instance).settings.forEach((name, value) => {
+    const key = `setting.${name}`;
+    if (!retrieveData(APP_STORAGE_PREFIX, key)) {
+      storeData(APP_STORAGE_PREFIX, key, value);
+    }
+  });
+}
+
+/**
+ * Load all items from local storage into the app.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function loadAllStorageData(instance) {
+  const privates = privateMembers.get(instance);
+
+  forEachDataItem(APP_STORAGE_PREFIX, (key, value) => {
+    const dotIndex = key.indexOf('.');
+    const type = key.substring(0, dotIndex);
+    const id = key.substring(dotIndex + 1);
+
+    switch (type) {
+      case 'task':
+        privates.tasks.addOrUpdateTask(id, Task.fromJson(value));
+        break;
+      case 'project':
+        privates.projects.addOrUpdateProject(id, Project.fromJson(value));
+        break;
+      case 'setting':
+        privates.settings.setSetting(id, value);
+        break;
+      default:
+        break;
+    }
+  });
+}
+
+/**
+ * Store all user data in local storage.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function storeAllData(instance) {
+  const privates = privateMembers.get(instance);
+
+  storeData(APP_STORAGE_PREFIX, 'app.version', APP_VERSION);
+
+  if (privates.settings.storageMethod === 'local') {
+    privates.tasks.forEach(({ id, task }) => {
+      storeData(APP_STORAGE_PREFIX, `task.${id}`, task);
+    });
+
+    privates.projects.forEach(({ id, project }) => {
+      storeData(APP_STORAGE_PREFIX, `project.${id}`, project);
+    });
+
+    privates.settings.forEach((name, value) => {
+      storeData(APP_STORAGE_PREFIX, `setting.${name}`, value);
+    });
+  } else {
+    storeData(APP_STORAGE_PREFIX, 'setting.storageMethod', 'none');
+  }
+}
+
+/**
+ * Update local storage after data has been changed.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ * @param {string} type The type of data that was changed: 'setting', 'task',
+ *   or 'project'.
+ * @param {Object} eventData The event object specifying the data that was
+ *   changed.
+ */
+function updateStorage(instance, type, eventData) {
+  const privates = privateMembers.get(instance);
+
+  // If storage method is changing, we need to delete or restore everything
+  if (type === 'setting' && eventData.name === 'storageMethod') {
+    if (eventData.value !== 'local') clearData(APP_STORAGE_PREFIX);
+    storeAllData(instance);
+    return;
+  }
+
+  if (privates.settings.storageMethod !== 'local') return;
+
+  switch (type) {
+    case 'task': {
+      const { type: eventType, id, task } = eventData;
+      const key = `task.${id}`;
+      switch (eventType) {
+        case 'add-task':
+        case 'update-task':
+          storeData(APP_STORAGE_PREFIX, key, task);
+          break;
+        case 'delete-task':
+          removeData(APP_STORAGE_PREFIX, key);
+          break;
+        default:
+          break;
+      }
+      break;
+    }
+    case 'project': {
+      const { type: eventType, id, project } = eventData;
+      const key = `project.${id}`;
+      switch (eventType) {
+        case 'add-project':
+        case 'update-project':
+          storeData(APP_STORAGE_PREFIX, key, project);
+          break;
+        case 'delete-project':
+          removeData(APP_STORAGE_PREFIX, key);
+          break;
+        default:
+          break;
+      }
+      break;
+    }
+    case 'setting': {
+      const { name, value } = eventData;
+      storeData(APP_STORAGE_PREFIX, `setting.${name}`, value);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+/**
  * Create the app's task filter menu.
  * @param {module:app~App} instance The class instances on which to apply the
  *   function.
@@ -1390,10 +1540,25 @@ class App {
       );
     });
 
-    /* Add random task and project data for testing */
-    addRandomData(this, 50, 10);
+    initializeStorage(this);
+    loadAllStorageData(this);
 
-    // TODO: Load from local storage
+    const taskCallback = (event) => updateStorage(this, 'task', event);
+    privates.tasks.addEventListener('add-task', taskCallback);
+    privates.tasks.addEventListener('update-task', taskCallback);
+    privates.tasks.addEventListener('delete-task', taskCallback);
+
+    const projCallback = (event) => updateStorage(this, 'project', event);
+    privates.projects.addEventListener('add-project', projCallback);
+    privates.projects.addEventListener('update-project', projCallback);
+    privates.projects.addEventListener('delete-project', projCallback);
+
+    const settingsCallback = (event) => updateStorage(this, 'setting', event);
+    privates.settings.addEventListener('update-setting', settingsCallback);
+
+    /* Add random task and project data for testing */
+    // TODO: remove
+    addRandomData(this, 0, 0);
 
     updateProjectFilters(this);
     privates.filterMenu.selectFilter('default', 'all');
