@@ -171,8 +171,15 @@ class Settings {
     this.storageMethod = 'local';
     this.setDateFormat('local');
     this.deleteAfter = 14;
+
+    const filterOptions = {
+      groupBy: 'default',
+      sortBy: 'create-date',
+      sortDescending: false,
+      showCompleted: false,
+    };
     ['default', 'dates', 'projects', 'priorities'].forEach((group) => {
-      this.setFilterOptions(group);
+      this.setFilterOptions(group, filterOptions);
     });
   }
 
