@@ -4,6 +4,7 @@
  */
 
 import { isBefore as isDateBefore, isSameDay } from 'date-fns';
+import EventEmitter from 'events';
 import _ from 'lodash';
 import { v4 as generateUuid } from 'uuid';
 
@@ -43,6 +44,8 @@ import { arrayToCsvRecord } from './utility/storage';
  * @property {Map} tasksByPriority Holds a map associating priority numbers to
  *   arrays of [taskWrapper]{@link module:taskList~TaskList~taskWrapper}
  *   objects based on the priorities of the tasks.
+ * @property {EventEmitter} eventEmitter Holds the event emitter which
+ *   dispatches events to attached event listeners.
  */
 
 /**
@@ -61,6 +64,33 @@ class TaskList {
    * @typedef {Object} module:taskList~TaskList~taskWrapper
    * @property {string} id The unique identifier for the task.
    * @property {module:task~Task} task The task instance.
+   */
+
+  /**
+   * Event that is fired when a task is added to the task list.
+   * @event module:taskList~TaskList~addTask
+   * @type {Object}
+   * @property {string} type The event type: 'add-task'.
+   * @property {string} id The unique identifier of the newly-added task.
+   * @property {module:task~Task} task A copy of the newly-added task.
+   */
+
+  /**
+   * Event that is fired when a task in the list is modified.
+   * @event module:taskList~TaskList~updateTask
+   * @type {Object}
+   * @property {string} type The event type: 'update-task'.
+   * @property {string} id The unique identifier of the updated task.
+   * @property {module:task~Task} task A copy of the modified task.
+   */
+
+  /**
+   * Event that is fired when a task in the list is deleted.
+   * @event module:taskList~TaskList~deleteTask
+   * @type {Object}
+   * @property {string} type The event type: 'delete-task'.
+   * @property {string} id The unique identifier for the deleted task.
+   * @property {module:task~Task} task A copy of the task that was deleted.
    */
 
   /**
@@ -114,6 +144,7 @@ class TaskList {
       tasksByDueDate: new Map(),
       tasksByProject: new Map(),
       tasksByPriority: new Map(),
+      eventEmitter: new EventEmitter(),
     };
     privateMembers.set(this, privates);
   }
@@ -139,6 +170,7 @@ class TaskList {
    *   identifier.
    * @returns {boolean} Returns true if the task was replaced successfully. If
    *   the given id is invalid, returns false.
+   * @fires module:taskList~TaskList~updateTask
    */
   updateTask(id, task) {
     const privates = privateMembers.get(this);
@@ -172,6 +204,12 @@ class TaskList {
     newKey = copy.priority;
     updateIndex(privates.tasksByPriority, oldKey, newKey);
 
+    privates.eventEmitter.emit('update-task', {
+      type: 'update-task',
+      id,
+      task: _.cloneDeep(task),
+    });
+
     return true;
   }
 
@@ -185,6 +223,8 @@ class TaskList {
    *   an existing task should be replaced.
    * @returns {boolean} True if the task was successfully added or updated, or
    *   false if the given identifier is not a valid UUID.
+   * @fires module:taskList~TaskList~addTask
+   * @fires module:taskList~TaskList~updateTask
    */
   addOrUpdateTask(id, task) {
     if (!isUuidValid(id)) return false;
@@ -217,6 +257,12 @@ class TaskList {
         priority,
         { ...wrapper },
       );
+
+      privates.eventEmitter.emit('add-task', {
+        type: 'add-task',
+        id,
+        task: _.cloneDeep(task),
+      });
     }
 
     return true;
@@ -228,6 +274,7 @@ class TaskList {
    * made, and the original object is not kept.
    * @param {module:task~Task} task The task to be added.
    * @returns {string} The identifier of the newly-added task.
+   * @fires module:taskList~TaskList~addTask
    */
   addTask(task) {
     const privates = privateMembers.get(this);
@@ -257,6 +304,7 @@ class TaskList {
    * @param {string} id The unique identifier of the task to remove.
    * @returns {boolean} Returns true if the task was found and removed
    *   successfully. Otherwise, if the given id was not found, returns false.
+   * @fires module:taskList~TaskList~deleteTask
    */
   deleteTask(id) {
     const privates = privateMembers.get(this);
@@ -279,40 +327,76 @@ class TaskList {
       elem.id === id
     ));
 
+    privates.eventEmitter.emit('delete-task', {
+      type: 'delete-task',
+      id,
+      task,
+    });
+
     return true;
   }
 
   /**
    * Delete all tasks in the task list.
+   * @fires module:taskList~TaskList~deleteTask
    */
   deleteAll() {
     const privates = privateMembers.get(this);
+
+    // Save task information in order to emit delete events later
+    const tasks = [];
+    privates.tasks.forEach((task, id) => tasks.push({ id, task }));
+
     privates.tasks.clear();
     privates.tasksByDueDate.clear();
     privates.tasksByProject.clear();
     privates.tasksByPriority.clear();
+
+    tasks.forEach(({ id, task }) => {
+      privates.eventEmitter.emit('delete-task', {
+        type: 'delete-task',
+        id,
+        task,
+      });
+    });
   }
 
   /**
    * For each task belonging to a given project, remove the task from that
    * project. Afterward, there will be no tasks assigned to the project.
    * @param {string} projectId The unique identifier of the project to clear.
+   * @fires module:taskList~TaskList~updateTask
    */
   clearProject(projectId) {
-    const map = privateMembers.get(this).tasksByProject;
+    const privates = privateMembers.get(this);
+    const map = privates.tasksByProject;
     const tasks = map.get(projectId);
     if (!tasks) return;
+
+    // Save modified tasks in order to emit events later
+    const updatedTasks = [];
 
     tasks.forEach((entry) => {
       const { task } = entry;
       task.project = null;
       addToMapArray(map, 'none', entry);
+      updatedTasks.push(entry);
     });
     map.delete(projectId);
+
+    updatedTasks.forEach(({ id, task }) => {
+      privates.eventEmitter.emit('update-task', {
+        type: 'update-task',
+        id,
+        task: _.cloneDeep(task),
+      });
+    });
   }
 
   /**
-   * Execute the provided function on each task in the list.
+   * Execute the provided function on each task in the list. Note that the task
+   * instance passed to the callback function is only a copy of the task in the
+   * list.
    * @param {Function} callback The function to execute on each task. The
    *   function will be passed a
    *   [wrapper]{@link module:taskList~TaskList~taskWrapper} containing the
@@ -520,6 +604,16 @@ class TaskList {
   }
 
   /**
+   * Add an event listener to the task list.
+   * @param {string} type The type of event to listen for.
+   * @param {Function} listener A callback function to be invoked when the
+   *   event is triggered.
+   */
+  addEventListener(type, listener) {
+    privateMembers.get(this).eventEmitter.on(type, listener);
+  }
+
+  /**
    * Convert data to an object suitable for serialization.
    * @returns {Object} An object representing serializable data for the class.
    */
@@ -676,6 +770,8 @@ class TaskList {
    *   on project identifiers.
    * @returns {module:taskList~TaskList~importStatus} An object holding
    *   information about the status of the import.
+   * @fires module:taskList~TaskList~addTask
+   * @fires module:taskList~TaskList~updateTask
    */
   importFromJson(data, options = {}) {
     const counts = {
@@ -984,6 +1080,8 @@ class TaskList {
    *   on project identifiers.
    * @returns {module:taskList~TaskList~importStatus} An object holding
    *   information about the status of the import.
+   * @fires module:taskList~TaskList~addTask
+   * @fires module:taskList~TaskList~updateTask
    */
   importFromCsv(data, options = {}) {
     const header = (data.length > 0) ? data[0] : [];
