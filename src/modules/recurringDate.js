@@ -20,6 +20,7 @@ import {
   formatDate,
   getWeekdayName,
   getMonthName,
+  parseIsoDateTime,
 } from './utility/dates';
 
 /**
@@ -526,6 +527,28 @@ class RecurringDate {
     }
 
     return strValue;
+  }
+
+  /**
+   * Create a recurring date from a JSON object.
+   * @param {Object} data The JSON object holding the serialized data.
+   * @returns {module:recurringDate~RecurringDate} A new recurring date
+   *   converted from the JSON data.
+   */
+  static fromJson(data) {
+    const convertDate = (date) => (date ? parseIsoDateTime(date) : null);
+    return new RecurringDate(data.intervalUnit, {
+      intervalLength: data.intervalLength,
+      startDate: convertDate(data.startDate),
+      baseOnCompletion: data.baseOnCompletion,
+      weekNumber: data.weekNumber,
+      daysOfWeek: data.daysOfWeek,
+      month: data.month,
+      dayOfMonth: data.dayOfMonth,
+      onWeekend: data.onWeekend,
+      endDate: convertDate(data.endDate),
+      maxCount: data.maxCount,
+    });
   }
 }
 

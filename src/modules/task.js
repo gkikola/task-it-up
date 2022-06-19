@@ -3,6 +3,9 @@
  * @module task
  */
 
+import RecurringDate from './recurringDate';
+import { parseIsoDateTime } from './utility/dates';
+
 /**
  * Represents a task.
  */
@@ -132,6 +135,26 @@ class Task {
    */
   toString() {
     return this.name ? `Task: ${this.name}` : 'Task: (untitled)';
+  }
+
+  /**
+   * Create a task from a JSON object.
+   * @param {Object} data The JSON object holding the serialized data.
+   * @returns {module:task~Task} A new task converted from the JSON data.
+   */
+  static fromJson(data) {
+    const convertDate = (date) => (date ? parseIsoDateTime(date) : null);
+    const recurringDate = data.recurringDate
+      ? RecurringDate.fromJson(data.recurringDate) : null;
+    return new Task(data.name, {
+      dueDate: convertDate(data.dueDate),
+      creationDate: convertDate(data.creationDate),
+      completionDate: convertDate(data.completionDate),
+      priority: data.priority,
+      description: data.description,
+      recurringDate,
+      project: data.project,
+    });
   }
 
   /**

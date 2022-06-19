@@ -26,6 +26,16 @@ class Project {
      */
     this.description = options.description ?? null;
   }
+
+  /**
+   * Create a project from a JSON object.
+   * @param {Object} data The JSON object holding the serialized data.
+   * @returns {module:project~Project} A new project converted from the JSON
+   *   data.
+   */
+  static fromJson(data) {
+    return new Project(data.name, { description: data.description });
+  }
 }
 
 export default Project;
