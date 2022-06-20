@@ -337,7 +337,7 @@ class SettingsModal {
           },
           cancel: () => {
             controls.saveLocal.checked = true;
-          }
+          },
         },
       );
       modalStack.showModal(modal);
