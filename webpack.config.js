@@ -43,11 +43,19 @@ module.exports = (env, argv) => {
       rules: [
         {
           test: /\.m?js$/i,
-          exclude: /node_modules[\\\/](?!(semver|lru-cache))[\\\/]/,
+          exclude: /node_modules[\\\/](?!(events|semver|lru-cache))[\\\/]/,
           use: {
             loader: 'babel-loader',
             options: {
-              presets: ['@babel/preset-env'],
+              presets: [
+                [
+                  '@babel/preset-env',
+                  {
+                    useBuiltIns: 'entry',
+                    corejs: '3.23',
+                  },
+                ],
+              ],
               plugins: ['lodash'],
             },
           },
