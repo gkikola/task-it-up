@@ -29,6 +29,51 @@ function addToMapArray(map, key, value) {
 }
 
 /**
+ * Compare two semantic version strings. The version strings should be
+ * formatted according to the [Semantic Versioning 2.0.0](https://semver.org/)
+ * specifications. Pre-release information and build metadata are ignored.
+ * @param {string} v1 The first version string to compare.
+ * @param {string} v2 The second version string to compare.
+ * @returns {number} If v1 has a lower version number than v2 (that is, v1 is
+ *   an older version), then a value less than 0 is returned. If v1 has higher
+ *   version number than v2 (that is, v1 is a newer version), then a value
+ *   greater than 0 is returned. Otherwise, if both v1 and v2 are equivalent
+ *   versions, then 0 is returned.
+ * @throws {RangeError} If either string is not a valid semantic version.
+ */
+function compareVersions(v1, v2) {
+  const splitVersion = (version) => {
+    const components = version.match(/^([0-9]+)(\.([0-9]+)(\.([0-9]+))?)?/);
+    if (!components) {
+      throw new RangeError(`Invalid semantic version "${version}"`);
+    }
+
+    const major = Number(components[1]);
+    const minor = (components[3] != null) ? Number(components[3]) : 0;
+    const patch = (components[5] != null) ? Number(components[5]) : 0;
+
+    return { major, minor, patch };
+  };
+
+  const leftVer = splitVersion(v1);
+  const rightVer = splitVersion(v2);
+
+  if (leftVer.major !== rightVer.major) {
+    return (leftVer.major < rightVer.major) ? -1 : 1;
+  }
+
+  if (leftVer.minor !== rightVer.minor) {
+    return (leftVer.minor < rightVer.minor) ? -1 : 1;
+  }
+
+  if (leftVer.patch !== rightVer.patch) {
+    return (leftVer.patch < rightVer.patch) ? -1 : 1;
+  }
+
+  return 0;
+}
+
+/**
  * Find a value in an array belonging to a Map having array values. The first
  * value in the appropriate array for which the predicate returns true is
  * returned.
@@ -339,6 +384,7 @@ function validateValue(value, options = {}) {
 
 export {
   addToMapArray,
+  compareVersions,
   findInMapArray,
   getJsonType,
   isUuidValid,
