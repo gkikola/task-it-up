@@ -43,7 +43,16 @@ module.exports = (env, argv) => {
       rules: [
         {
           test: /\.m?js$/i,
-          exclude: /node_modules[\\\/](?!(events|semver|lru-cache))[\\\/]/,
+          include: (resource) => {
+            const includedPackages = [
+              'events',
+            ];
+
+            const match = resource.match(/node_modules[\\\/](.*?)[\\\/]/);
+
+            // Exclude only non-whitelisted dependencies
+            return !match || includedPackages.includes(match[1]);
+          },
           use: {
             loader: 'babel-loader',
             options: {
@@ -51,11 +60,12 @@ module.exports = (env, argv) => {
                 [
                   '@babel/preset-env',
                   {
-                    useBuiltIns: 'entry',
+                    useBuiltIns: 'usage',
                     corejs: '3.23',
                   },
                 ],
               ],
+              sourceType: 'unambiguous',
               plugins: ['lodash'],
             },
           },
