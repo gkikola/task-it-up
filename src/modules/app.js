@@ -8,7 +8,6 @@ import {
   endOfDay,
   startOfDay,
 } from 'date-fns';
-import semver from 'semver';
 
 import '../styles/reset.css';
 import '../styles/main.css';
@@ -28,6 +27,7 @@ import SettingsModal from './modals/settingsModal';
 import Task from './task';
 import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
+import { compareVersions } from './utility/data';
 import { formatDate } from './utility/dates';
 import { createIconButton } from './utility/dom';
 import {
@@ -525,9 +525,9 @@ function importFromJson(instance, data) {
       projects,
     } = JSON.parse(data);
 
-    if (app?.name !== APP_NAME || !semver.valid(app?.version)) {
+    if (app?.name !== APP_NAME || app?.version == null) {
       errors.push('Warning: Imported data does not follow the expected schema. The data may have been created by a different application, or may have been altered.');
-    } else if (semver.gt(app.version, APP_VERSION)) {
+    } else if (compareVersions(app.version, APP_VERSION) > 0) {
       errors.push('Warning: Imported data seems to have been created by a newer version of the application. Some information might not be imported or might be imported incorrectly.');
     }
 
