@@ -4,7 +4,7 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
-    'plugin:compat/recommended'
+    'plugin:compat/recommended',
   ],
   globals: {
     PACKAGE_NAME: 'readonly',
@@ -13,6 +13,8 @@ module.exports = {
     PACKAGE_AUTHOR_NAME: 'readonly',
     PACKAGE_AUTHOR_EMAIL: 'readonly',
     PACKAGE_AUTHOR_WEBSITE: 'readonly',
+    PACKAGE_LICENSE: 'readonly',
+    PACKAGE_HOMEPAGE: 'readonly',
   },
   parserOptions: {
     ecmaVersion: 'latest',
