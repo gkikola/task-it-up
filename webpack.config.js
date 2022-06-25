@@ -24,18 +24,28 @@ module.exports = (env, argv) => {
 
   // Base configuration
   const config = {
-    entry: './src/index.js',
+    entry: {
+      main: './src/index.js',
+      licenses: './src/licenses.js',
+    },
     mode,
     plugins: [
       new HtmlWebpackPlugin({
         template: './src/template.ejs',
         title: 'Task It Up',
+        chunks: ['main'],
+      }),
+      new HtmlWebpackPlugin({
+        template: './src/template.ejs',
+        title: 'Licenses - Task It Up',
+        filename: '[name].html',
+        chunks: ['licenses'],
       }),
       new MiniCssExtractPlugin(),
       new webpack.DefinePlugin(definePluginOpts),
     ],
     output: {
-      filename: 'main.js',
+      filename: '[name].[contenthash].js',
       path: path.resolve(__dirname, 'dist'),
       clean: true,
     },

@@ -1,0 +1,41 @@
+@import './variables.css';
+
+/* Use alternative box model */
+html {
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: var(--content-font);
+  background-color: var(--modal-accent-color);
+}
+
+a, a:visited {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.content {
+  width: 650px;
+  max-width: calc(100vw - 32px);
+  min-height: 100vh;
+  margin: auto;
+  padding: 8px;
+  background-color: white;
+  border-width: 0 1px 0;
+  border-style: none solid none;
+  border-color: black;
+}
+
+h1 {
+  font-family: var(--label-font);
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0 0 16px 0;
+}
