@@ -1,0 +1,70 @@
+{
+  "licenses": [
+    {
+      "name": "Apache License, Version 2.0",
+      "id": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    {
+      "name": "The MIT License",
+      "id": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    {
+      "name": "SIL Open Font License, Version 1.1",
+      "id": "OFL-1.1",
+      "url": "https://scripts.sil.org/OFL_web"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Carter One",
+      "type": "font",
+      "copyright": null,
+      "license": "OFL-1.1",
+      "homepage": "https://fonts.google.com/specimen/Carter+One"
+    },
+    {
+      "name": "core-js",
+      "type": "software",
+      "copyright": "Copyright \u00A9 2014\u20132022 Denis Pushkarev",
+      "license": "MIT",
+      "homepage": "https://github.com/zloirock/core-js"
+    },
+    {
+      "name": "date-fns",
+      "type": "software",
+      "copyright": "Copyright \u00A9 2022 Sasha Koss",
+      "license": "MIT",
+      "homepage": "https://date-fns.org/"
+    },
+    {
+      "name": "Lodash",
+      "type": "software",
+      "copyright": "Copyright JS Foundation and other contributors",
+      "license": "MIT",
+      "homepage": "https://lodash.com/"
+    },
+    {
+      "name": "Material Icons",
+      "type": "font",
+      "copyright": null,
+      "license": "Apache-2.0",
+      "homepage": "https://developers.google.com/fonts/docs/material_icons"
+    },
+    {
+      "name": "ordinal",
+      "type": "software",
+      "copyright": "Copyright \u00A9 2018 Daniel Cousens",
+      "license": "MIT",
+      "homepage": "https://github.com/dcousens/ordinal.js"
+    },
+    {
+      "name": "uuid",
+      "type": "software",
+      "copyright": "Copyright \u00A9 2010\u20132020 Robert Kieffer and other contributors",
+      "license": "MIT",
+      "homepage": "https://github.com/uuidjs/uuid"
+    }
+  ]
+}

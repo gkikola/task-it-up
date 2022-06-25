@@ -103,6 +103,10 @@ module.exports = (env, argv) => {
           test: /\.(png|svg|jpg|jpeg|gif)$/i,
           type: 'asset/resource',
         },
+        {
+          test: /\.txt$/i,
+          type: 'asset/source',
+        },
       ],
     },
     optimization: {

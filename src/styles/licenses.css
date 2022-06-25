@@ -11,6 +11,7 @@ html {
 body {
   font-family: var(--content-font);
   background-color: var(--modal-accent-color);
+  line-height: normal;
 }
 
 a, a:visited {
@@ -19,6 +20,28 @@ a, a:visited {
 
 a:hover {
   text-decoration: underline;
+}
+
+p {
+  margin: 12px 0;
+}
+
+h1 {
+  font-family: var(--label-font);
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0 0 16px 0;
+}
+
+h2 {
+  font-family: var(--label-font);
+  font-size: 24px;
+  font-weight: bold;
+  margin: 32px 0 12px 0;
+}
+
+ul {
+  list-style: disc inside;
 }
 
 .content {
@@ -33,9 +56,28 @@ a:hover {
   border-color: black;
 }
 
-h1 {
-  font-family: var(--label-font);
-  font-size: 32px;
-  font-weight: bold;
-  margin: 0 0 16px 0;
+.resource-info {
+  margin: 12px 0;
+  padding: 12px;
+  background-color: var(--item-selection-color);
+  border: 1px solid black;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.resource-info-item {
+  display: block;
+}
+
+.license-text {
+  margin-top: 8px;
+  max-height: 300px;
+  overflow: auto;
+  font-family: 'Lucida Console', Courier, monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+
+  background-color: white;
+  border: 1px solid black;
 }
