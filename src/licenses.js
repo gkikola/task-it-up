@@ -1,8 +1,23 @@
+/**
+ * Defines functions for creating a page showing license information.
+ * @module licenses
+ */
+
 import './styles/reset.css';
 import './styles/licenses.css';
 import AppInfo from './modules/appInfo';
 import LicenseInfo from '../data/licenses/licenseInfo.json';
 
+/**
+ * Given two objects with a 'name' proeprty, compare their names and return a
+ * value indicating which is first in sort order. The comparison is not
+ * case-sensitive.
+ * @param {Object} a The first object to compare.
+ * @param {Object} b The second object to compare.
+ * @returns {number} A number less than 0 if the first object comes first in
+ *   sort order, a number greater than 0 if the second object comes first, or
+ *   0 if both objects have the same name (ignoring case).
+ */
 function compareByName(a, b) {
   const nameA = a.name.toLowerCase();
   const nameB = b.name.toLowerCase();
@@ -12,18 +27,43 @@ function compareByName(a, b) {
   return 0;
 }
 
+/**
+ * Get information about a license given its identifier.
+ * @param {string} id The short identifier for the license.
+ * @returns {Object} An object holding information about the license.
+ */
 function getLicenseInfo(id) {
   return LicenseInfo.licenses.find((license) => (
     license.id.toLowerCase() === id.toLowerCase()
   ));
 }
 
+/**
+ * Return an array of resources of a given type, sorted by name.
+ * @param {string} type The type of resource to find: 'software' or 'font'.
+ * @returns {Object[]} An array of objects specifying information about the
+ *   third-party resources.
+ */
 function filterResources(type) {
   return LicenseInfo.resources.filter((resource) => (
     resource.type.toLowerCase() === type.toLowerCase()
   )).sort(compareByName);
 }
 
+/**
+ * Describes an entry in a table of contents.
+ * @typedef {Object} module:licenses~tocEntry
+ * @property {string} title The title of the section.
+ * @property {string} id The identifier for the heading element that starts the
+ *   section.
+ */
+
+/**
+ * Create a table of contents and insert it into the DOM.
+ * @param {HTMLElement} parent The parent element under which the TOC is to be
+ *   inserted.
+ * @param {module:licenses~tocEntry[]} entries An array of TOC entries.
+ */
 function createToc(parent, entries) {
   const listElem = document.createElement('ul');
   entries.forEach((entry) => {
@@ -37,6 +77,24 @@ function createToc(parent, entries) {
   parent.appendChild(listElem);
 }
 
+/**
+ * Describes a fragment of a paragraph of text.
+ * @typedef {Object} module:licenses~paragraphNode
+ * @property {string} type The type of paragraph node: 'text' indicates plain
+ *   text, while 'link' indicates a hyperlink.
+ * @property {string} content The text content that will be displayed within
+ *   the paragraph on the page.
+ * @property {string} [url] For link nodes, this specifies the URL that will be
+ *   linked to.
+ */
+
+/**
+ * Create a series of paragraph elements and insert them into the DOM.
+ * @param {HTMLElement} parent The parent element under which the paragraphs
+ *   are to be inserted.
+ * @param {module:licenses~paragraphNode[][]} paragraphs An array of
+ *   paragraphs, where each paragraph is an array of paragraph nodes.
+ */
 function createParagraphs(parent, paragraphs) {
   paragraphs.forEach((paragraph) => {
     const pElem = document.createElement('p');
@@ -62,6 +120,11 @@ function createParagraphs(parent, paragraphs) {
   });
 }
 
+/**
+ * Generate the list of resources and insert the content into the DOM.
+ * @param {HTMLElement} parent The parent element under which the elements
+ *   should be inserted.
+ */
 function createResourceList(parent) {
   const groups = [
     {
@@ -73,7 +136,7 @@ function createResourceList(parent) {
       name: 'Fonts',
       id: 'fonts',
       items: filterResources('font'),
-    }
+    },
   ];
 
   groups.forEach((group) => {
@@ -121,6 +184,11 @@ function createResourceList(parent) {
   });
 }
 
+/**
+ * Generate the list of licenses and insert the content into the DOM.
+ * @param {HTMLElement} parent The parent element under which the elements are
+ *   to be inserted.
+ */
 function createLicenseList(parent) {
   const heading = document.createElement('h2');
   heading.textContent = 'License Text';
@@ -151,6 +219,11 @@ function createLicenseList(parent) {
   });
 }
 
+/**
+ * Create the content for the licenses page and insert it into the DOM.
+ * @param {HTMLElement} parent The parent element under which the page content
+ *   is to be inserted.
+ */
 function createPage(parent) {
   const content = document.createElement('div');
   content.classList.add('content');
@@ -175,7 +248,7 @@ function createPage(parent) {
       },
       {
         type: 'text',
-        content: ` and is licensed under `
+        content: ' and is licensed under ',
       },
       {
         type: 'link',
