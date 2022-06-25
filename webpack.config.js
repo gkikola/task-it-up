@@ -20,6 +20,8 @@ module.exports = (env, argv) => {
     PACKAGE_AUTHOR_NAME: JSON.stringify(authorInfo[1]),
     PACKAGE_AUTHOR_EMAIL: JSON.stringify(authorInfo[3] ?? null),
     PACKAGE_AUTHOR_WEBSITE: JSON.stringify(authorInfo[5] ?? null),
+    PACKAGE_LICENSE: JSON.stringify(package.license),
+    PACKAGE_HOMEPAGE: JSON.stringify(package.homepage),
   };
 
   // Base configuration
