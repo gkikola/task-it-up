@@ -45,7 +45,7 @@ a:hover {
   height: var(--header-height);
 
   color: white;
-  background-color: #0000bb;
+  background-color: var(--header-color);
   padding: 12px;
 }
 
