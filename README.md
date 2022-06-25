@@ -6,6 +6,8 @@ Task It Up allows you to create tasks, assign due dates and priorities, and
 organize your tasks into projects. Data is saved locally on your computer or
 device.
 
+[View Live Version](https://www.gregkikola.com/task-it-up/).
+
 
 #### Table of Contents
 
