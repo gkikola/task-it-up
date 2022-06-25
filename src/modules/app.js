@@ -11,6 +11,7 @@ import {
 
 import '../styles/reset.css';
 import '../styles/main.css';
+import AppInfo from './appInfo';
 import AddProjectModal from './modals/addProjectModal';
 import AddTaskModal from './modals/addTaskModal';
 import ConfirmModal from './modals/confirmModal';
@@ -40,13 +41,6 @@ import {
   retrieveData,
   storeData,
 } from './utility/storage';
-
-const APP_NAME = 'Task It Up';
-const APP_AUTHOR = PACKAGE_AUTHOR_NAME;
-const APP_AUTHOR_WEBSITE = PACKAGE_AUTHOR_WEBSITE;
-const APP_COPYRIGHT_YEARS = '2021-2022';
-const APP_VERSION = PACKAGE_VERSION;
-const APP_STORAGE_PREFIX = PACKAGE_NAME;
 
 const NARROW_LAYOUT_CUTOFF = 700;
 
@@ -525,9 +519,9 @@ function importFromJson(instance, data) {
       projects,
     } = JSON.parse(data);
 
-    if (app?.name !== APP_NAME || app?.version == null) {
+    if (app?.name !== AppInfo.name || app?.version == null) {
       errors.push('Warning: Imported data does not follow the expected schema. The data may have been created by a different application, or may have been altered.');
-    } else if (compareVersions(app.version, APP_VERSION) > 0) {
+    } else if (compareVersions(app.version, AppInfo.version) > 0) {
       errors.push('Warning: Imported data seems to have been created by a newer version of the application. Some information might not be imported or might be imported incorrectly.');
     }
 
@@ -1045,10 +1039,10 @@ function handleUserMenuSelection(instance, itemId) {
  *   function.
  */
 function initializeStorage(instance) {
-  storeData(APP_STORAGE_PREFIX, 'app.version', APP_VERSION);
+  storeData(AppInfo.storagePrefix, 'app.version', AppInfo.version);
 
   const storageMethod = retrieveData(
-    APP_STORAGE_PREFIX,
+    AppInfo.storagePrefix,
     'setting.storageMethod',
   );
   if (storageMethod && storageMethod !== 'local') return;
@@ -1056,8 +1050,8 @@ function initializeStorage(instance) {
   // Store any settings that are not already in local storage
   privateMembers.get(instance).settings.forEach((name, value) => {
     const key = `setting.${name}`;
-    if (!retrieveData(APP_STORAGE_PREFIX, key)) {
-      storeData(APP_STORAGE_PREFIX, key, value);
+    if (!retrieveData(AppInfo.storagePrefix, key)) {
+      storeData(AppInfo.storagePrefix, key, value);
     }
   });
 }
@@ -1070,7 +1064,7 @@ function initializeStorage(instance) {
 function loadAllStorageData(instance) {
   const privates = privateMembers.get(instance);
 
-  forEachDataItem(APP_STORAGE_PREFIX, (key, value) => {
+  forEachDataItem(AppInfo.storagePrefix, (key, value) => {
     const dotIndex = key.indexOf('.');
     const type = key.substring(0, dotIndex);
     const id = key.substring(dotIndex + 1);
@@ -1099,22 +1093,22 @@ function loadAllStorageData(instance) {
 function storeAllData(instance) {
   const privates = privateMembers.get(instance);
 
-  storeData(APP_STORAGE_PREFIX, 'app.version', APP_VERSION);
+  storeData(AppInfo.storagePrefix, 'app.version', AppInfo.version);
 
   if (privates.settings.storageMethod === 'local') {
     privates.tasks.forEach(({ id, task }) => {
-      storeData(APP_STORAGE_PREFIX, `task.${id}`, task);
+      storeData(AppInfo.storagePrefix, `task.${id}`, task);
     });
 
     privates.projects.forEach(({ id, project }) => {
-      storeData(APP_STORAGE_PREFIX, `project.${id}`, project);
+      storeData(AppInfo.storagePrefix, `project.${id}`, project);
     });
 
     privates.settings.forEach((name, value) => {
-      storeData(APP_STORAGE_PREFIX, `setting.${name}`, value);
+      storeData(AppInfo.storagePrefix, `setting.${name}`, value);
     });
   } else {
-    storeData(APP_STORAGE_PREFIX, 'setting.storageMethod', 'none');
+    storeData(AppInfo.storagePrefix, 'setting.storageMethod', 'none');
   }
 }
 
@@ -1132,7 +1126,7 @@ function updateStorage(instance, type, eventData) {
 
   // If storage method is changing, we need to delete or restore everything
   if (type === 'setting' && eventData.name === 'storageMethod') {
-    if (eventData.value !== 'local') clearData(APP_STORAGE_PREFIX);
+    if (eventData.value !== 'local') clearData(AppInfo.storagePrefix);
     storeAllData(instance);
     return;
   }
@@ -1146,10 +1140,10 @@ function updateStorage(instance, type, eventData) {
       switch (eventType) {
         case 'add-task':
         case 'update-task':
-          storeData(APP_STORAGE_PREFIX, key, task);
+          storeData(AppInfo.storagePrefix, key, task);
           break;
         case 'delete-task':
-          removeData(APP_STORAGE_PREFIX, key);
+          removeData(AppInfo.storagePrefix, key);
           break;
         default:
           break;
@@ -1162,10 +1156,10 @@ function updateStorage(instance, type, eventData) {
       switch (eventType) {
         case 'add-project':
         case 'update-project':
-          storeData(APP_STORAGE_PREFIX, key, project);
+          storeData(AppInfo.storagePrefix, key, project);
           break;
         case 'delete-project':
-          removeData(APP_STORAGE_PREFIX, key);
+          removeData(AppInfo.storagePrefix, key);
           break;
         default:
           break;
@@ -1174,7 +1168,7 @@ function updateStorage(instance, type, eventData) {
     }
     case 'setting': {
       const { name, value } = eventData;
-      storeData(APP_STORAGE_PREFIX, `setting.${name}`, value);
+      storeData(AppInfo.storagePrefix, `setting.${name}`, value);
       break;
     }
     default:
@@ -1245,7 +1239,7 @@ function createHeader(instance, parent) {
   titleContainer.appendChild(createIconButton('menu'));
   const title = document.createElement('p');
   title.classList.add('title');
-  title.textContent = APP_NAME;
+  title.textContent = AppInfo.name;
   titleContainer.appendChild(title);
   header.appendChild(titleContainer);
 
@@ -1373,9 +1367,9 @@ function createFooter(parent) {
 
   const copyright = document.createElement('div');
   copyright.classList.add('copyright');
-  copyright.innerHTML = `Copyright &copy; ${APP_COPYRIGHT_YEARS} `
-    + `<a href="${APP_AUTHOR_WEBSITE}" target="_blank">`
-    + `${APP_AUTHOR}</a>`;
+  copyright.innerHTML = `Copyright &copy; ${AppInfo.copyrightYears} `
+    + `<a href="${AppInfo.authorWebsite}" target="_blank">`
+    + `${AppInfo.author}</a>`;
   footer.appendChild(copyright);
 
   parent.appendChild(footer);
@@ -1573,8 +1567,8 @@ class App {
 
     return {
       app: {
-        name: APP_NAME,
-        version: APP_VERSION,
+        name: AppInfo.name,
+        version: AppInfo.version,
       },
       settings: privates.settings,
       tasks: privates.tasks,
