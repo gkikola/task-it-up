@@ -52,6 +52,7 @@
 .task-list-item-description {
   font-size: 14px;
   margin: 6px 0;
+  line-height: normal;
   color: #505050;
   white-space: pre-wrap;
 }

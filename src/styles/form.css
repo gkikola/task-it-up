@@ -75,6 +75,7 @@ input[type="radio"], input[type="checkbox"] {
 .form-input-label-inline {
   font-family: var(--label-font);
   font-size: 14px;
+  line-height: normal;
 }
 
 .form-input, .form-select, .form-textarea {
@@ -102,6 +103,7 @@ input[type="radio"], input[type="checkbox"] {
 .form-textarea {
   width: 100%;
   resize: vertical;
+  line-height: normal;
 }
 
 .form-button {
