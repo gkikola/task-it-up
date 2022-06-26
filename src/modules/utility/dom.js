@@ -363,9 +363,112 @@ function createToggleButton(label, options = {}) {
   return button;
 }
 
+/**
+ * Describes a paragraph fragment.
+ * @typedef {Object|string} module:dom~paragraphFragment
+ * @property {string} [content] The text content that is to be displayed in the
+ *   paragraph.
+ * @property {string} [url] If provided, the fragment will be a hyperlink
+ *   pointing to the given URL.
+ * @property {string} [target] If a URL was provided, this property determines
+ *   the value of the "target" attribute for the anchor tag. That is, it
+ *   determines where to display the linked URL.
+ */
+
+/**
+ * Describes a paragraph element and its content.
+ * @typedef {Object|string|string[]} module:dom~paragraph
+ * @property {module:dom~paragraphFragment|module:dom~paragraphFragment[]} [content]
+ *   The content of the paragraph.
+ * @property {string} [id] The identifier for the paragraph element.
+ * @property {string[]} [classList=[]] An array of class names to apply to the
+ *   paragraph element.
+ */
+
+/**
+ * Specifies options for creating paragraphs.
+ * @typedef {Object} module:dom~paragraphOptions
+ * @property {string[]} [classList=[]] An array of class names to apply to each
+ *   paragraph element.
+ * @property {Object} [container] An object containing information about the
+ *   container holding the paragraphs.
+ * @property {string} [container.id] The identifier for the container.
+ * @property {string[]} [container.classList=[]] An array of class names to
+ *   apply to the container.
+ */
+
+/**
+ * Create a series of paragraph elements.
+ * @param {module:dom~paragraph|module:dom~paragraph[]} paragraphs Describes
+ *   the paragraph or paragraphs to be created.
+ * @param {module:dom~paragraphOptions} [options={}] An object holding
+ *   configuration options controlling the paragraph creation.
+ * @returns {HTMLElement} A container holding the newly-created paragraph
+ *   elements.
+ */
+function createParagraphs(paragraphs, options = {}) {
+  const container = document.createElement('div');
+  if (options?.container?.id) container.id = options.container.id;
+  if (options?.container?.classList) {
+    container.classList.add(...options.container.classList);
+  }
+  const pArray = Array.isArray(paragraphs) ? paragraphs : [paragraphs];
+  pArray.forEach((paragraph) => {
+    const pElem = document.createElement('p');
+    if (options?.classList) pElem.classList.add(...options.classList);
+
+    let fragments = null;
+    if (Array.isArray(paragraph)) {
+      // Convert array of strings to array of fragment objects
+      fragments = paragraph.map((fragment) => ({
+        content: fragment,
+      }));
+    } else if (typeof paragraph === 'string') {
+      fragments = [{ content: paragraph }];
+    } else if (paragraph.content == null) {
+      fragments = [];
+    } else if (Array.isArray(paragraph.content)) {
+      fragments = paragraph.content.map((fragment) => {
+        if (typeof fragment === 'string') return { content: fragment };
+        return fragment;
+      });
+    } else {
+      // The paragraph is an object
+      if (paragraph.id) pElem.id = paragraph.id;
+      if (paragraph.classList) pElem.classList.add(...paragraph.classList);
+
+      if (typeof paragraph.content === 'string') {
+        fragments = [{ content: paragraph.content }];
+      } else {
+        fragments = [paragraph.content];
+      }
+    }
+
+    fragments.forEach((fragment) => {
+      let node = null;
+
+      if (fragment.url != null) {
+        node = document.createElement('a');
+        node.textContent = fragment.content ?? '';
+        node.href = fragment.url;
+        if (fragment.target != null) node.target = fragment.target;
+      } else {
+        node = document.createTextNode(fragment.content ?? '');
+      }
+
+      pElem.appendChild(node);
+    });
+
+    container.appendChild(pElem);
+  });
+
+  return container;
+}
+
 export {
   createDateInputField,
   createFormControl,
   createIconButton,
+  createParagraphs,
   createToggleButton,
 };

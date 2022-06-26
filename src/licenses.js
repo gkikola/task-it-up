@@ -7,6 +7,7 @@ import './styles/reset.css';
 import './styles/licenses.css';
 import AppInfo from './modules/appInfo';
 import LicenseInfo from '../data/licenses/licenseInfo.json';
+import { createParagraphs } from './modules/utility/dom';
 
 /**
  * Given two objects with a 'name' proeprty, compare their names and return a
@@ -75,49 +76,6 @@ function createToc(parent, entries) {
     listElem.appendChild(itemElem);
   });
   parent.appendChild(listElem);
-}
-
-/**
- * Describes a fragment of a paragraph of text.
- * @typedef {Object} module:licenses~paragraphNode
- * @property {string} type The type of paragraph node: 'text' indicates plain
- *   text, while 'link' indicates a hyperlink.
- * @property {string} content The text content that will be displayed within
- *   the paragraph on the page.
- * @property {string} [url] For link nodes, this specifies the URL that will be
- *   linked to.
- */
-
-/**
- * Create a series of paragraph elements and insert them into the DOM.
- * @param {HTMLElement} parent The parent element under which the paragraphs
- *   are to be inserted.
- * @param {module:licenses~paragraphNode[][]} paragraphs An array of
- *   paragraphs, where each paragraph is an array of paragraph nodes.
- */
-function createParagraphs(parent, paragraphs) {
-  paragraphs.forEach((paragraph) => {
-    const pElem = document.createElement('p');
-    paragraph.forEach((node) => {
-      let nodeElem = null;
-      switch (node.type) {
-        case 'text':
-          nodeElem = document.createTextNode(node.content);
-          break;
-        case 'link':
-          nodeElem = document.createElement('a');
-          nodeElem.textContent = node.content;
-          nodeElem.href = node.url;
-          break;
-        default:
-          break;
-      }
-
-      if (nodeElem) pElem.appendChild(nodeElem);
-    });
-
-    parent.appendChild(pElem);
-  });
 }
 
 /**
@@ -236,36 +194,22 @@ function createPage(parent) {
   const appLicense = getLicenseInfo(AppInfo.license);
   const copySymbol = '\u00A9';
   const introParagraphs = [
-    [
-      {
-        type: 'text',
-        content: `${AppInfo.name} is copyright ${copySymbol} ${AppInfo.copyrightYears} `,
-      },
-      {
-        type: 'link',
-        content: AppInfo.author,
-        url: AppInfo.authorWebsite,
-      },
-      {
-        type: 'text',
-        content: ' and is licensed under ',
-      },
-      {
-        type: 'link',
-        content: appLicense.name,
-        url: `#license-${appLicense.id.toLowerCase()}`,
-      },
-      {
-        type: 'text',
-        content: '.',
-      },
-    ],
-    [
-      {
-        type: 'text',
-        content: `Several third party packages are distributed along with ${AppInfo.name}. These packages are listed below, along with their license and copyright information.`,
-      },
-    ],
+    {
+      content: [
+        `${AppInfo.name} is copyright ${copySymbol} ${AppInfo.copyrightYears} `,
+        {
+          content: AppInfo.author,
+          url: AppInfo.authorWebsite,
+        },
+        ' and is licensed under ',
+        {
+          content: appLicense.name,
+          url: `#license-${appLicense.id.toLowerCase()}`,
+        },
+        '.',
+      ],
+    },
+    `Several third party packages are distributed along with ${AppInfo.name}. These packages are listed below, along with their license and copyright information.`,
   ];
 
   const toc = [
@@ -283,7 +227,7 @@ function createPage(parent) {
     },
   ];
 
-  createParagraphs(content, introParagraphs);
+  content.appendChild(createParagraphs(introParagraphs));
   createToc(content, toc);
   createResourceList(content);
   createLicenseList(content);
