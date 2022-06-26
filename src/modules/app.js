@@ -30,7 +30,7 @@ import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
 import { compareVersions } from './utility/data';
 import { formatDate } from './utility/dates';
-import { createIconButton } from './utility/dom';
+import { createIconButton, createParagraphs } from './utility/dom';
 import {
   clearData,
   forEachDataItem,
@@ -808,6 +808,48 @@ function showDataModal(instance) {
 }
 
 /**
+ * Display the modal dialog showing information about the app.
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function showAboutModal(instance) {
+  const content = document.createElement('div');
+  const paragraphs = [
+    {
+      content: `Version ${AppInfo.version}`,
+      classList: ['about-modal-version'],
+    },
+    {
+      content: [
+        `Copyright ${AppInfo.copyrightYears} `,
+        {
+          content: AppInfo.author,
+          url: AppInfo.authorWebsite,
+          target: '_blank',
+        },
+        `. License: ${AppInfo.license}.`,
+      ],
+    },
+    {
+      content: [
+        {
+          content: 'View full license information',
+          url: 'licenses.html',
+          target: '_blank',
+        },
+        '.',
+      ],
+    },
+  ];
+  content.appendChild(createParagraphs(paragraphs, {
+    classList: ['about-modal-paragraph'],
+  }));
+
+  const modal = new InfoModal(content, { title: AppInfo.name });
+  privateMembers.get(instance).modalStack.showModal(modal);
+}
+
+/**
  * Respond to a selection in the main panel menu.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -1026,6 +1068,7 @@ function handleUserMenuSelection(instance, itemId) {
       showDataModal(instance);
       break;
     case 'about':
+      showAboutModal(instance);
       break;
     default:
       break;
