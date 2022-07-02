@@ -59,16 +59,18 @@ const NARROW_LAYOUT_CUTOFF = 700;
  * @property {module:taskDisplay~TaskDisplay} taskDisplay Holds the task
  *   display panel.
  * @property {module:settings~Settings} settings Holds user app settings.
- * @property {HTMLElement} appContainer Holds a reference to the DOM node
- *   holding the page elements for the app.
- * @property {HTMLElement} sidePanel Holds a reference to the side panel
- *   element in the DOM.
- * @property {HTMLElement} resizer Holds a reference to the resizing bar
- *   element for the side panel.
- * @property {HTMLElement} mainPanel Holds a reference to the main panel
- *   element in the DOM.
  * @property {module:popupMenu~PopupMenu} mainPanelMenu The popup menu that is
  *   shown when the user clicks the 'more' button in the main panel.
+ * @property {Object} elements An object holding references to the page
+ *   elements in the DOM.
+ * @property {HTMLElement} elements.appContainer Holds a reference to the
+ *   container element holding all the elements for the app.
+ * @property {HTMLElement} elements.sidePanel Holds a reference to the side
+ *   panel element.
+ * @property {HTMLElement} elements.resizer Holds a reference to the resizing
+ *   bar for the side panel.
+ * @property {HTMLElement} elements.mainPanel Holds a reference to the main
+ *   panel element.
  * @property {boolean} narrowScreen Indicates whether the screen size is
  *   narrow. This should be true when the viewport width is less than or equal
  *   to NARROW_LAYOUT_CUTOFF.
@@ -150,9 +152,9 @@ function addRandomData(instance, taskCount, projCount) {
  *   function.
  */
 function openSidePanel(instance) {
-  const privates = privateMembers.get(instance);
-  privates.sidePanel.classList.remove('closed');
-  privates.resizer.classList.remove('closed');
+  const { elements } = privateMembers.get(instance);
+  elements.sidePanel.classList.remove('closed');
+  elements.resizer.classList.remove('closed');
 }
 
 /**
@@ -161,9 +163,9 @@ function openSidePanel(instance) {
  *   function.
  */
 function closeSidePanel(instance) {
-  const privates = privateMembers.get(instance);
-  privates.sidePanel.classList.add('closed');
-  privates.resizer.classList.add('closed');
+  const { elements } = privateMembers.get(instance);
+  elements.sidePanel.classList.add('closed');
+  elements.resizer.classList.add('closed');
 }
 
 /**
@@ -172,10 +174,10 @@ function closeSidePanel(instance) {
  *   function.
  */
 function toggleSidePanel(instance) {
-  const privates = privateMembers.get(instance);
-  const closed = privates.sidePanel.classList.toggle('closed');
-  if (closed) privates.resizer.classList.add('closed');
-  else privates.resizer.classList.remove('closed');
+  const { elements } = privateMembers.get(instance);
+  const closed = elements.sidePanel.classList.toggle('closed');
+  if (closed) elements.resizer.classList.add('closed');
+  else elements.resizer.classList.remove('closed');
 }
 
 /**
@@ -1234,7 +1236,7 @@ function createFilterMenu(instance) {
     { id: 'priorities', label: 'Priorities' },
   ];
 
-  const filterMenu = new FilterMenu(privates.sidePanel, filterGroups);
+  const filterMenu = new FilterMenu(privates.elements.sidePanel, filterGroups);
 
   const filters = [
     { groupId: 'default', filterId: 'all', label: 'All Tasks' },
@@ -1302,12 +1304,12 @@ function createHeader(instance, parent) {
  *   should be inserted.
  */
 function createSidePanel(instance, parent) {
-  const privates = privateMembers.get(instance);
+  const { elements } = privateMembers.get(instance);
 
-  privates.sidePanel = document.createElement('aside');
-  privates.sidePanel.id = 'side-panel';
+  elements.sidePanel = document.createElement('aside');
+  elements.sidePanel.id = 'side-panel';
   createFilterMenu(instance);
-  parent.appendChild(privates.sidePanel);
+  parent.appendChild(elements.sidePanel);
 }
 
 /**
@@ -1318,18 +1320,18 @@ function createSidePanel(instance, parent) {
  *   to be inserted.
  */
 function createResizer(instance, parent) {
-  const privates = privateMembers.get(instance);
+  const { elements } = privateMembers.get(instance);
 
-  privates.resizer = document.createElement('div');
-  privates.resizer.classList.add('resizer');
+  elements.resizer = document.createElement('div');
+  elements.resizer.classList.add('resizer');
 
   const handler = (e) => {
     const size = `${e.x}px`;
-    privates.sidePanel.style.width = size;
+    elements.sidePanel.style.width = size;
     e.preventDefault();
   };
 
-  privates.resizer.addEventListener('mousedown', (e) => {
+  elements.resizer.addEventListener('mousedown', (e) => {
     // Check for left-click
     if (e.button === 0) {
       document.addEventListener('mousemove', handler);
@@ -1341,11 +1343,11 @@ function createResizer(instance, parent) {
   document.addEventListener('mouseup', (e) => {
     if (e.button === 0) {
       document.removeEventListener('mousemove', handler);
-      privates.resizer.classList.remove('dragging');
+      elements.resizer.classList.remove('dragging');
     }
   });
 
-  parent.appendChild(privates.resizer);
+  parent.appendChild(elements.resizer);
 }
 
 /**
@@ -1358,8 +1360,9 @@ function createResizer(instance, parent) {
 function createMainPanel(instance, parent) {
   const privates = privateMembers.get(instance);
 
-  privates.mainPanel = document.createElement('div');
-  privates.mainPanel.id = 'main-panel';
+  const mainPanel = document.createElement('div');
+  mainPanel.id = 'main-panel';
+  privates.elements.mainPanel = mainPanel;
 
   const header = document.createElement('div');
   header.id = 'main-panel-header';
@@ -1373,7 +1376,7 @@ function createMainPanel(instance, parent) {
   subheading.id = 'main-panel-subheading';
   headingContainer.appendChild(subheading);
 
-  const menu = new PopupMenu({ closeIfScrolled: privates.mainPanel });
+  const menu = new PopupMenu({ closeIfScrolled: mainPanel });
   privates.mainPanelMenu = menu;
 
   const iconContainer = document.createElement('div');
@@ -1382,7 +1385,7 @@ function createMainPanel(instance, parent) {
   iconContainer.appendChild(createIconButton('more_horiz'));
   header.appendChild(iconContainer);
 
-  privates.mainPanel.appendChild(header);
+  mainPanel.appendChild(header);
 
   const taskDisplayOptions = {
     taskCallback: (type, id, task) => {
@@ -1390,13 +1393,13 @@ function createMainPanel(instance, parent) {
     },
   };
   privates.taskDisplay = new TaskDisplay(
-    privates.mainPanel,
+    mainPanel,
     privates.tasks,
     privates.projects,
     taskDisplayOptions,
   );
 
-  parent.appendChild(privates.mainPanel);
+  parent.appendChild(mainPanel);
 }
 
 /**
@@ -1430,7 +1433,7 @@ function createPageElements(instance, parent) {
 
   const container = document.createElement('div');
   container.id = 'app';
-  privates.appContainer = container;
+  privates.elements.appContainer = container;
 
   createHeader(instance, container);
 
@@ -1500,11 +1503,13 @@ class App {
       currentFilter: { group: null, filter: null },
       taskDisplay: null,
       settings: new Settings(),
-      appContainer: null,
-      sidePanel: null,
-      resizer: null,
-      mainPanel: null,
       mainPanelMenu: null,
+      elements: {
+        appContainer: null,
+        sidePanel: null,
+        resizer: null,
+        mainPanel: null,
+      },
       narrowScreen: false,
     };
     privateMembers.set(this, privates);
