@@ -5,22 +5,46 @@
 
 import { isSameDay } from 'date-fns';
 
+import CheckedIcon from '../images/radio-checked.svg';
+import CopyIcon from '../images/copy.svg';
+import DeleteIcon from '../images/delete.svg';
+import EditIcon from '../images/edit.svg';
+import MoreIcon from '../images/more.svg';
+import ProjectIcon from '../images/project.svg';
+import UncheckedIcon from '../images/radio-unchecked.svg';
+
 import PopupMenu from './popupMenu';
 import Settings from './settings';
 import Task from './task';
 import { formatDate } from './utility/dates';
-import { createIconButton } from './utility/dom';
+import { createImageButton } from './utility/dom';
 
-const CHECKED_ICON = 'check_circle_outline';
-const UNCHECKED_ICON = 'radio_button_unchecked';
+const ICON_WIDTH = 24;
+const ICON_HEIGHT = 24;
 
 const STANDARD_MENU_ITEMS = [
-  { label: 'Edit Task...', id: 'edit', iconType: 'edit' },
-  { label: 'Clone Task', id: 'clone', iconType: 'content_copy' },
-  { label: 'Delete Task...', id: 'delete', iconType: 'delete' },
+  {
+    label: 'Edit Task...',
+    id: 'edit',
+    icon: { source: EditIcon, width: ICON_WIDTH, height: ICON_HEIGHT },
+  },
+  {
+    label: 'Clone Task',
+    id: 'clone',
+    icon: { source: CopyIcon, width: ICON_WIDTH, height: ICON_HEIGHT },
+  },
+  {
+    label: 'Delete Task...',
+    id: 'delete',
+    icon: { source: DeleteIcon, width: ICON_WIDTH, height: ICON_HEIGHT },
+  },
 ];
 const PROJECT_MENU_ITEMS = [
-  { label: 'Go To Project', id: 'go-to-project', iconType: 'assignment' },
+  {
+    label: 'Go To Project',
+    id: 'go-to-project',
+    icon: { source: ProjectIcon, width: ICON_WIDTH, height: ICON_HEIGHT },
+  },
 ];
 
 /**
@@ -127,8 +151,12 @@ function addTask(instance, list, taskId, task) {
   itemElem.classList.add('task-list-item');
   list.appendChild(itemElem);
 
-  const iconType = task.isComplete() ? CHECKED_ICON : UNCHECKED_ICON;
-  const checkButton = createIconButton(iconType, {
+  const iconSrc = task.isComplete() ? CheckedIcon : UncheckedIcon;
+  const iconAlt = task.isComplete() ? 'Mark as incomplete' : 'Mark as complete';
+  const checkButton = createImageButton(iconSrc, {
+    altText: iconAlt,
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
     classList: ['task-list-item-checkbox'],
   });
   itemElem.appendChild(checkButton);
@@ -194,21 +222,29 @@ function addTask(instance, list, taskId, task) {
   buttonContainer.classList.add('icon-container');
   itemElem.appendChild(buttonContainer);
 
-  const editButton = createIconButton('edit');
+  const editButton = createImageButton(EditIcon, {
+    altText: 'Edit task',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+    callback: () => {
+      if (privates.taskCallback) privates.taskCallback('edit', taskId, task);
+    },
+  });
   buttonContainer.appendChild(editButton);
-  editButton.addEventListener('click', () => {
-    if (privates.taskCallback) privates.taskCallback('edit', taskId, task);
-  });
 
-  const moreButton = createIconButton('more_horiz');
-  buttonContainer.appendChild(moreButton);
-  moreButton.addEventListener('click', (e) => {
-    privates.taskMenu.open((id) => {
-      if (privates.taskCallback) {
-        privates.taskCallback(id, taskId, task);
-      }
-    }, { referenceElement: e.target });
+  const moreButton = createImageButton(MoreIcon, {
+    altText: 'More actions',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+    callback: (e) => {
+      privates.taskMenu.open((id) => {
+        if (privates.taskCallback) {
+          privates.taskCallback(id, taskId, task);
+        }
+      }, { referenceElement: e.target });
+    },
   });
+  buttonContainer.appendChild(moreButton);
 }
 
 /**

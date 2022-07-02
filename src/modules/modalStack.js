@@ -3,7 +3,9 @@
  * @module modalStack
  */
 
-import { createIconButton } from './utility/dom';
+import CloseIcon from '../images/close.svg';
+
+import { createImageButton } from './utility/dom';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -12,6 +14,8 @@ const FOCUSABLE_SELECTOR = [
   'textarea',
   'button',
 ].join(', ');
+const ICON_WIDTH = 24;
+const ICON_HEIGHT = 24;
 const Z_INDEX_START = 500;
 const Z_INDEX_STEP = 100;
 const Z_INDEX_OVERLAY_STEP = 50;
@@ -283,8 +287,12 @@ class ModalStack {
     titleText.classList.add('modal-title');
     titleText.textContent = modal.title;
     titleBar.appendChild(titleText);
-    const closeIcon = createIconButton('close');
-    closeIcon.addEventListener('click', () => this.cancelModal());
+    const closeIcon = createImageButton(CloseIcon, {
+      altText: 'Close',
+      width: ICON_WIDTH,
+      height: ICON_HEIGHT,
+      callback: () => this.cancelModal(),
+    });
     titleBar.appendChild(closeIcon);
 
     const content = document.createElement('div');

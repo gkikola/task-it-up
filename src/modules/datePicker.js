@@ -13,8 +13,14 @@ import {
   startOfWeek,
 } from 'date-fns';
 
-import { createFormControl, createIconButton } from './utility/dom';
+import LeftArrowIcon from '../images/arrow-left.svg';
+import RightArrowIcon from '../images/arrow-right.svg';
+import TodayIcon from '../images/today.svg';
 
+import { createFormControl, createImageButton } from './utility/dom';
+
+const ICON_WIDTH = 24;
+const ICON_HEIGHT = 24;
 const MONTHS = [
   'January',
   'February',
@@ -161,9 +167,21 @@ function createFormElements(instance, parent) {
   heading.appendChild(monthYearContainer);
 
   const buttonContainer = document.createElement('div');
-  const backButton = createIconButton('navigate_before');
-  const todayButton = createIconButton('today');
-  const forwardButton = createIconButton('navigate_next');
+  const backButton = createImageButton(LeftArrowIcon, {
+    altText: 'Go to previous month',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
+  const todayButton = createImageButton(TodayIcon, {
+    altText: 'Go to today',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
+  const forwardButton = createImageButton(RightArrowIcon, {
+    altText: 'Go to next month',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
   buttonContainer.appendChild(backButton);
   buttonContainer.appendChild(todayButton);
   buttonContainer.appendChild(forwardButton);

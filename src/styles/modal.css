@@ -48,10 +48,6 @@
   align-items: center;
 }
 
-.modal-title-bar .icon {
-  font-size: 24px;
-}
-
 .modal-title {
   font-family: var(--label-font);
   font-size: 20px;

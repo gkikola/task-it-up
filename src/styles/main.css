@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Carter+One&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Icons');
 
 @import './variables.css';
 @import './datePicker.css';
@@ -47,10 +46,6 @@ a:hover {
   color: white;
   background-color: var(--header-color);
   padding: 12px;
-}
-
-#header .icon {
-  font-size: 24px;
 }
 
 #middle-container {
@@ -148,16 +143,8 @@ a:hover {
   background-color: #9b9b9b;
 }
 
-.icon {
-  color: inherit;
-}
-
 .icon-container {
   display: flex;
-}
-
-.icon-container .icon {
-  font-size: 24px;
 }
 
 .icon-container > * + * {

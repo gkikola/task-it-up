@@ -216,8 +216,11 @@ class PopupMenu {
    *   menu.
    * @property {string} id An identifier for the menu item. This will be passed
    *   to callbacks.
-   * @property {string} [iconType] The type of icon to display. This indicates
-   *   the icon to use from the Google Material Icons font.
+   * @property {Object} [icon] An object specifying information about an icon
+   *   to display next to the menu item.
+   * @property {string} icon.source The source URL for the icon.
+   * @property {number} [icon.width] The width of the icon in pixels.
+   * @property {number} [icon.height] The height of the icon in pixels.
    */
 
   /**
@@ -300,10 +303,15 @@ class PopupMenu {
       listItem.dataset.index = index.toString();
       list.appendChild(listItem);
 
-      const icon = document.createElement('div');
-      icon.classList.add('icon', 'material-icons', 'popup-menu-item-icon');
-      icon.textContent = item.iconType;
-      listItem.appendChild(icon);
+      if (item.icon) {
+        const icon = new Image();
+        icon.src = item.icon.source;
+        icon.alt = '';
+        icon.classList.add('popup-menu-item-icon');
+        if (item.icon.width != null) icon.width = item.icon.width;
+        if (item.icon.height != null) icon.height = item.icon.height;
+        listItem.appendChild(icon);
+      }
 
       const label = document.createElement('div');
       label.classList.add('popup-menu-item-label');

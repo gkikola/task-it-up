@@ -11,6 +11,20 @@ import {
 
 import '../styles/reset.css';
 import '../styles/main.css';
+import MenuIcon from '../images/menu.svg';
+import AppOptionsIcon from '../images/app-options.svg';
+import AddIcon from '../images/add.svg';
+import DeleteIcon from '../images/delete.svg';
+import DoneIcon from '../images/done.svg';
+import EditIcon from '../images/edit.svg';
+import GroupIcon from '../images/group.svg';
+import MoreIcon from '../images/more.svg';
+import OrderIcon from '../images/order.svg';
+import SaveIcon from '../images/save.svg';
+import SettingsIcon from '../images/settings.svg';
+import SortIcon from '../images/sort.svg';
+import InfoIcon from '../images/info.svg';
+
 import AppInfo from './appInfo';
 import AddProjectModal from './modals/addProjectModal';
 import AddTaskModal from './modals/addTaskModal';
@@ -30,7 +44,7 @@ import TaskDisplay from './taskDisplay';
 import TaskList from './taskList';
 import { compareVersions } from './utility/data';
 import { formatDate } from './utility/dates';
-import { createIconButton, createParagraphs } from './utility/dom';
+import { createImageButton, createParagraphs } from './utility/dom';
 import {
   clearData,
   forEachDataItem,
@@ -42,6 +56,8 @@ import {
   storeData,
 } from './utility/storage';
 
+const ICON_WIDTH = 24;
+const ICON_HEIGHT = 24;
 const NARROW_LAYOUT_CUTOFF = 700;
 
 /**
@@ -71,6 +87,14 @@ const NARROW_LAYOUT_CUTOFF = 700;
  *   bar for the side panel.
  * @property {HTMLElement} elements.mainPanel Holds a reference to the main
  *   panel element.
+ * @property {HTMLElement} elements.menuButton Holds a reference to the menu
+ *   button in the header.
+ * @property {HTMLElement} elements.appOptionsButton Holds a reference to the
+ *   app options button in the header.
+ * @property {HTMLElement} elements.addTaskButton Holds a reference to the
+ *   button in the main panel that adds a new task.
+ * @property {HTMLElement} elements.mainPanelMenuButton Holds a reference to
+ *   the main panel menu button.
  * @property {boolean} narrowScreen Indicates whether the screen size is
  *   narrow. This should be true when the viewport width is less than or equal
  *   to NARROW_LAYOUT_CUTOFF.
@@ -194,12 +218,18 @@ function updateMainPanelMenu(instance) {
   const GROUP_ICON = 'category';
   const SORT_ICON = 'sort';
 
+  const iconOptions = (source) => ({
+    source,
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
+
   const {
     groupBy, sortBy, sortDescending, showCompleted,
   } = filterOptions;
   const optionItems = [
-    { label: 'Add Task...', id: 'add-task', iconType: 'add' },
-    { label: 'Add Project...', id: 'add-project', iconType: 'add' },
+    { label: 'Add Task...', id: 'add-task', icon: iconOptions(AddIcon) },
+    { label: 'Add Project...', id: 'add-project', icon: iconOptions(AddIcon) },
   ];
   const groupByItems = [];
   const sortByItems = [];
@@ -208,12 +238,12 @@ function updateMainPanelMenu(instance) {
     optionItems.push({
       label: 'Edit Project...',
       id: 'edit-project',
-      iconType: 'edit',
+      icon: iconOptions(EditIcon),
     });
     optionItems.push({
       label: 'Delete Project...',
       id: 'delete-project',
-      iconType: 'delete',
+      icon: iconOptions(DeleteIcon),
     });
   }
 
@@ -221,12 +251,12 @@ function updateMainPanelMenu(instance) {
     {
       label: showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks',
       id: showCompleted ? 'hide-completed' : 'show-completed',
-      iconType: 'done',
+      icon: iconOptions(DoneIcon),
     },
     {
       label: sortDescending ? 'Sort Ascending' : 'Sort Descending',
       id: sortDescending ? 'sort-ascending' : 'sort-descending',
-      iconType: 'swap_vert',
+      icon: iconOptions(OrderIcon),
     },
   );
 
@@ -234,7 +264,7 @@ function updateMainPanelMenu(instance) {
     groupByItems.push({
       label: 'Use Default Grouping',
       id: 'group-by-default',
-      iconType: GROUP_ICON,
+      icon: iconOptions(GroupIcon),
     });
   }
 
@@ -242,7 +272,7 @@ function updateMainPanelMenu(instance) {
     groupByItems.push({
       label: 'Do Not Group Tasks',
       id: 'group-by-none',
-      iconType: GROUP_ICON,
+      icon: iconOptions(GroupIcon),
     });
   }
 
@@ -250,7 +280,7 @@ function updateMainPanelMenu(instance) {
     sortByItems.push({
       label: 'Sort by Date Added',
       id: 'sort-by-create-date',
-      iconType: SORT_ICON,
+      icon: iconOptions(SortIcon),
     });
   }
 
@@ -258,13 +288,13 @@ function updateMainPanelMenu(instance) {
     groupByItems.push({
       label: 'Group by Due Date',
       id: 'group-by-due-date',
-      iconType: GROUP_ICON,
+      icon: iconOptions(GroupIcon),
     });
     if (sortBy !== 'due-date') {
       sortByItems.push({
         label: 'Sort by Due Date',
         id: 'sort-by-due-date',
-        iconType: SORT_ICON,
+        icon: iconOptions(SortIcon),
       });
     }
   }
@@ -273,13 +303,13 @@ function updateMainPanelMenu(instance) {
     groupByItems.push({
       label: 'Group by Project',
       id: 'group-by-project',
-      iconType: GROUP_ICON,
+      icon: iconOptions(GroupIcon),
     });
     if (sortBy !== 'project') {
       sortByItems.push({
         label: 'Sort by Project',
         id: 'sort-by-project',
-        iconType: SORT_ICON,
+        icon: iconOptions(SortIcon),
       });
     }
   }
@@ -288,13 +318,13 @@ function updateMainPanelMenu(instance) {
     groupByItems.push({
       label: 'Group by Priority',
       id: 'group-by-priority',
-      iconType: GROUP_ICON,
+      icon: iconOptions(GroupIcon),
     });
     if (sortBy !== 'priority') {
       sortByItems.push({
         label: 'Sort by Priority',
         id: 'sort-by-priority',
-        iconType: SORT_ICON,
+        icon: iconOptions(SortIcon),
       });
     }
   }
@@ -1056,12 +1086,12 @@ function handleFilterChange(instance, event) {
 }
 
 /**
- * Respond to a selection in the User menu.
+ * Respond to a selection in the App Options menu.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
  * @param {string} itemId The identifier of the menu item that was selected.
  */
-function handleUserMenuSelection(instance, itemId) {
+function handleAppMenuSelection(instance, itemId) {
   switch (itemId) {
     case 'settings':
       showSettingsModal(instance);
@@ -1258,7 +1288,10 @@ function createFilterMenu(instance) {
   filterMenu.addEventListener('select-filter', (e) => {
     handleFilterChange(instance, e);
   });
-  filterMenu.addGroupIconButton('projects', 'add', {
+  filterMenu.addGroupIconButton('projects', AddIcon, {
+    altText: 'Add project',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
     callback: () => showAddProjectModal(instance),
   });
 
@@ -1274,23 +1307,37 @@ function createFilterMenu(instance) {
  *   should be inserted.
  */
 function createHeader(instance, parent) {
-  // const privates = privateMembers.get(instance);
+  const { elements } = privateMembers.get(instance);
 
   const header = document.createElement('header');
   header.id = 'header';
 
+  const menuButton = createImageButton(MenuIcon, {
+    altText: 'Toggle side panel',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
+  elements.menuButton = menuButton;
+
   const titleContainer = document.createElement('div');
   titleContainer.classList.add('title-container');
-  titleContainer.appendChild(createIconButton('menu'));
+  titleContainer.appendChild(menuButton);
   const title = document.createElement('p');
   title.classList.add('title');
   title.textContent = AppInfo.name;
   titleContainer.appendChild(title);
   header.appendChild(titleContainer);
 
+  const appOptionsButton = createImageButton(AppOptionsIcon, {
+    altText: 'More options',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
+  elements.appOptionsButton = appOptionsButton;
+
   const toolContainer = document.createElement('div');
   toolContainer.classList.add('tools');
-  toolContainer.appendChild(createIconButton('account_circle'));
+  toolContainer.appendChild(appOptionsButton);
   header.appendChild(toolContainer);
 
   parent.appendChild(header);
@@ -1379,10 +1426,24 @@ function createMainPanel(instance, parent) {
   const menu = new PopupMenu({ closeIfScrolled: mainPanel });
   privates.mainPanelMenu = menu;
 
+  const addTaskButton = createImageButton(AddIcon, {
+    altText: 'Add task',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
+  privates.elements.addTaskButton = addTaskButton;
+
+  const menuButton = createImageButton(MoreIcon, {
+    altText: 'More actions',
+    width: ICON_WIDTH,
+    height: ICON_HEIGHT,
+  });
+  privates.elements.mainPanelMenuButton = menuButton;
+
   const iconContainer = document.createElement('div');
   iconContainer.classList.add('icon-container');
-  iconContainer.appendChild(createIconButton('add'));
-  iconContainer.appendChild(createIconButton('more_horiz'));
+  iconContainer.appendChild(addTaskButton);
+  iconContainer.appendChild(menuButton);
   header.appendChild(iconContainer);
 
   mainPanel.appendChild(header);
@@ -1509,6 +1570,10 @@ class App {
         sidePanel: null,
         resizer: null,
         mainPanel: null,
+        menuButton: null,
+        appOptionsButton: null,
+        addTaskButton: null,
+        mainPanelMenuButton: null,
       },
       narrowScreen: false,
     };
@@ -1543,42 +1608,51 @@ class App {
     privates.filterMenu.expandGroup('projects');
     privates.filterMenu.selectFilter('dates', 'today');
 
-    const menuSelector = '.title-container .icon[data-icon-type="menu"]';
-    const menuIcon = document.querySelector(menuSelector);
-    menuIcon.addEventListener('click', () => toggleSidePanel(this));
+    privates.elements.menuButton.addEventListener('click', () => {
+      toggleSidePanel(this);
+    });
 
-    const userMenu = new PopupMenu({
+    const { appOptionsButton } = privates.elements;
+    const iconOptions = (source) => ({
+      source,
+      width: ICON_WIDTH,
+      height: ICON_HEIGHT,
+    });
+    const appOptionsMenu = new PopupMenu({
       menuItems: [
-        { label: 'Settings...', id: 'settings', iconType: 'settings' },
-        { label: 'Data Management...', id: 'data', iconType: 'save' },
-        { label: 'About...', id: 'about', iconType: 'info' },
+        {
+          label: 'Settings...',
+          id: 'settings',
+          icon: iconOptions(SettingsIcon),
+        },
+        {
+          label: 'Data Management...',
+          id: 'data',
+          icon: iconOptions(SaveIcon),
+        },
+        {
+          label: 'About...',
+          id: 'about',
+          icon: iconOptions(InfoIcon),
+        },
       ],
     });
-    const userIcon = document.querySelector(
-      '#header .icon[data-icon-type="account_circle"]',
-    );
-    userIcon.addEventListener('click', () => {
-      userMenu.open(
-        (itemId) => handleUserMenuSelection(this, itemId),
-        { referenceElement: userIcon },
+    appOptionsButton.addEventListener('click', () => {
+      appOptionsMenu.open(
+        (itemId) => handleAppMenuSelection(this, itemId),
+        { referenceElement: appOptionsButton },
       );
     });
 
-    const mainPanelHeader = document.getElementById('main-panel-header');
-    const addTaskIcon = mainPanelHeader.querySelector(
-      '.icon[data-icon-type="add"]',
-    );
-    addTaskIcon.addEventListener('click', () => {
+    privates.elements.addTaskButton.addEventListener('click', () => {
       handleMainPanelMenuSelection(this, 'add-task');
     });
 
-    const moreIcon = mainPanelHeader.querySelector(
-      '.icon[data-icon-type="more_horiz"]',
-    );
-    moreIcon.addEventListener('click', () => {
+    const { mainPanelMenuButton } = privates.elements;
+    mainPanelMenuButton.addEventListener('click', () => {
       privates.mainPanelMenu.open(
         (item) => handleMainPanelMenuSelection(this, item),
-        { referenceElement: moreIcon },
+        { referenceElement: mainPanelMenuButton },
       );
     });
 

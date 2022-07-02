@@ -35,11 +35,6 @@
   background-color: var(--item-selection-color);
 }
 
-.popup-menu-item-icon {
-  width: 24px;
-  height: 24px;
-}
-
 .popup-menu-item-label {
   font-family: var(--label-font);
   font-size: 16px;

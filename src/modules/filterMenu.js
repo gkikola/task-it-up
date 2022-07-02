@@ -6,11 +6,14 @@
 import _ from 'lodash';
 import EventEmitter from 'events';
 
-import Collapsible from './collapsible';
-import { createIconButton } from './utility/dom';
+import CollapsedIcon from '../images/arrow-right.svg';
+import ExpandedIcon from '../images/arrow-down.svg';
 
-const ICON_EXPANDED = 'expand_more';
-const ICON_COLLAPSED = 'chevron_right';
+import Collapsible from './collapsible';
+import { createImageButton } from './utility/dom';
+
+const ICON_WIDTH = 24;
+const ICON_HEIGHT = 24;
 
 /**
  * Object holding private members for the
@@ -194,9 +197,12 @@ class FilterMenu {
       iconContainer.classList.add('icon-container');
       heading.appendChild(iconContainer);
 
-      arrow = document.createElement('span');
-      arrow.classList.add('icon', 'material-icons', 'filter-group-expand-icon');
-      arrow.textContent = ICON_COLLAPSED;
+      arrow = new Image();
+      arrow.src = CollapsedIcon;
+      arrow.alt = 'Expand';
+      arrow.width = ICON_WIDTH;
+      arrow.height = ICON_HEIGHT;
+      arrow.classList.add('filter-group-expand-icon');
       toggle.appendChild(arrow);
 
       const text = document.createElement('span');
@@ -345,10 +351,11 @@ class FilterMenu {
    */
   expandGroup(id) {
     const elements = getGroupElements(this, id);
-    const { collapsible } = elements;
+    const { collapsible, expandIcon } = elements;
     if (collapsible) {
       collapsible.expand();
-      elements.expandIcon.textContent = ICON_EXPANDED;
+      expandIcon.src = ExpandedIcon;
+      expandIcon.alt = 'Collapse';
     }
   }
 
@@ -359,10 +366,11 @@ class FilterMenu {
    */
   collapseGroup(id) {
     const elements = getGroupElements(this, id);
-    const { collapsible } = elements;
+    const { collapsible, expandIcon } = elements;
     if (collapsible) {
       collapsible.collapse();
-      elements.expandIcon.textContent = ICON_COLLAPSED;
+      expandIcon.src = CollapsedIcon;
+      expandIcon.alt = 'Expand';
     }
   }
 
@@ -385,27 +393,19 @@ class FilterMenu {
    * Add an icon button to a group heading.
    * @param {string} groupId The identifier of the group in which to insert the
    *   icon button.
-   * @param {string} iconType The type of icon to display.
-   * @param {Object} [options={}] An object holding configuration options for
-   *   the button.
-   * @param {string} [id] The identifier for the button.
-   * @param {string} [title] The title of the button, usually displayed by the
-   *   browser as a tooltip.
-   * @param {Function} [callback] A callback function that will be invoked when
-   *   the button is clicked. The function will receive the standard Event
-   *   object as an argument when invoked.
+   * @param {string} source The source URL for the image to display in the
+   *   button.
+   * @param {module:dom~imageButtonOptions} [options={}] An object holding
+   *   configuration options for the button.
+   * @returns {HTMLElement} A reference to the button that was created.
    * @throws {RangeError} If the group identifier is invalid.
    */
-  addGroupIconButton(groupId, iconType, options = {}) {
+  addGroupIconButton(groupId, source, options = {}) {
     const { container } = getGroupElements(this, groupId);
     const iconContainer = container.querySelector('.icon-container');
-    const button = createIconButton(iconType, {
-      id: options.id || null,
-      title: options.title || null,
-    });
-    if (options.callback) button.addEventListener('click', options.callback);
-
+    const button = createImageButton(source, options);
     iconContainer.appendChild(button);
+    return button;
   }
 
   /**

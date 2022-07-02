@@ -303,27 +303,50 @@ function createDateInputField(options = {}) {
 }
 
 /**
- * Create an icon button element.
- * @param {string} iconType The type of icon to display. This is stored in the
- *   data-icon-type attribute of the button and also indicates the icon to use
- *   from the Google Material Icons font.
- * @param {Object} [options={}] An object holding configuration options
- *   controlling the button creation.
- * @param {string} [options.id] The identifier for the button.
- * @param {string} [options.title] The title of the button, usually displayed
- *   by the browser as a tooltip.
- * @param {string[]} [options.classList] An array of class names to apply to
- *   the button.
+ * Specifies options for creating an image button.
+ * @typedef {Object} module:dom~imageButtonOptions
+ * @property {string} [id] The identifier for the button.
+ * @property {string} [title] The title of the button, usually displayed by the
+ *   browser as a tooltip.
+ * @property {string[]} [classList] An array of class names to apply to the
+ *   button.
+ * @property {string} [altText] The alternative text description of the image,
+ *   used for accessibility purposes or as a fallback. If not provided, then an
+ *   empty alt attribute is used.
+ * @property {number} [width] The intrinsic width of the image in pixels.
+ * @property {number} [height] The intrinsic height of the image in pixels.
+ * @property {string} [imgId] The identifier for the image.
+ * @property {string[]} [imgClassList] An array of class names to apply to the
+ *   image.
+ * @property {Function} [callback] A callback function that will be invoked
+ *   the button is clicked. The function will receive the standard Event object
+ *   as an argument when invoked.
+ */
+
+/**
+ * Create a button element containing an image.
+ * @param {string} source The source URL of the image to display.
+ * @param {module:dom~imageButtonOptions} [options={}] An object holding
+ *   configuration options controlling the button creation.
  * @returns {HTMLElement} The newly-created button element.
  */
-function createIconButton(iconType, options = {}) {
+function createImageButton(source, options = {}) {
   const button = document.createElement('button');
-  button.classList.add('icon', 'material-icons');
-  button.dataset.iconType = iconType;
-  button.textContent = iconType;
   if (options.id) button.id = options.id;
   if (options.title) button.title = options.title;
   if (options.classList) button.classList.add(...options.classList);
+
+  const imageElem = new Image();
+  imageElem.src = source;
+  imageElem.alt = options.altText ?? '';
+  if (options.width != null) imageElem.width = options.width;
+  if (options.height != null) imageElem.height = options.height;
+  if (options.imgId) imageElem.id = options.imgId;
+  if (options.imgClassList) imageElem.classList.add(...options.imgClassList);
+  button.appendChild(imageElem);
+
+  if (options.callback) button.addEventListener('click', options.callback);
+
   return button;
 }
 
@@ -468,7 +491,7 @@ function createParagraphs(paragraphs, options = {}) {
 export {
   createDateInputField,
   createFormControl,
-  createIconButton,
+  createImageButton,
   createParagraphs,
   createToggleButton,
 };
