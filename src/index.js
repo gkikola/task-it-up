@@ -1,3 +1,5 @@
+import './shims/classList';
+
 import App from './modules/app';
 
 const app = new App(document.body);

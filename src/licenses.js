@@ -5,6 +5,8 @@
 
 import './styles/reset.css';
 import './styles/licenses.css';
+import './shims/classList';
+
 import AppInfo from './modules/appInfo';
 import LicenseInfo from '../data/licenses/licenseInfo.json';
 import { createParagraphs } from './modules/utility/dom';
