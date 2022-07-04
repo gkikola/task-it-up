@@ -38,6 +38,7 @@
 .popup-menu-item-label {
   font-family: var(--label-font);
   font-size: 16px;
-  flex: 1;
+  flex-grow: 1;
+  flex-shrink: 0;
   margin-left: 8px;
 }
