@@ -3,17 +3,26 @@
     {
       "name": "Apache License, Version 2.0",
       "id": "Apache-2.0",
-      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+      "url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "hidden": false
     },
     {
       "name": "The MIT License",
       "id": "MIT",
-      "url": "https://opensource.org/licenses/MIT"
+      "url": "https://opensource.org/licenses/MIT",
+      "hidden": false
+    },
+    {
+      "name": "None (Public Domain)",
+      "id": "Public-Domain",
+      "url": null,
+      "hidden": true
     },
     {
       "name": "SIL Open Font License, Version 1.1",
       "id": "OFL-1.1",
-      "url": "https://scripts.sil.org/OFL_web"
+      "url": "https://scripts.sil.org/OFL_web",
+      "hidden": false
     }
   ],
   "resources": [
@@ -58,6 +67,13 @@
       "copyright": "Copyright \u00A9 2018 Daniel Cousens",
       "license": "MIT",
       "homepage": "https://github.com/dcousens/ordinal.js"
+    },
+    {
+      "name": "Reset CSS",
+      "type": "software",
+      "copyright": "By Eric A. Meyer",
+      "license": "Public-Domain",
+      "homepage": "https://meyerweb.com/eric/tools/css/reset/index.html"
     },
     {
       "name": "uuid",

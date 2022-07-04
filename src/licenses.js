@@ -129,10 +129,15 @@ function createResourceList(parent) {
         const prefixNode = document.createTextNode('License: ');
         itemLicense.appendChild(prefixNode);
 
-        const licenseLink = document.createElement('a');
-        licenseLink.textContent = licenseInfo.name;
-        licenseLink.href = `#license-${licenseInfo.id.toLowerCase()}`;
-        itemLicense.appendChild(licenseLink);
+        if (licenseInfo.hidden) {
+          const licenseName = document.createTextNode(licenseInfo.name);
+          itemLicense.appendChild(licenseName);
+        } else {
+          const licenseLink = document.createElement('a');
+          licenseLink.textContent = licenseInfo.name;
+          licenseLink.href = `#license-${licenseInfo.id.toLowerCase()}`;
+          itemLicense.appendChild(licenseLink);
+        }
 
         container.appendChild(itemLicense);
       }
@@ -153,7 +158,9 @@ function createLicenseList(parent) {
   heading.id = 'license-text';
   parent.appendChild(heading);
 
-  const licenses = [...LicenseInfo.licenses].sort(compareByName);
+  const licenses = LicenseInfo.licenses.filter((license) => (
+    !license.hidden
+  )).sort(compareByName);
 
   licenses.forEach((license) => {
     const container = document.createElement('div');
