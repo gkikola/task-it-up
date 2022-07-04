@@ -60,6 +60,7 @@ a:hover {
   overflow: auto;
   width: 350px;
   min-width: 250px;
+  max-width: 500px; /* Fallback for older browsers */
   max-width: min(100vw, 500px);
 }
 

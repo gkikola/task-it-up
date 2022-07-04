@@ -24,6 +24,7 @@
 .modal {
   width: 400px;
   max-width: 100vw;
+  max-height: 100vh; /* Fallback for older browsers */
   max-height: min(600px, 100vh);
   overflow: auto;
 
