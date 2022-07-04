@@ -23,6 +23,12 @@
       "id": "OFL-1.1",
       "url": "https://scripts.sil.org/OFL_web",
       "hidden": false
+    },
+    {
+      "name": "The Unlicense",
+      "id": "Unlicense",
+      "url": "https://unlicense.org/",
+      "hidden": false
     }
   ],
   "resources": [
@@ -32,6 +38,13 @@
       "copyright": null,
       "license": "OFL-1.1",
       "homepage": "https://fonts.google.com/specimen/Carter+One"
+    },
+    {
+      "name": "classList.js",
+      "type": "software",
+      "copyright": "By Eli Grey",
+      "license": "Unlicense",
+      "homepage": "https://github.com/eligrey/classList.js"
     },
     {
       "name": "core-js",
