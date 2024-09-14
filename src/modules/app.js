@@ -215,9 +215,6 @@ function updateMainPanelMenu(instance) {
   const { group, filter } = privates.currentFilter;
   const filterOptions = privates.settings.getFilterOptions(group);
 
-  const GROUP_ICON = 'category';
-  const SORT_ICON = 'sort';
-
   const iconOptions = (source) => ({
     source,
     width: ICON_WIDTH,
