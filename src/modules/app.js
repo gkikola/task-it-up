@@ -171,6 +171,58 @@ function addRandomData(instance, taskCount, projCount) {
 }
 
 /**
+ * Get an object describing the filter criteria associated with a particular
+ * task filter.
+ * @param {string} group The identifier of the group that the filter belongs
+ *   to.
+ * @param {string} filter The identifier of the filter.
+ * @returns {module:app~App~filterCriteria} An object describing the criteria
+ *   that a task must meet in order to be included by the filter.
+ */
+function getFilterCriteria(group, filter) {
+  const criteria = {};
+
+  switch (group) {
+    case 'dates': {
+      const today = startOfDay(new Date());
+      const todayEnd = endOfDay(today);
+
+      const duration = {};
+      switch (filter) {
+        case 'week':
+          duration.weeks = 1;
+          duration.days = -1;
+          break;
+        case 'month':
+          duration.months = 1;
+          duration.days = -1;
+          break;
+        case 'past-due':
+          duration.days = -1;
+          criteria.requireDueDate = true;
+          break;
+        default:
+          break;
+      }
+      criteria.endDate = addToDate(todayEnd, duration);
+      break;
+    }
+    case 'projects':
+      criteria.project = filter;
+      break;
+    case 'priorities': {
+      const priority = Task.convertStringToPriority(filter);
+      criteria.priority = priority;
+      break;
+    }
+    default:
+      break;
+  }
+
+  return criteria;
+}
+
+/**
  * Open the side panel, so that the filter menu is visible.
  * @param {module:app~App} instance The class instance on which to apply the
  *   function.
@@ -363,8 +415,14 @@ function updateMainPanel(instance, options = {}) {
 
   let heading = null;
   let subheading = null;
+
+  const filterCriteria = getFilterCriteria(group, filter);
   const displayOptions = {
+    endDate: filterCriteria.endDate,
     groupBy: 'none',
+    priority: filterCriteria.priority,
+    project: filterCriteria.project,
+    requireDueDate: filterCriteria.requireDueDate,
     resetScroll: options.resetScroll ?? true,
     dateFormat: privates.settings.dateFormat,
   };
@@ -373,9 +431,7 @@ function updateMainPanel(instance, options = {}) {
     case 'dates': {
       filterOptions = privates.settings.getFilterOptions('dates');
       const today = startOfDay(new Date());
-      const todayEnd = endOfDay(today);
 
-      const duration = {};
       switch (filter) {
         case 'today':
           heading = 'Today';
@@ -384,24 +440,17 @@ function updateMainPanel(instance, options = {}) {
         case 'week':
           heading = 'This Week';
           displayOptions.groupBy = 'due-date';
-          duration.weeks = 1;
-          duration.days = -1;
           break;
         case 'month':
           heading = 'This Month';
           displayOptions.groupBy = 'due-date';
-          duration.months = 1;
-          duration.days = -1;
           break;
         case 'past-due':
           heading = 'Past Due';
-          duration.days = -1;
-          displayOptions.requireDueDate = true;
           break;
         default:
           break;
       }
-      displayOptions.endDate = addToDate(todayEnd, duration);
 
       if (filter !== 'today' && filter !== 'past-due') {
         const dateFormat = privates.settings.dateFormat.outputPattern;
@@ -413,7 +462,6 @@ function updateMainPanel(instance, options = {}) {
     }
     case 'projects':
       filterOptions = privates.settings.getFilterOptions('projects');
-      displayOptions.project = filter;
       if (filter === 'none') {
         heading = 'Uncategorized';
       } else {
@@ -425,7 +473,6 @@ function updateMainPanel(instance, options = {}) {
     case 'priorities': {
       filterOptions = privates.settings.getFilterOptions('priorities');
       const priority = Task.convertStringToPriority(filter);
-      displayOptions.priority = priority;
       heading = `${Task.convertPriorityToPrettyString(priority)} Priority`;
       break;
     }
@@ -1514,6 +1561,21 @@ function createPageElements(instance, parent) {
  * event-driven logic.
  */
 class App {
+  /**
+   * An object holding information about the task criteria associated with a
+   * particular task filter.
+   * @typedef {Object} module:app~App~filterCriteria
+   * @property {Date} [endDate] If set, indicates the maximum date that a task
+   *   can have without being excluded by the filter.
+   * @property {boolean} [requireDueDate=false] If set to true, then tasks
+   *   without a due date are excluded by the filter.
+   * @property {string} [project] If set, indicates the project that a task
+   *   must belong to in order to be included by the filter. If set to 'none',
+   *   then only tasks that do not belong to any project are included.
+   * @property {string} [priority] If set, indicates the priority level that a
+   *   task must have in order to be included by the filter.
+   */
+
   /**
    * An object holding information about the status of a data import, including
    * whether or not the import was successful and any errors that were
