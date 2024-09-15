@@ -345,6 +345,34 @@ class FilterMenu {
   }
 
   /**
+   * Return an array of
+   * [filterInfo]{@link module:filterMenu~FilterMenu~filterInfo} objects
+   * describing the filters contained in the menu.
+   * @param {string} [groupId] If provided, limits the return value to just
+   *   those filters belonging to the specified group.
+   * @returns {module:filterMenu~FilterMenu~filterInfo[]} An array of
+   *   [filterInfo]{@link module:filterMenu~FilterMenu~filterInfo} objects
+   *   describing the filters in the menu.
+   */
+  filters(groupId = null) {
+    const { groupElements } = privateMembers.get(this);
+    const filterInfoList = [];
+    const addFilterInfo = (group) => {
+      groupElements.get(group).filterItems.forEach((_value, filter) => {
+        filterInfoList.push({ group, filter });
+      });
+    };
+
+    if (groupId != null) {
+      addFilterInfo(groupId);
+    } else {
+      groupElements.forEach((_value, group) => addFilterInfo(group));
+    }
+
+    return filterInfoList;
+  }
+
+  /**
    * Expand a filter group, so that its filter items are visible.
    * @param {string} id The identifier for the group to be expanded.
    * @throws {RangeError} If the group identifier is invalid.
