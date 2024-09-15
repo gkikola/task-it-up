@@ -531,6 +531,31 @@ class TaskList {
   }
 
   /**
+   * Count the number of tasks in the list, optionally restricted to tasks
+   * matching a set of criteria.
+   * @param {Object} [options={}] An object holding options to control which
+   *   tasks are to be counted.
+   * @param {Date} [options.startDate] If provided, only tasks with due dates
+   *   on or after the given date will be counted.
+   * @param {Date} [options.endDate] If provided, only tasks with due dates
+   *   on or before the given date will be counted.
+   * @param {boolean} [options.completed=false] If set to true, then tasks that
+   *   have been completed will be counted. Otherwise, they are excluded.
+   * @param {boolean} [options.requireDueDate=false] If set to true, then only
+   *   tasks that have a due date will be counted.
+   * @param {string} [options.project] If provided, only tasks belonging to the
+   *   specified project will be counted. If set to 'none', then only tasks
+   *   that do not have a project assigned will be counted.
+   * @param {number} [options.priority] If provided, only tasks with the
+   *   specified priority will be counted.
+   * @returns {number} The number of tasks in the list matching the given
+   *   criteria, or the total number of tasks if no criteria was given.
+   */
+  count(options = {}) {
+    return filterTasks(this, options).length;
+  }
+
+  /**
    * Get an array of [taskWrapper]{@link module:taskList~TaskList~taskWrapper}
    * objects filtered and sorted according to the given options.
    * @param {Object} [options={}] An object holding options to control which
