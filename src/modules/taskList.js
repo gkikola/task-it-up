@@ -56,6 +56,127 @@ import { arrayToCsvRecord } from './utility/storage';
 const privateMembers = new WeakMap();
 
 /**
+ * Filter tasks in the list according to the given criteria.
+ * @param {module:taskList~TaskList} instance The
+ *   [TaskList]{@link module:taskList~TaskList} instance on which to run the
+ *   function.
+ * @param {Object} [options={}] An object holding options to control which
+ *   tasks are to be included.
+ * @param {boolean} [options.cloneTasks=false] If set to true, then the tasks
+ *   in the returned array will be deep clones of the tasks in the list.
+ *   Otherwise, references to the original tasks are used.
+ * @param {Date} [options.startDate] If provided, only tasks with due dates
+ *   on or after the given date will be included.
+ * @param {Date} [options.endDate] If provided, only tasks with due dates
+ *   on or before the given date will be included.
+ * @param {boolean} [options.completed=false] If set to true, then tasks that
+ *   have been completed will be included. Otherwise, they are excluded.
+ * @param {boolean} [options.requireDueDate=false] If set to true, then only
+ *   tasks that have a due date will be included.
+ * @param {string} [options.project] If provided, only tasks belonging to the
+ *   specified project will be included. If set to 'none', then only tasks
+ *   that do not have a project assigned will be included.
+ * @param {number} [options.priority] If provided, only tasks with the
+ *   specified priority will be included.
+ * @returns {Task[]} An array containing all tasks in the list that match the
+ *   given criteria.
+ */
+function filterTasks(instance, options = {}) {
+  const privates = privateMembers.get(instance);
+
+  // Which index to use: default | due-date | project | priority
+  let lookupType = 'default';
+  if (options.project) {
+    lookupType = 'project';
+  } else if (typeof options.priority === 'number') {
+    lookupType = 'priority';
+  } else if (options.startDate || options.endDate) {
+    lookupType = 'due-date';
+  }
+
+  let output = [];
+  const copyTask = (task) => (options.cloneTasks ? _.cloneDeep(task) : task);
+  const pushTasks = (map, key) => {
+    const tasks = map.get(key);
+    if (tasks) tasks.forEach((task) => output.push(copyTask(task)));
+  };
+
+  switch (lookupType) {
+    case 'due-date': {
+      const dates = [...privates.tasksByDueDate.keys()];
+      dates.sort();
+
+      let startKey = null;
+      let endKey = null;
+      if (options.startDate) {
+        startKey = formatIsoDate(options.startDate);
+      }
+      if (options.endDate) {
+        endKey = formatIsoDate(options.endDate);
+      }
+
+      let lowIndex = 0;
+      let highIndex = dates.length;
+      if (startKey) {
+        lowIndex = _.sortedIndex(dates, startKey);
+      }
+      if (endKey) {
+        highIndex = _.sortedLastIndex(dates, endKey);
+      } else if (dates.length > 0 && dates[dates.length - 1] === 'none') {
+        highIndex -= 1;
+      }
+
+      dates.slice(lowIndex, highIndex).forEach((key) => {
+        pushTasks(privates.tasksByDueDate, key);
+      });
+      pushTasks(privates.tasksByDueDate, 'none');
+      break;
+    }
+    case 'priority': {
+      pushTasks(privates.tasksByPriority, options.priority);
+      break;
+    }
+    case 'project':
+      pushTasks(privates.tasksByProject, options.project);
+      break;
+    case 'default':
+    default:
+      privates.tasks.forEach((task, id) => {
+        output.push({ id, task: copyTask(task) });
+      });
+      break;
+  }
+
+  output = output.filter(({ task }) => {
+    if (task.dueDate) {
+      if (options.startDate
+        && isDateBefore(task.dueDate, options.startDate)) {
+        return false;
+      }
+      if (options.endDate && isDateBefore(options.endDate, task.dueDate)) {
+        return false;
+      }
+    }
+    if (!options.completed && task.isComplete()) return false;
+    if (options.requireDueDate && !task.dueDate) return false;
+    if (options.project) {
+      if (options.project === 'none' && task.project) return false;
+      if (options.project !== 'none' && task.project !== options.project) {
+        return false;
+      }
+    }
+    if (typeof options.priority === 'number'
+      && task.priority !== options.priority) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return output;
+}
+
+/**
  * Container holding a list of tasks.
  */
 class TaskList {
@@ -438,96 +559,11 @@ class TaskList {
    *   [taskWrapper]{@link module:taskList~TaskList~taskWrapper} objects.
    */
   entries(options = {}) {
-    const privates = privateMembers.get(this);
     const sortBy = options.sortBy || [];
 
-    // Which index to use: default | due-date | project | priority
-    let lookupType = 'default';
-    if (options.project) {
-      lookupType = 'project';
-    } else if (typeof options.priority === 'number') {
-      lookupType = 'priority';
-    } else if (options.startDate || options.endDate) {
-      lookupType = 'due-date';
-    }
-
-    let output = [];
-    const copyTasks = (map, key) => {
-      const tasks = map.get(key);
-      if (tasks) tasks.forEach((task) => output.push(_.cloneDeep(task)));
-    };
-    switch (lookupType) {
-      case 'due-date': {
-        const dates = [...privates.tasksByDueDate.keys()];
-        dates.sort();
-
-        let startKey = null;
-        let endKey = null;
-        if (options.startDate) {
-          startKey = formatIsoDate(options.startDate);
-        }
-        if (options.endDate) {
-          endKey = formatIsoDate(options.endDate);
-        }
-
-        let lowIndex = 0;
-        let highIndex = dates.length;
-        if (startKey) {
-          lowIndex = _.sortedIndex(dates, startKey);
-        }
-        if (endKey) {
-          highIndex = _.sortedLastIndex(dates, endKey);
-        } else if (dates.length > 0 && dates[dates.length - 1] === 'none') {
-          highIndex -= 1;
-        }
-
-        dates.slice(lowIndex, highIndex).forEach((key) => {
-          copyTasks(privates.tasksByDueDate, key);
-        });
-        copyTasks(privates.tasksByDueDate, 'none');
-        break;
-      }
-      case 'priority': {
-        copyTasks(privates.tasksByPriority, options.priority);
-        break;
-      }
-      case 'project':
-        copyTasks(privates.tasksByProject, options.project);
-        break;
-      case 'default':
-      default:
-        privates.tasks.forEach((task, id) => {
-          output.push({ id, task: _.cloneDeep(task) });
-        });
-        break;
-    }
-
-    output = output.filter((entry) => {
-      const { task } = entry;
-      if (task.dueDate) {
-        if (options.startDate
-          && isDateBefore(task.dueDate, options.startDate)) {
-          return false;
-        }
-        if (options.endDate && isDateBefore(options.endDate, task.dueDate)) {
-          return false;
-        }
-      }
-      if (!options.completed && task.isComplete()) return false;
-      if (options.requireDueDate && !task.dueDate) return false;
-      if (options.project) {
-        if (options.project === 'none' && task.project) return false;
-        if (options.project !== 'none' && task.project !== options.project) {
-          return false;
-        }
-      }
-      if (typeof options.priority === 'number'
-        && task.priority !== options.priority) {
-        return false;
-      }
-
-      return true;
-    });
+    const filterCriteria = options;
+    filterCriteria.cloneTasks = true;
+    let output = filterTasks(this, filterCriteria);
 
     output = output.sort((a, b) => {
       const leftTask = a.task;
