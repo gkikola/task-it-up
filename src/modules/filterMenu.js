@@ -353,11 +353,15 @@ class FilterMenu {
    * @returns {module:filterMenu~FilterMenu~filterInfo[]} An array of
    *   [filterInfo]{@link module:filterMenu~FilterMenu~filterInfo} objects
    *   describing the filters in the menu.
+   * @throws {RangeError} If an invalid group identifier is provided.
    */
   filters(groupId = null) {
     const { groupElements } = privateMembers.get(this);
     const filterInfoList = [];
     const addFilterInfo = (group) => {
+      if (!groupElements.has(group)) {
+        throw new RangeError(`Cannot locate filter group "${groupId}"`);
+      }
       groupElements.get(group).filterItems.forEach((_value, filter) => {
         filterInfoList.push({ group, filter });
       });
