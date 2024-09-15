@@ -76,6 +76,29 @@ function getFilterItemElement(instance, groupId, filterId) {
 }
 
 /**
+ * Get the element in the DOM that contains the task count for a particular
+ * filter.
+ * @param {module:filterMenu~FilterMenu} instance The class instance on which
+ *   to apply the function.
+ * @param {string} groupId The identifier for the group containing the filter.
+ * @param {string} filterId The identifier for the filter.
+ * @returns {HTMLElement} The element containing the filter task count.
+ * @throws {RangeError} If either the group or filter identifiers are invalid.
+ * @throws {DOMException} If the count element does not exist in the DOM.
+ */
+function getFilterItemCountElement(instance, groupId, filterId) {
+  const itemElem = getFilterItemElement(instance, groupId, filterId);
+  const countElem = itemElem.querySelector('.filter-item-count');
+
+  if (countElem == null) {
+    throw new DOMException('Cannot locate item count DOM element for filter '
+      + `"${filterId}" in group "${groupId}"`, 'InvalidStateError');
+  }
+
+  return countElem;
+}
+
+/**
  * Clear the filter selection, but do so without firing any events.
  * @param {module:filterMenu~FilterMenu} instance The class instance on which
  *   to apply the function.
@@ -438,6 +461,36 @@ class FilterMenu {
     const button = createImageButton(source, options);
     iconContainer.appendChild(button);
     return button;
+  }
+
+  /**
+   * Get the displayed count of tasks belonging to a particular filter.
+   * @param {string} groupId The identifier for the group containing the
+   *   filter.
+   * @param {string} filterId The identifier for the filter.
+   * @returns {number} The displayed task count for the filter.
+   * @throws {RangeError} If either the group or filter identifiers are invalid.
+   * @throws {DOMException} If the count element does not exist in the DOM.
+   */
+  getItemCount(groupId, filterId) {
+    const countElem = getFilterItemCountElement(this, groupId, filterId);
+    const count = Number.parseInt(countElem.textContent, 10);
+
+    return Number.isNaN(count) ? 0 : count;
+  }
+
+  /**
+   * Update the dispalyed count of tasks belonging to a particular filter.
+   * @param {string} groupId The identifier for the group containing the
+   *   filter.
+   * @param {string} filterId The identifier for the filter.
+   * @param {number} count The task count to display for the specified filter.
+   * @throws {RangeError} If either the group or filter identifiers are invalid.
+   * @throws {DOMException} If the count element does not exist in the DOM.
+   */
+  setItemCount(groupId, filterId, count) {
+    const countElem = getFilterItemCountElement(this, groupId, filterId);
+    countElem.textContent = count.toString();
   }
 
   /**
