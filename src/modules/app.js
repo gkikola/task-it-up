@@ -525,6 +525,19 @@ function updateProjectFilters(instance) {
 }
 
 /**
+ * Update the item counts for the filters in the filter menu.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance
+ *   on which to run the function.
+ */
+function updateFilterCounts(instance) {
+  const { filterMenu, tasks } = privateMembers.get(instance);
+  filterMenu.filters().forEach(({ group, filter }) => {
+    const criteria = getFilterCriteria(group, filter);
+    filterMenu.setItemCount(group, filter, tasks.count(criteria));
+  });
+}
+
+/**
  * Export app data to a JSON file.
  * @param {module:app~App} instance The [App]{@link module:app~App} instance
  *   whose data is to be exported.
