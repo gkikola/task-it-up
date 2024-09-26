@@ -526,8 +526,8 @@ function updateProjectFilters(instance) {
 
 /**
  * Update the item counts for the filters in the filter menu.
- * @param {module:app~App} instance The [App]{@link module:app~App} instance
- *   on which to run the function.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance on
+ *   which to run the function.
  */
 function updateFilterCounts(instance) {
   const { filterMenu, tasks } = privateMembers.get(instance);
@@ -535,6 +535,17 @@ function updateFilterCounts(instance) {
     const criteria = getFilterCriteria(group, filter);
     filterMenu.setItemCount(group, filter, tasks.count(criteria));
   });
+}
+
+/**
+ * Update the filter information in the filter menu. This includes updating the
+ * listed projects as well as the task counts for each filter.
+ * @param {module:app~App} instance The [App]{@link module:app~App} instance on
+ *   which to run the function.
+ */
+function updateFilters(instance) {
+  updateProjectFilters(instance);
+  updateFilterCounts(instance);
 }
 
 /**
@@ -747,7 +758,7 @@ function deleteAllData(instance) {
   privates.settings.resetToDefault();
   privates.tasks.deleteAll();
   privates.projects.deleteAll();
-  updateProjectFilters(instance);
+  updateFilters(instance);
   updateMainPanel(instance);
 }
 
@@ -792,8 +803,11 @@ function showAddTaskModal(instance, options = {}) {
     projectId: options.projectId || null,
     priority: options.priority ?? 0,
     dateFormat: privates.settings.dateFormat,
-    confirm: () => updateMainPanel(instance, { resetScroll: false }),
-    newProject: () => updateProjectFilters(instance),
+    confirm: () => {
+      updateFilters(instance);
+      updateMainPanel(instance, { resetScroll: false });
+    },
+    newProject: () => updateFilters(instance),
   });
   privates.modalStack.showModal(modal);
 }
@@ -825,7 +839,7 @@ function showAddProjectModal(instance, options = {}) {
         newId = privates.projects.addProject(project);
       }
 
-      updateProjectFilters(instance);
+      updateFilters(instance);
       if (newId) privates.filterMenu.selectFilter('projects', newId);
     },
     project: projectToUpdate,
@@ -856,9 +870,11 @@ function showDataModal(instance) {
   const modal = new DataModal({
     importData: (content, { name }) => {
       const result = importFromFile(instance, content, name);
-      if (result.projects.total > 0) updateProjectFilters(instance);
-      if (result.tasks.total > 0) {
-        updateMainPanel(instance, { resetScroll: false });
+      if (result.projects.total + result.tasks.total > 0) {
+        updateFilters(instance);
+        if (result.tasks.total > 0) {
+          updateMainPanel(instance, { resetScroll: false });
+        }
       }
       const container = document.createElement('div');
       const statusMsg = document.createElement('div');
@@ -982,7 +998,7 @@ function handleMainPanelMenuSelection(instance, itemId) {
         () => {
           privates.tasks.clearProject(filter);
           privates.projects.deleteProject(filter);
-          updateProjectFilters(instance);
+          updateFilters(instance);
         },
       );
       needPanelUpdate = false;
@@ -1081,7 +1097,8 @@ function completeTask(instance, id) {
  */
 function handleTaskUpdate(instance, type, id, task) {
   const privates = privateMembers.get(instance);
-  let needUpdate = true;
+  let needFilterUpdate = true;
+  let needPanelUpdate = true;
   switch (type) {
     case 'mark-complete':
       completeTask(instance, id);
@@ -1092,7 +1109,8 @@ function handleTaskUpdate(instance, type, id, task) {
       break;
     case 'edit':
       showAddTaskModal(instance, { taskId: id });
-      needUpdate = false;
+      needFilterUpdate = false;
+      needPanelUpdate = false;
       break;
     case 'clone':
       privates.tasks.addTask(task);
@@ -1103,21 +1121,26 @@ function handleTaskUpdate(instance, type, id, task) {
         `Are you sure you want to delete the task '${task.name}'?`,
         () => {
           privates.tasks.deleteTask(id);
+          updateFilters(instance);
           updateMainPanel(instance, { resetScroll: false });
         },
       );
-      needUpdate = false;
+      needFilterUpdate = false;
+      needPanelUpdate = false;
       break;
     case 'go-to-project':
       privates.filterMenu.selectFilter('projects', task.project || 'none');
-      needUpdate = false;
+      needFilterUpdate = false;
+      needPanelUpdate = false;
       break;
     default:
-      needUpdate = false;
+      needFilterUpdate = false;
+      needPanelUpdate = false;
       break;
   }
 
-  if (needUpdate) updateMainPanel(instance, { resetScroll: false });
+  if (needFilterUpdate) updateFilters(instance);
+  if (needPanelUpdate) updateMainPanel(instance, { resetScroll: false });
 }
 
 /**
@@ -1353,7 +1376,7 @@ function createFilterMenu(instance) {
   });
 
   privates.filterMenu = filterMenu;
-  updateProjectFilters(instance);
+  updateFilters(instance);
 }
 
 /**
@@ -1748,7 +1771,7 @@ class App {
     // TODO: remove
     addRandomData(this, 0, 0);
 
-    updateProjectFilters(this);
+    updateFilters(this);
     privates.filterMenu.selectFilter('default', 'all');
   }
 
