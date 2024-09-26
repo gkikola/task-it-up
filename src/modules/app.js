@@ -378,7 +378,14 @@ function updateMainPanelMenu(instance) {
     }
   }
 
-  const menuItems = [...optionItems, ...groupByItems, ...sortByItems];
+  const separator = { type: 'separator' };
+  const menuItems = [
+    ...optionItems,
+    separator,
+    ...groupByItems,
+    separator,
+    ...sortByItems,
+  ];
   privates.mainPanelMenu.setMenuItems(menuItems);
 }
 
