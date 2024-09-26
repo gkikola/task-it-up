@@ -241,11 +241,14 @@ class PopupMenu {
    * @typedef {Object} module:popupMenu~PopupMenu~menuItem
    * @property {string} [label] The text label that will be displayed in the
    *   menu. This should be provided unless the item is a separator.
-   * @property {string} [id] An identifier for the menu item. This will be passed
-   *   to callbacks.
+   * @property {string} [id] An identifier for the menu item. This will be
+   *   passed to callbacks.
    * @property {string} [type=entry] The type of menu item: 'entry' indicates
    *   that the item is a standard menu item, and 'separator' indicates that
    *   the item is a visual separator.
+   * @property {boolean} [checked=false] Indicates whether the menu item should
+   *   be visually marked as checked or turned on (such as for items that can
+   *   be toggled on or off).
    * @property {Object} [icon] An object specifying information about an icon
    *   to display next to the menu item.
    * @property {string} icon.source The source URL for the icon.
@@ -357,6 +360,10 @@ class PopupMenu {
         label.classList.add('popup-menu-item-label');
         label.textContent = item.label;
         listItem.appendChild(label);
+
+        if (item.checked) {
+          listItem.classList.add('checked');
+        }
 
         listItem.addEventListener('click', () => selectItem(this, index));
         listItem.addEventListener('mousemove', () => focusItem(this, index));

@@ -21,7 +21,7 @@
 }
 
 .popup-menu-item {
-  padding: 8px;
+  padding: 4px;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -31,8 +31,22 @@
   border-top: 1px solid var(--item-separator-color);
 }
 
+.popup-menu-item.checked .popup-menu-item-label {
+  color: white;
+  background-color: var(--menu-checked-color);
+}
+
+.popup-menu-item.active.checked .popup-menu-item-label {
+  color: white;
+  background-color: var(--menu-selection-checked-color);
+}
+
 .popup-menu-item.active {
-  background-color: var(--item-selection-color);
+  background-color: var(--menu-selection-color);
+}
+
+.popup-menu-item-icon {
+  margin-left: 4px;
 }
 
 .popup-menu-item-label {
@@ -40,7 +54,9 @@
   font-size: 16px;
   flex-grow: 1;
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-left: 4px;
+  padding: 6px;
+  border-radius: 6px;
 }
 
 .popup-menu-separator {

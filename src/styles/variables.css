@@ -10,6 +10,9 @@
   --input-disabled-bg-color: #e2e2e2;
   --item-separator-color: #f0f0f0;
   --item-selection-color: #f0f0f0;
+  --menu-selection-color: #f0f0f0;
   --menu-separator-color: #c0c0c0;
+  --menu-checked-color: #606060;
+  --menu-selection-checked-color: #808080;
   --main-content-width: 800px;
 }
