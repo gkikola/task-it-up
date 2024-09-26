@@ -198,7 +198,7 @@ function createFormElements(instance, parent) {
   updateDayGrid(instance);
 
   backButton.addEventListener('click', () => instance.goToPreviousMonth());
-  todayButton.addEventListener('click', () => instance.goToThisMonth());
+  todayButton.addEventListener('click', () => instance.selectToday());
   forwardButton.addEventListener('click', () => instance.goToNextMonth());
   privates.monthInput.addEventListener('change', (e) => {
     privates.displayedMonth = Number(e.target.value);
@@ -309,6 +309,31 @@ class DatePicker {
    */
   get day() {
     return privateMembers.get(this).day;
+  }
+
+  /**
+   * Select a particular date in the picker. If needed, update the displayed
+   * month so that the date is visible.
+   * @param {Date} date The date to be selected.
+   */
+  selectDate(date) {
+    const privates = privateMembers.get(this);
+    privates.year = date.getFullYear();
+    privates.month = date.getMonth();
+    privates.day = date.getDate();
+    privates.displayedYear = privates.year;
+    privates.displayedMonth = privates.month;
+
+    updateInputs(this);
+    updateDayGrid(this);
+  }
+
+  /**
+   * Select the present day in the picker. If needed, update the displayed
+   * month so that the date is visible.
+   */
+  selectToday() {
+    this.selectDate(new Date());
   }
 
   /**
