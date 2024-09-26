@@ -126,6 +126,43 @@ function focusItem(instance, index) {
 }
 
 /**
+ * Change the focused menu item to the next or previous item in the list. If no
+ * item is currently focused, then either the first or last item will be
+ * focused depending on the specified direction. Separators are ignored.
+ * @param {module:popupMenu~PopupMenu} instance The class instance on which to
+ *   apply the function.
+ * @param {number} delta Indicates which direction to iterate through the menu:
+ *   -1 will move the focus to the previous item and 1 will move the focus to
+ *   the next item.
+ */
+function shiftFocus(instance, delta) {
+  const privates = privateMembers.get(instance);
+  const active = privates.activeItem;
+  const items = privates.menuItems;
+
+  let index = active;
+
+  if (index === null) {
+    // Start one before or one past the end so that the starting or ending item
+    // will be the first item in the iteration
+    index = (delta > 0) ? -1 : items.length;
+  }
+
+  // Travel through the menu items until we find the next non-separator
+  for (let count = 0; count < items.length; count += 1) {
+    index += delta;
+    if (index < 0) index = items.length - 1;
+    if (index >= items.length) index = 0;
+
+    if (items[index] !== 'separator') break;
+  }
+
+  if (items.length > 0) {
+    focusItem(instance, index);
+  }
+}
+
+/**
  * Handle a mouse or keyboard event.
  * @param {module:popupMenu~PopupMenu} instance The class instance on which to
  *   apply the function.
@@ -155,22 +192,12 @@ function handleEvent(instance, event) {
           break;
         case 'ArrowUp':
         case 'Up': {
-          const active = privates.activeItem;
-          const itemCount = privates.menuItems.length;
-          let index = null;
-          if (active !== null) index = active > 0 ? active - 1 : itemCount - 1;
-          else if (itemCount > 0) index = itemCount - 1;
-          focusItem(instance, index);
+          shiftFocus(instance, -1);
           break;
         }
         case 'ArrowDown':
         case 'Down': {
-          const active = privates.activeItem;
-          const itemCount = privates.menuItems.length;
-          let index = null;
-          if (active !== null) index = active < itemCount - 1 ? active + 1 : 0;
-          else if (itemCount > 0) index = 0;
-          focusItem(instance, index);
+          shiftFocus(instance, 1);
           break;
         }
         default:
@@ -212,10 +239,13 @@ class PopupMenu {
   /**
    * A menu item in the popup.
    * @typedef {Object} module:popupMenu~PopupMenu~menuItem
-   * @property {string} label The text label that will be displayed in the
-   *   menu.
-   * @property {string} id An identifier for the menu item. This will be passed
+   * @property {string} [label] The text label that will be displayed in the
+   *   menu. This should be provided unless the item is a separator.
+   * @property {string} [id] An identifier for the menu item. This will be passed
    *   to callbacks.
+   * @property {string} [type=entry] The type of menu item: 'entry' indicates
+   *   that the item is a standard menu item, and 'separator' indicates that
+   *   the item is a visual separator.
    * @property {Object} [icon] An object specifying information about an icon
    *   to display next to the menu item.
    * @property {string} icon.source The source URL for the icon.
@@ -299,27 +329,38 @@ class PopupMenu {
     menu.appendChild(list);
     privates.menuItems.forEach((item, index) => {
       const listItem = document.createElement('li');
-      listItem.classList.add('popup-menu-item');
       listItem.dataset.index = index.toString();
       list.appendChild(listItem);
 
-      if (item.icon) {
-        const icon = new Image();
-        icon.src = item.icon.source;
-        icon.alt = '';
-        icon.classList.add('popup-menu-item-icon');
-        if (item.icon.width != null) icon.width = item.icon.width;
-        if (item.icon.height != null) icon.height = item.icon.height;
-        listItem.appendChild(icon);
+      switch (item.type) {
+        case 'separator':
+          listItem.classList.add('popup-menu-separator');
+          break;
+        case 'entry':
+        default:
+          listItem.classList.add('popup-menu-item');
+          break;
       }
 
-      const label = document.createElement('div');
-      label.classList.add('popup-menu-item-label');
-      label.textContent = item.label;
-      listItem.appendChild(label);
+      if (item.type !== 'separator') {
+        if (item.icon) {
+          const icon = new Image();
+          icon.src = item.icon.source;
+          icon.alt = '';
+          icon.classList.add('popup-menu-item-icon');
+          if (item.icon.width != null) icon.width = item.icon.width;
+          if (item.icon.height != null) icon.height = item.icon.height;
+          listItem.appendChild(icon);
+        }
 
-      listItem.addEventListener('click', () => selectItem(this, index));
-      listItem.addEventListener('mousemove', () => focusItem(this, index));
+        const label = document.createElement('div');
+        label.classList.add('popup-menu-item-label');
+        label.textContent = item.label;
+        listItem.appendChild(label);
+
+        listItem.addEventListener('click', () => selectItem(this, index));
+        listItem.addEventListener('mousemove', () => focusItem(this, index));
+      }
     });
 
     menu.addEventListener('mouseleave', () => focusItem(this, null));
