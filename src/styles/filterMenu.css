@@ -56,10 +56,22 @@
   background-color: #dadada;
 }
 
-.filter-item-label {
+.filter-item-label, .filter-item-count {
   font-family: var(--label-font);
   font-size: 16px;
+  white-space: nowrap;
+}
+
+.filter-item-label {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.filter-item-count {
+  color: #808080;
+}
+
+.filter-item-selector:hover .filter-item-count,
+.filter-item.selected .filter-item-count {
+  color: #404040;
 }
