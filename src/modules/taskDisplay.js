@@ -322,6 +322,9 @@ class TaskDisplay {
    *   'due-date', 'priority', 'project', or 'none'.
    * @property {string} [sortBy=create-date] The primary field to sort the
    *   tasks by: 'name', 'due-date', 'create-date', 'priority', or 'project'.
+   * @property {boolean} [groupDescending=false] If set to true and if tasks
+   *   are being grouped (using groupBy), then the groups will be sorted in
+   *   descending order.
    * @property {boolean} [sortDescending=false] If set to true, then results
    *   will be sorted in descending order.
    * @property {boolean} [caseSensitive=false] If set to true, then sorting for
@@ -397,10 +400,11 @@ class TaskDisplay {
     }
 
     const groupBy = options.groupBy || 'none';
-    const descending = options.sortDescending ?? false;
+    const groupDescending = options.groupDescending ?? false;
+    const sortDescending = options.sortDescending ?? false;
     const caseSensitive = options.caseSensitive ?? false;
     const missingLast = options.missingLast ?? false;
-    const pushSortField = (field) => {
+    const pushSortField = (field, descending) => {
       if (!listOptions.sortBy) listOptions.sortBy = [];
       listOptions.sortBy.push({
         field,
@@ -410,9 +414,11 @@ class TaskDisplay {
       });
     };
 
-    if (groupBy !== 'none') pushSortField(groupBy);
-    if (options.sortBy) pushSortField(options.sortBy);
-    if (options.sortBy !== 'create-date') pushSortField('create-date');
+    if (groupBy !== 'none') pushSortField(groupBy, groupDescending);
+    if (options.sortBy) pushSortField(options.sortBy, sortDescending);
+    if (options.sortBy !== 'create-date') {
+      pushSortField('create-date', sortDescending);
+    }
 
     const entries = privates.tasks.entries(listOptions);
 

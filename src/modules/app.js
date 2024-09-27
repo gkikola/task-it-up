@@ -275,7 +275,7 @@ function updateMainPanelMenu(instance) {
 
   const separator = { type: 'separator' };
   const {
-    groupBy, sortBy, sortDescending, showCompleted,
+    groupBy, sortBy, groupDescending, sortDescending, showCompleted,
   } = filterOptions;
   const optionItems = [
     { label: 'Add Task...', id: 'add-task', icon: iconOptions(AddIcon) },
@@ -296,20 +296,28 @@ function updateMainPanelMenu(instance) {
     });
   }
 
-  optionItems.push(
-    {
-      label: 'Show Completed Tasks',
-      id: 'toggle-completed',
-      checked: showCompleted,
-      icon: iconOptions(DoneIcon),
-    },
-    {
-      label: 'Sort Descending',
-      id: 'toggle-sort-descending',
-      checked: sortDescending,
+  optionItems.push({
+    label: 'Show Completed Tasks',
+    id: 'toggle-completed',
+    checked: showCompleted,
+    icon: iconOptions(DoneIcon),
+  });
+
+  if (groupBy !== 'none') {
+    optionItems.push({
+      label: 'Group Descending',
+      id: 'toggle-group-descending',
+      checked: groupDescending,
       icon: iconOptions(OrderIcon),
-    },
-  );
+    });
+  }
+
+  optionItems.push({
+    label: 'Sort Descending',
+    id: 'toggle-sort-descending',
+    checked: sortDescending,
+    icon: iconOptions(OrderIcon),
+  });
 
   const groupByItems = [
     {
@@ -507,6 +515,7 @@ function updateMainPanel(instance, options = {}) {
     displayOptions.sortBy = filterOptions.sortBy;
   }
   displayOptions.completed = filterOptions.showCompleted;
+  displayOptions.groupDescending = filterOptions.groupDescending;
   displayOptions.sortDescending = filterOptions.sortDescending;
   displayOptions.missingLast = true;
 
@@ -1025,6 +1034,9 @@ function handleMainPanelMenuSelection(instance, itemId) {
     }
     case 'toggle-completed':
       filterOptions.showCompleted = !filterOptions.showCompleted;
+      break;
+    case 'toggle-group-descending':
+      filterOptions.groupDescending = !filterOptions.groupDescending;
       break;
     case 'toggle-sort-descending':
       filterOptions.sortDescending = !filterOptions.sortDescending;

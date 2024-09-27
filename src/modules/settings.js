@@ -61,6 +61,9 @@ class Settings {
    * @property {string} sortBy The primary field to sort the tasks by:
    *   'default', 'name', 'due-date', 'create-date', 'priority', or 'project'.
    *   The default depends on the type of filter.
+   * @property {boolean} groupDescending When tasks are grouped, this indicates
+   *   whether to sort the groups in descending order rather than ascending
+   *   order.
    * @property {boolean} sortDescending Indicates whether to sort in descending
    *   order rather than ascending order.
    * @property {boolean} showCompleted Indicates whether to include completed
@@ -289,6 +292,8 @@ class Settings {
     const newOptions = {
       groupBy: options.groupBy ?? oldOptions?.groupBy ?? 'default',
       sortBy: options.sortBy ?? oldOptions?.sortBy ?? 'default',
+      groupDescending: options.groupDescending ?? oldOptions?.groupDescending
+        ?? false,
       sortDescending: options.sortDescending ?? oldOptions?.sortDescending
         ?? false,
       showCompleted: options.showCompleted ?? oldOptions?.showCompleted
@@ -316,6 +321,7 @@ class Settings {
     const filterOptions = {
       groupBy: 'default',
       sortBy: 'default',
+      groupDescending: false,
       sortDescending: false,
       showCompleted: false,
     };
@@ -538,6 +544,12 @@ class Settings {
             ],
             errorCallback: handleError,
           })) newOptions.sortBy = filterOptions.sortBy;
+
+          if (validateValue(filterOptions.groupDescending, {
+            valueName: `filterGroups.${name}.groupDescending`,
+            expectedType: 'boolean',
+            errorCallback: handleError,
+          })) newOptions.groupDescending = filterOptions.groupDescending;
 
           if (validateValue(filterOptions.sortDescending, {
             valueName: `filterGroups.${name}.sortDescending`,
