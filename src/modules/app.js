@@ -994,6 +994,7 @@ function handleMainPanelMenuSelection(instance, itemId) {
 
   let needPanelUpdate = true;
   let needFilterOptionUpdate = true;
+
   switch (itemId) {
     case 'add-task': {
       const modalOptions = {};
@@ -1043,36 +1044,47 @@ function handleMainPanelMenuSelection(instance, itemId) {
       break;
     case 'group-by-default':
       filterOptions.groupBy = 'default';
+      filterOptions.groupDescending = false;
       break;
     case 'group-by-none':
       filterOptions.groupBy = 'none';
+      filterOptions.groupDescending = false;
       break;
     case 'group-by-due-date':
       filterOptions.groupBy = 'due-date';
+      filterOptions.groupDescending = false;
       break;
     case 'group-by-project':
       filterOptions.groupBy = 'project';
+      filterOptions.groupDescending = false;
       break;
     case 'group-by-priority':
       filterOptions.groupBy = 'priority';
+      filterOptions.groupDescending = true;
       break;
     case 'sort-by-default':
       filterOptions.sortBy = 'default';
+      filterOptions.sortDescending = false;
       break;
     case 'sort-by-name':
       filterOptions.sortBy = 'name';
+      filterOptions.sortDescending = false;
       break;
     case 'sort-by-create-date':
       filterOptions.sortBy = 'create-date';
+      filterOptions.sortDescending = false;
       break;
     case 'sort-by-due-date':
       filterOptions.sortBy = 'due-date';
+      filterOptions.sortDescending = false;
       break;
     case 'sort-by-project':
       filterOptions.sortBy = 'project';
+      filterOptions.sortDescending = false;
       break;
     case 'sort-by-priority':
       filterOptions.sortBy = 'priority';
+      filterOptions.sortDescending = true;
       break;
     default:
       break;
