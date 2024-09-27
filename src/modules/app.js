@@ -273,15 +273,15 @@ function updateMainPanelMenu(instance) {
     height: ICON_HEIGHT,
   });
 
+  const separator = { type: 'separator' };
   const {
     groupBy, sortBy, sortDescending, showCompleted,
   } = filterOptions;
   const optionItems = [
     { label: 'Add Task...', id: 'add-task', icon: iconOptions(AddIcon) },
     { label: 'Add Project...', id: 'add-project', icon: iconOptions(AddIcon) },
+    separator,
   ];
-  const groupByItems = [];
-  const sortByItems = [];
 
   if (group === 'projects' && filter !== 'none') {
     optionItems.push({
@@ -298,87 +298,94 @@ function updateMainPanelMenu(instance) {
 
   optionItems.push(
     {
-      label: showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks',
-      id: showCompleted ? 'hide-completed' : 'show-completed',
+      label: 'Show Completed Tasks',
+      id: 'toggle-completed',
+      checked: showCompleted,
       icon: iconOptions(DoneIcon),
     },
     {
-      label: sortDescending ? 'Sort Ascending' : 'Sort Descending',
-      id: sortDescending ? 'sort-ascending' : 'sort-descending',
+      label: 'Sort Descending',
+      id: 'toggle-sort-descending',
+      checked: sortDescending,
       icon: iconOptions(OrderIcon),
     },
   );
 
-  if (groupBy !== 'default') {
-    groupByItems.push({
+  const groupByItems = [
+    {
       label: 'Use Default Grouping',
       id: 'group-by-default',
+      checked: groupBy === 'default',
       icon: iconOptions(GroupIcon),
-    });
-  }
-
-  if (groupBy !== 'none') {
-    groupByItems.push({
+    },
+    {
       label: 'Do Not Group Tasks',
       id: 'group-by-none',
+      checked: groupBy === 'none',
       icon: iconOptions(GroupIcon),
-    });
-  }
+    },
+  ];
 
-  if (sortBy !== 'create-date') {
-    sortByItems.push({
+  const sortByItems = [
+    {
       label: 'Sort by Date Added',
       id: 'sort-by-create-date',
+      checked: sortBy === 'create-date',
       icon: iconOptions(SortIcon),
-    });
-  }
+    },
+  ];
 
-  if ((group !== 'dates' || filter !== 'past-due') && groupBy !== 'due-date') {
+  if (group !== 'dates' || filter !== 'past-due') {
     groupByItems.push({
       label: 'Group by Due Date',
       id: 'group-by-due-date',
+      checked: groupBy === 'due-date',
       icon: iconOptions(GroupIcon),
     });
-    if (sortBy !== 'due-date') {
+    if (groupBy !== 'due-date') {
       sortByItems.push({
         label: 'Sort by Due Date',
         id: 'sort-by-due-date',
+        checked: sortBy === 'due-date',
         icon: iconOptions(SortIcon),
       });
     }
   }
 
-  if (group !== 'projects' && groupBy !== 'project') {
+  if (group !== 'projects') {
     groupByItems.push({
       label: 'Group by Project',
       id: 'group-by-project',
+      checked: groupBy === 'project',
       icon: iconOptions(GroupIcon),
     });
-    if (sortBy !== 'project') {
+    if (groupBy !== 'project') {
       sortByItems.push({
         label: 'Sort by Project',
         id: 'sort-by-project',
+        checked: sortBy === 'project',
         icon: iconOptions(SortIcon),
       });
     }
   }
 
-  if (group !== 'priorities' && groupBy !== 'priority') {
+  if (group !== 'priorities') {
     groupByItems.push({
       label: 'Group by Priority',
       id: 'group-by-priority',
+      checked: groupBy === 'priority',
       icon: iconOptions(GroupIcon),
     });
-    if (sortBy !== 'priority') {
+    if (groupBy !== 'priority') {
       sortByItems.push({
         label: 'Sort by Priority',
         id: 'sort-by-priority',
+        checked: sortBy === 'priority',
         icon: iconOptions(SortIcon),
       });
     }
   }
 
-  const separator = { type: 'separator' };
   const menuItems = [
     ...optionItems,
     separator,
@@ -1012,17 +1019,11 @@ function handleMainPanelMenuSelection(instance, itemId) {
       needFilterOptionUpdate = false;
       break;
     }
-    case 'show-completed':
-      filterOptions.showCompleted = true;
+    case 'toggle-completed':
+      filterOptions.showCompleted = !filterOptions.showCompleted;
       break;
-    case 'hide-completed':
-      filterOptions.showCompleted = false;
-      break;
-    case 'sort-ascending':
-      filterOptions.sortDescending = false;
-      break;
-    case 'sort-descending':
-      filterOptions.sortDescending = true;
+    case 'toggle-sort-descending':
+      filterOptions.sortDescending = !filterOptions.sortDescending;
       break;
     case 'group-by-default':
       filterOptions.groupBy = 'default';
