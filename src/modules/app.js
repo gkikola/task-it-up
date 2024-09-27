@@ -334,6 +334,12 @@ function updateMainPanelMenu(instance) {
 
   const sortByItems = [
     {
+      label: 'Use Default Sorting',
+      id: 'sort-by-default',
+      checked: sortBy === 'default',
+      icon: iconOptions(SortIcon),
+    },
+    {
       label: 'Sort by Date Added',
       id: 'sort-by-create-date',
       checked: sortBy === 'create-date',
@@ -424,7 +430,8 @@ function updateMainPanel(instance, options = {}) {
   const filterCriteria = getFilterCriteria(group, filter);
   const displayOptions = {
     endDate: filterCriteria.endDate,
-    groupBy: 'none',
+    groupBy: 'due-date',
+    sortBy: 'create-date',
     priority: filterCriteria.priority,
     project: filterCriteria.project,
     requireDueDate: filterCriteria.requireDueDate,
@@ -444,11 +451,9 @@ function updateMainPanel(instance, options = {}) {
           break;
         case 'week':
           heading = 'This Week';
-          displayOptions.groupBy = 'due-date';
           break;
         case 'month':
           heading = 'This Month';
-          displayOptions.groupBy = 'due-date';
           break;
         case 'past-due':
           heading = 'Past Due';
@@ -488,12 +493,13 @@ function updateMainPanel(instance, options = {}) {
       break;
   }
 
-  // Override grouping if needed
+  // Override grouping and sorting if needed
   if (filterOptions.groupBy !== 'default') {
     displayOptions.groupBy = filterOptions.groupBy;
   }
-
-  displayOptions.sortBy = filterOptions.sortBy;
+  if (filterOptions.sortBy !== 'default') {
+    displayOptions.sortBy = filterOptions.sortBy;
+  }
   displayOptions.completed = filterOptions.showCompleted;
   displayOptions.sortDescending = filterOptions.sortDescending;
 
@@ -1030,6 +1036,9 @@ function handleMainPanelMenuSelection(instance, itemId) {
       break;
     case 'group-by-priority':
       filterOptions.groupBy = 'priority';
+      break;
+    case 'sort-by-default':
+      filterOptions.sortBy = 'default';
       break;
     case 'sort-by-create-date':
       filterOptions.sortBy = 'create-date';
