@@ -340,6 +340,12 @@ function updateMainPanelMenu(instance) {
       icon: iconOptions(SortIcon),
     },
     {
+      label: 'Sort by Name',
+      id: 'sort-by-name',
+      checked: sortBy === 'name',
+      icon: iconOptions(SortIcon),
+    },
+    {
       label: 'Sort by Date Added',
       id: 'sort-by-create-date',
       checked: sortBy === 'create-date',
@@ -1039,6 +1045,9 @@ function handleMainPanelMenuSelection(instance, itemId) {
       break;
     case 'sort-by-default':
       filterOptions.sortBy = 'default';
+      break;
+    case 'sort-by-name':
+      filterOptions.sortBy = 'name';
       break;
     case 'sort-by-create-date':
       filterOptions.sortBy = 'create-date';
