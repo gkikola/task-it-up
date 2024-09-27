@@ -508,6 +508,7 @@ function updateMainPanel(instance, options = {}) {
   }
   displayOptions.completed = filterOptions.showCompleted;
   displayOptions.sortDescending = filterOptions.sortDescending;
+  displayOptions.missingLast = true;
 
   updateMainHeading(heading, subheading);
   privates.taskDisplay.update(displayOptions);
