@@ -58,8 +58,9 @@ class Settings {
    * @property {string} groupBy The field to group the tasks by: 'default',
    *   'due-date', 'priority', 'project', or 'none'. The default depends on the
    *   type of filter.
-   * @property {string} sortBy The primary field to sort the tasks by: 'name',
-   *   'due-date', 'create-date', 'priority', or 'project'.
+   * @property {string} sortBy The primary field to sort the tasks by:
+   *   'default', 'name', 'due-date', 'create-date', 'priority', or 'project'.
+   *   The default depends on the type of filter.
    * @property {boolean} sortDescending Indicates whether to sort in descending
    *   order rather than ascending order.
    * @property {boolean} showCompleted Indicates whether to include completed
@@ -287,7 +288,7 @@ class Settings {
 
     const newOptions = {
       groupBy: options.groupBy ?? oldOptions?.groupBy ?? 'default',
-      sortBy: options.sortBy ?? oldOptions?.sortBy ?? 'create-date',
+      sortBy: options.sortBy ?? oldOptions?.sortBy ?? 'default',
       sortDescending: options.sortDescending ?? oldOptions?.sortDescending
         ?? false,
       showCompleted: options.showCompleted ?? oldOptions?.showCompleted
@@ -314,7 +315,7 @@ class Settings {
 
     const filterOptions = {
       groupBy: 'default',
-      sortBy: 'create-date',
+      sortBy: 'default',
       sortDescending: false,
       showCompleted: false,
     };
@@ -528,6 +529,7 @@ class Settings {
             valueName: `filterGroups.${name}.sortBy`,
             expectedType: 'string',
             expectedValues: [
+              'default',
               'name',
               'due-date',
               'create-date',
