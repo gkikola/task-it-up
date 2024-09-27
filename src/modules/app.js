@@ -324,6 +324,12 @@ function updateMainPanelMenu(instance) {
       checked: groupBy === 'none',
       icon: iconOptions(GroupIcon),
     },
+    {
+      label: 'Group by Due Date',
+      id: 'group-by-due-date',
+      checked: groupBy === 'due-date',
+      icon: iconOptions(GroupIcon),
+    },
   ];
 
   const sortByItems = [
@@ -333,24 +339,13 @@ function updateMainPanelMenu(instance) {
       checked: sortBy === 'create-date',
       icon: iconOptions(SortIcon),
     },
+    {
+      label: 'Sort by Due Date',
+      id: 'sort-by-due-date',
+      checked: sortBy === 'due-date',
+      icon: iconOptions(SortIcon),
+    },
   ];
-
-  if (group !== 'dates' || filter !== 'past-due') {
-    groupByItems.push({
-      label: 'Group by Due Date',
-      id: 'group-by-due-date',
-      checked: groupBy === 'due-date',
-      icon: iconOptions(GroupIcon),
-    });
-    if (groupBy !== 'due-date') {
-      sortByItems.push({
-        label: 'Sort by Due Date',
-        id: 'sort-by-due-date',
-        checked: sortBy === 'due-date',
-        icon: iconOptions(SortIcon),
-      });
-    }
-  }
 
   if (group !== 'projects') {
     groupByItems.push({
@@ -359,14 +354,12 @@ function updateMainPanelMenu(instance) {
       checked: groupBy === 'project',
       icon: iconOptions(GroupIcon),
     });
-    if (groupBy !== 'project') {
-      sortByItems.push({
-        label: 'Sort by Project',
-        id: 'sort-by-project',
-        checked: sortBy === 'project',
-        icon: iconOptions(SortIcon),
-      });
-    }
+    sortByItems.push({
+      label: 'Sort by Project',
+      id: 'sort-by-project',
+      checked: sortBy === 'project',
+      icon: iconOptions(SortIcon),
+    });
   }
 
   if (group !== 'priorities') {
@@ -376,14 +369,12 @@ function updateMainPanelMenu(instance) {
       checked: groupBy === 'priority',
       icon: iconOptions(GroupIcon),
     });
-    if (groupBy !== 'priority') {
-      sortByItems.push({
-        label: 'Sort by Priority',
-        id: 'sort-by-priority',
-        checked: sortBy === 'priority',
-        icon: iconOptions(SortIcon),
-      });
-    }
+    sortByItems.push({
+      label: 'Sort by Priority',
+      id: 'sort-by-priority',
+      checked: sortBy === 'priority',
+      icon: iconOptions(SortIcon),
+    });
   }
 
   const menuItems = [
