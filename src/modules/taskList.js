@@ -630,8 +630,8 @@ class TaskList {
             }
             break;
           case 'priority':
-            if (leftTask.priority > rightTask.priority) return LESS;
-            if (leftTask.priority < rightTask.priority) return MORE;
+            if (leftTask.priority < rightTask.priority) return LESS;
+            if (leftTask.priority > rightTask.priority) return MORE;
             break;
           case 'project': {
             const leftProj = leftTask.project;
