@@ -3,7 +3,11 @@
  * @module taskDisplay
  */
 
-import { isSameDay } from 'date-fns';
+import {
+  isBefore as isDateBefore,
+  isSameDay,
+  startOfDay,
+} from 'date-fns';
 
 import CheckedIcon from '../images/radio-checked.svg';
 import CopyIcon from '../images/copy.svg';
@@ -116,15 +120,18 @@ function clear(instance) {
  * @param {module:taskDisplay~TaskDisplay} instance The class instance on which
  *   to apply the function.
  * @param {string} [label] The text content of the heading, if any.
+ * @param {string[]} [headingStyleClasses] An array of style classes to add to
+ *   the heading, if any. These classes are applied in addition to the default
+ *   class of 'task-list-heading'.
  * @returns {HTMLElement} The list element where the task items can be
  *   inserted.
  */
-function createList(instance, label) {
+function createList(instance, label = null, headingStyleClasses = []) {
   const privates = privateMembers.get(instance);
 
   if (label) {
     const heading = document.createElement('h4');
-    heading.classList.add('task-list-heading');
+    heading.classList.add('task-list-heading', ...headingStyleClasses);
     heading.textContent = label;
     privates.content.appendChild(heading);
   }
@@ -185,7 +192,7 @@ function addTask(instance, list, taskId, task) {
 
   const detailsContainer = document.createElement('div');
   infoContainer.appendChild(detailsContainer);
-  const addDetail = (content, styleClass) => {
+  const addDetail = (content, styleClasses) => {
     if (detailsContainer.hasChildNodes()) {
       const comma = document.createElement('span');
       comma.classList.add('task-list-item-details');
@@ -194,7 +201,7 @@ function addTask(instance, list, taskId, task) {
     }
 
     const detail = document.createElement('span');
-    detail.classList.add('task-list-item-details', styleClass);
+    detail.classList.add('task-list-item-details', ...styleClasses);
     detail.textContent = content;
     detailsContainer.appendChild(detail);
   };
@@ -202,21 +209,28 @@ function addTask(instance, list, taskId, task) {
   if (task.dueDate) {
     const dateFormat = privates.dateFormat.outputPattern;
     const dateStr = formatDate(task.dueDate, dateFormat);
-    addDetail(dateStr, 'task-list-item-due-date');
+
+    const styleClasses = ['task-list-item-due-date'];
+    const today = startOfDay(new Date());
+    if (!task.isComplete() && isDateBefore(task.dueDate, today)) {
+      styleClasses.push('task-list-item-past-due');
+    }
+
+    addDetail(dateStr, styleClasses);
   }
 
   if (task.recurringDate) {
     const recurrenceStr = task.recurringDate.toString();
-    addDetail(recurrenceStr, 'task-list-item-recurring-date');
+    addDetail(recurrenceStr, ['task-list-item-recurring-date']);
   }
 
   if (task.project) {
     const project = privates.projects.getProject(task.project);
-    addDetail(project.name, 'task-list-item-project');
+    addDetail(project.name, ['task-list-item-project']);
   }
 
   const priorityStr = Task.convertPriorityToPrettyString(task.priority);
-  addDetail(`${priorityStr} Priority`, 'task-list-item-priority');
+  addDetail(`${priorityStr} Priority`, ['task-list-item-priority']);
 
   const buttonContainer = document.createElement('div');
   buttonContainer.classList.add('icon-container');
@@ -424,13 +438,23 @@ class TaskDisplay {
 
     let list = null;
     let prevTask = null;
-    entries.forEach((entry) => {
-      if (!prevTask || !isSameGroup(groupBy, entry.task, prevTask)) {
-        list = createList(this, getGroupHeading(this, groupBy, entry.task));
+    entries.forEach(({ task, id }) => {
+      if (!prevTask || !isSameGroup(groupBy, task, prevTask)) {
+        const headingStyles = [];
+        const today = startOfDay(new Date());
+        if (groupBy === 'due-date' && !task.isComplete()
+          && isDateBefore(task.dueDate, today)) {
+          headingStyles.push('task-list-heading-past-due');
+        }
+        list = createList(
+          this,
+          getGroupHeading(this, groupBy, task),
+          headingStyles,
+        );
       }
 
-      addTask(this, list, entry.id, entry.task);
-      prevTask = entry.task;
+      addTask(this, list, id, task);
+      prevTask = task;
     });
 
     if (entries.length === 0) {

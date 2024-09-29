@@ -61,6 +61,10 @@
   font-size: 14px;
 }
 
+.task-list-item-past-due {
+  color: var(--task-past-due);
+}
+
 .task-list-item .icon-container {
   margin-left: 12px;
 }
