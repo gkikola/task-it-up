@@ -1529,9 +1529,13 @@ function createResizer(instance, parent) {
 function createMainPanel(instance, parent) {
   const privates = privateMembers.get(instance);
 
+  const mainPanelContainer = document.createElement('div');
+  mainPanelContainer.id = 'main-panel-container';
+
   const mainPanel = document.createElement('div');
   mainPanel.id = 'main-panel';
   privates.elements.mainPanel = mainPanel;
+  mainPanelContainer.appendChild(mainPanel);
 
   const header = document.createElement('div');
   header.id = 'main-panel-header';
@@ -1582,7 +1586,7 @@ function createMainPanel(instance, parent) {
     taskDisplayOptions,
   );
 
-  parent.appendChild(mainPanel);
+  parent.appendChild(mainPanelContainer);
 }
 
 /**
