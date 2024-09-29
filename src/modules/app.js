@@ -296,12 +296,14 @@ function updateMainPanelMenu(instance) {
     });
   }
 
-  optionItems.push({
-    label: 'Show Completed Tasks',
-    id: 'toggle-completed',
-    checked: showCompleted,
-    icon: iconOptions(DoneIcon),
-  });
+  if (group !== 'dates' || filter !== 'past-due') {
+    optionItems.push({
+      label: 'Show Completed Tasks',
+      id: 'toggle-completed',
+      checked: showCompleted,
+      icon: iconOptions(DoneIcon),
+    });
+  }
 
   if (groupBy !== 'none') {
     optionItems.push({
@@ -452,6 +454,7 @@ function updateMainPanel(instance, options = {}) {
     resetScroll: options.resetScroll ?? true,
     dateFormat: privates.settings.dateFormat,
   };
+  let hideCompletedTasks = false;
   let filterOptions;
   switch (group) {
     case 'dates': {
@@ -471,6 +474,7 @@ function updateMainPanel(instance, options = {}) {
           break;
         case 'past-due':
           heading = 'Past Due';
+          hideCompletedTasks = true;
           break;
         default:
           break;
@@ -514,7 +518,9 @@ function updateMainPanel(instance, options = {}) {
   if (filterOptions.sortBy !== 'default') {
     displayOptions.sortBy = filterOptions.sortBy;
   }
-  displayOptions.completed = filterOptions.showCompleted;
+
+  displayOptions.completed = hideCompletedTasks
+    ? false : filterOptions.showCompleted;
   displayOptions.groupDescending = filterOptions.groupDescending;
   displayOptions.sortDescending = filterOptions.sortDescending;
   displayOptions.missingLast = true;
