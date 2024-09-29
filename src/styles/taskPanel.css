@@ -65,6 +65,10 @@
   color: var(--task-past-due);
 }
 
+.task-list-item-priority {
+  font-style: italic;
+}
+
 .task-list-item .icon-container {
   margin-left: 12px;
 }
