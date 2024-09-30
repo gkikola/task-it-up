@@ -6,6 +6,7 @@
 import {
   add as addToDate,
   endOfDay,
+  isBefore as isDateBefore,
   startOfDay,
 } from 'date-fns';
 
@@ -1380,8 +1381,36 @@ function updateStorage(instance, type, eventData) {
 }
 
 /**
+ * Deletes old tasks that have been completed for more than the number of days
+ * specified by the 'deleteAfter' setting (if any).
+ * @param {module:app~App} instance The class instance on which to apply the
+ *   function.
+ */
+function deleteOldTasks(instance) {
+  const privates = privateMembers.get(instance);
+  const { deleteAfter } = privates.settings;
+
+  if (deleteAfter !== null) {
+    const tasksToDelete = [];
+    const today = startOfDay(new Date());
+
+    privates.tasks.forEach(({ id, task }) => {
+      if (task.completionDate) {
+        const deletionDate = addToDate(
+          endOfDay(task.completionDate),
+          { days: deleteAfter - 1 },
+        );
+        if (isDateBefore(deletionDate, today)) tasksToDelete.push(id);
+      }
+    });
+
+    tasksToDelete.forEach((id) => privates.tasks.deleteTask(id));
+  }
+}
+
+/**
  * Create the app's task filter menu.
- * @param {module:app~App} instance The class instances on which to apply the
+ * @param {module:app~App} instance The class instance on which to apply the
  *   function.
  */
 function createFilterMenu(instance) {
@@ -1818,6 +1847,8 @@ class App {
 
     const settingsCallback = (event) => updateStorage(this, 'setting', event);
     privates.settings.addEventListener('update-setting', settingsCallback);
+
+    deleteOldTasks(this);
 
     /* Add random task and project data for testing */
     // TODO: remove
